@@ -78,6 +78,7 @@ const TString tab2016noSkim = "DR80XSummer16asymptoticMiniAODv2_2_noSkim";
 const TString tab2017       = "2017data";
 const TString tab2017v2     = "2017data_v2";
 
+Int_t G_year = 2017;
 TString SelectedTab = tab2016noSkim;
 
 
@@ -135,7 +136,7 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
   if(options.Contains("FastSim")) G_IsFastSim = true;
 
   // Selection
-  ESelector sel = 0;
+  ESelector sel = iTopSelec;
 /*  if     (Selection == "StopDilep" || Selection == "stop"    ) sel = iStopSelec;
   else if(Selection == "Top"       || Selection == "TOP"     ) sel = iTopSelec;
   else if(Selection == "TW"        || Selection == "tW"      ) sel = iTWSelec;
@@ -361,7 +362,7 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
 
   // Create PAF Project whith that environment
   myProject = new PAFProject(pafmode); 
-  myProject->Set:
+  //myProject->SetDefaultTreeName("Events");
   
   // Add TMVA library for TMVA Analysis
   if(sel == ittDMSelec || sel == iTWSelec){
@@ -409,15 +410,16 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
   myProject->SetInputParam("lspMass"        , int(lspMass)     );
   myProject->SetInputParam("NormISRweights" , NormISRweights   );
   myProject->SetInputParam("doSyst"         , G_DoSystematics  ); 
+  myProject->SetInputParam("Year"           , G_year); 
   
   
   // Name of analysis class
   //----------------------------------------------------------------------------
-/*  myProject->AddSelectorPackage("LeptonSelector");
-  if(sel == ittHSelec || sel == i4tSelec) myProject->AddSelectorPackage("TauSelector");
+  myProject->AddSelectorPackage("LeptonSelector");
   myProject->AddSelectorPackage("JetSelector");
   myProject->AddSelectorPackage("EventBuilder");
-  if      (sel == iStopSelec)    myProject->AddSelectorPackage("StopAnalysis");
+  myProject->AddSelectorPackage("TopAnalysis");
+/*  if      (sel == iStopSelec)    myProject->AddSelectorPackage("StopAnalysis");
   else if (sel == ittDMSelec)    myProject->AddSelectorPackage("ttDM");
   else if (sel == iTopSelec )    myProject->AddSelectorPackage("TopAnalysis");
   else if (sel == ittHSelec )    myProject->AddSelectorPackage("ttHAnalysis");
@@ -433,19 +435,19 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
   else                         PAF_FATAL("RunAnalyserPAF", "No selector defined for this analysis!!!!");
   */
 
-  myProject->AddSelectorPackage("pruebaNanoAOD");
 
   // Additional packages
   //----------------------------------------------------------------------------
-//  myProject->AddPackage("ElecScaleClass");
-//  myProject->AddPackage("Lepton");
-//  myProject->AddPackage("Jet");
-//  myProject->AddPackage("mt2");
-//  myProject->AddPackage("Functions");
-//  myProject->AddPackage("LeptonSF");
-//  myProject->AddPackage("BTagSFUtil");
-//  myProject->AddPackage("PUWeight");
+  myProject->AddPackage("ElecScaleClass");
+  myProject->AddPackage("Lepton");
+  myProject->AddPackage("Jet");
+  myProject->AddPackage("mt2");
+  myProject->AddPackage("Functions");
+  myProject->AddPackage("LeptonSF");
+  myProject->AddPackage("BTagSFUtil");
+ // myProject->AddPackage("PUWeight");
 
+  myProject->AddSelectorPackage("prueba");
   // Let's rock!
   //----------------------------------------------------------------------------
   myProject->Run();
@@ -474,12 +476,9 @@ void GetCount(std::vector<TString> Files, Bool_t IsData){
 		f = TFile::Open(Files.at(i));
     f->GetObject("tree", tree);
 		f->GetObject("Count", hcount);
-		Count        += hcount-> GetEntries();
+		Count        += tree  -> GetEntries();
     nTrueEntries += tree  -> GetEntries();
-		if(!IsData){ 
-			f->GetObject("SumGenWeights", hsum);
-			SumOfWeights += hsum  -> GetBinContent(1);
-		}
+    SumOfWeights += tree  -> GetEntries();
 		f->Close();    
 	}
 }
