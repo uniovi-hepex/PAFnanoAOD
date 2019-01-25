@@ -79,6 +79,9 @@ class JetSelector : public PAFChainItemSelector{
     Int_t jetId;
     Int_t flavmc;
     Float_t csv;
+    Float_t deepcsv;
+    Float_t deepcsvC;
+    Float_t deepflav;
     Float_t pt; Float_t eta; Float_t rawPt; 
     Float_t pt_corrUp; Float_t pt_corrDown; 
     // genJet

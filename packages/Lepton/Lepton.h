@@ -3,7 +3,7 @@
 
 #include "TLorentzVector.h"
 #include "TString.h"
-#include "ElecScaleClass.h"
+//#include "ElecScaleClass.h"
 
 enum genLepMatch{kLGMtoGenLep, kLGMgood, kLGMfake, kLGMflip, kLGMconv, kLGMtoGenB, kLGMother};
 
@@ -60,6 +60,9 @@ class Lepton : public TObject{
     void SetR9(Float_t val){ R9 = val;}
     void SetEnergyUnc(Float_t val){ EnergyUnc = val;}
     void SetGenMatch(Int_t m){ genMatch = m;}
+    void Setdxy(Float_t t){ dxy = t;}
+    void Setdz( Float_t t){ dz  = t;}
+    void SetSIP3D(Float_t t){ SIP3D = t;}
 
     Float_t Pt(){return p.Pt();}
     Float_t Eta(){return p.Eta();}
@@ -69,7 +72,9 @@ class Lepton : public TObject{
     Float_t GetR9(){return R9;}
     Float_t GetEnergyUnc(){return EnergyUnc;}
     Int_t   GetGenMatch(){return genMatch;}
-    
+    Float_t Getdxt(){ return dxy;}
+    Float_t Getdz(){ return dz;}
+    Float_t GetSIP3D(){ return SIP3D;}
 
   protected:
     Float_t SF;
@@ -78,6 +83,9 @@ class Lepton : public TObject{
     Float_t R9;
     Float_t EnergyUnc;
     Int_t   genMatch;
+    Float_t dxy;
+    Float_t dz;
+    Float_t SIP3D;
 
     //ClassDef(Lepton, 0);
 };

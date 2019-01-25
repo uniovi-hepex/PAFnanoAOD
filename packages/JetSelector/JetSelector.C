@@ -56,13 +56,13 @@ void JetSelector::Initialise(){
   //---- Select your wp for b-tagging and pt, eta for the jets
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-  if(gSelection == iTopSelec || gSelection == iStopTopSelec || gSelection == ittDMSelec){
+  if(gSelection == iTopSelec || gSelection == iStopTopSelec || gSelection == ittDMSelec || gSelection == itt5TeV){
     taggerName="CSVv2";
     stringWP = "Medium";
     jet_MaxEta = 2.4;
     jet_MinPt  = 30;
     vetoJet_minPt = 30;
-    vetoJet_maxEta = 2.4;
+    vetoJet_maxEta = 5.0;
     minDR = 0.4;
     if(gIs2017eccop){
       taggerName=="CSVv2_94XSF_V1_B_F"; // DeepCSV_94XSF_V1_B_F
@@ -124,7 +124,7 @@ void JetSelector::Initialise(){
   }
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-  if (gSelection == iTopSelec || gSelection == iStopTopSelec || gSelection == iTWSelec) MeasType = "mujets";
+  if (gSelection == iTopSelec || gSelection == iStopTopSelec || gSelection == iTWSelec || gSelection == itt5TeV) MeasType = "mujets";
   TString pwd  = GetParam<TString>("WorkingDir");
   TString BTagSFPath = Form("%s/packages/BTagSFUtil", pwd.Data());
   
@@ -157,8 +157,11 @@ void JetSelector::GetJetVariables(Int_t i){
   //rawPt       = Get<Float_t>("Jet_rawPt",i);
   //pt_corrUp   = Get<Float_t>("Jet_corr_JECUp",i); 
   //pt_corrDown = Get<Float_t>("Jet_corr_JECDown",i);
-  jetId       = Get<Int_t>("Jet_jetId",i); jetId = 1; // temp
+  jetId       = Get<Int_t>("Jet_jetId",i); 
   csv         = Get<Float_t>("Jet_btagCSVV2", i);
+  deepcsv     = Get<Float_t>("Jet_btagDeepB", i);
+  deepcsvC    = Get<Float_t>("Jet_btagDeepC", i);
+  deepflav    = Get<Float_t>("Jet_btagDeepFlavB", i);
   flavmc = -999999;
   if(!gIsData){
     flavmc = Get<Int_t>("Jet_hadronFlavour", i);
@@ -225,10 +228,13 @@ void JetSelector::InsideLoop(){
     // Get all jet variables
     GetJetVariables(i);
     tJ = Jet(tpJ, csv, jetId, flavmc);
+    tJ.SetDeepCSVB(deepcsv);
+    tJ.SetDeepCSVC(deepcsvC);
+    tJ.SetDeepFlav(deepflav);
     tJ.isBtag = IsBtag(tJ);
 
     // Check and clean
-    if(tJ.id > 0 && Cleaning(tJ, Leptons, minDR)){
+    if(tJ.id > 1 && Cleaning(tJ, Leptons, minDR)){ // Jet id == 2, 6
 
       // MC info
       if(!gIsData){
@@ -252,13 +258,8 @@ void JetSelector::InsideLoop(){
 
       // Fill the veto collections
       if (tJ.p.Pt() > vetoJet_minPt && TMath::Abs(tJ.p.Eta()) < vetoJet_maxEta){
-        if      (gSelection == iWWSelec){if (tJ.isBtag) vetoJets.push_back(tJ);}
-        else if (gSelection == iWZSelec){if (tJ.isBtag) vetoJets.push_back(tJ);}
-        else if (gSelection == i4tSelec){if (tJ.isBtag) vetoJets.push_back(tJ);}
-        else if (gSelection == iWZSelec){if (tJ.isBtag) vetoJets.push_back(tJ);}
-        else if (gSelection == iTopSelec){if (tJ.isBtag) vetoJets.push_back(tJ);}
-        else if (gSelection == iTWSelec){
-          vetoJets.push_back(tJ);
+        if (gSelection == iTopSelec || gSelection == itt5TeV){
+          if(TMath::Abs(tJ.p.Eta()) > 2.4)  vetoJets.push_back(tJ);
         }
         else  vetoJets.push_back(tJ);
       }
@@ -282,6 +283,14 @@ void JetSelector::InsideLoop(){
       mcJets.push_back(tJ);
       }*/
   }
+
+  selJets        = SortJetsByPt(selJets);
+  selJetsJecUp   = SortJetsByPt(selJetsJecUp);
+  selJetsJecDown = SortJetsByPt(selJetsJecDown);
+  selJetsJER     = SortJetsByPt(selJetsJER);
+  Jets15         = SortJetsByPt(Jets15);
+  mcJets         = SortJetsByPt(mcJets);
+  vetoJets       = SortJetsByPt(vetoJets);
 
   nSelJets  = selJets.size();
   nJets15   = Jets15.size();

@@ -5,25 +5,27 @@
 #include "TLorentzVector.h"
 
 class Jet{
-
   public:
     Jet(){};
-    Jet(TLorentzVector vec, Float_t btag_csv, Int_t Id = -1, Int_t mcFlavour = 0){
+    Jet(TLorentzVector vec, Float_t btag_csv, Int_t Id = -1, Int_t mcFlavour = 0, Float_t btag_deepcsv = -1){
       p = vec;
       csv = btag_csv;
+      deepcsv = btag_deepcsv;
       id = Id;
       flavmc = mcFlavour;
       //InitSyst();
     }
     ~Jet(){};
 
-
     Bool_t isBtag;
     TLorentzVector p;
     TLorentzVector mcp;
-    Bool_t id;
+    Int_t id;
     Int_t flavmc;
     Float_t csv; 
+    Float_t deepcsv; 
+    Float_t deepcsvC;
+    Float_t deepflav;
 
     // For systematics
     Float_t pTJESUp;
@@ -41,7 +43,12 @@ class Jet{
     Float_t Phi(){ return p.Phi();}
     Float_t E(){ return p.E();}
     void SetMCjet(TLorentzVector p){ mcp = p;}
-
+    void SetDeepCSVB(float v);
+    void SetDeepCSVC(float v);
+    void SetDeepFlav(float v);
+    Float_t GetDeepCSVB();
+    Float_t GetDeepCSVC();
+    Float_t GetDeepFlav();
 };
 
 #endif

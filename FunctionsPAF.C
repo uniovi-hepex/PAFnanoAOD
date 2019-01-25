@@ -26,9 +26,11 @@
 
 //=== Get all files in a path with name "Tree_" + filename + "_[number].root"
 vector<TString> GetAllFiles(TString path, TString  filename = "", Bool_t verbose = 0);
+std::vector<TString> TStringToVector(TString t, char separator = ',');
 
 //=== Get an histogram or values from plenty of Heppy Trees
-TH1D* GetHistoFromFiles(vector<TString> Files, TString histoName);
+TH1* GetHistoFromFiles(vector<TString> Files, TString histoName);
+TChain* GetTreeFromFiles(vector<TString> Files, TString treeName = "tree");
 Float_t GetSMSnorm(std::vector<TString> Files, Float_t mStop, Float_t mLsp);
 Float_t GetSMSnorm(TString Files, Float_t mStop, Float_t mLsp);
 
@@ -248,9 +250,35 @@ Float_t ttbar_xsec_top_mass(Float_t m){
   return s;
 }
 
+std::vector<TString> TStringToVector(TString t, char separator){
+  std::vector<TString> v;
+  t.ReplaceAll(" ", "");
+  Int_t n = t.CountChar(separator);
+  TString element;
+  for(Int_t i = 0; i < n; i++){
+    element = t(0, t.First(separator));
+    t = t(t.First(separator)+1, t.Sizeof());
+    v.push_back(element);
+  }
+  v.push_back(t);
+  return v;
+}
+
+
 vector<TString> GetAllFiles(TString path, TString  filename, Bool_t verbose) {
   if(verbose) cout << Form("[GetAllFiles]: Obtaining files of form %s in folder %s\n", filename.Data(), path.Data());
   vector<TString> theFiles;
+  if(filename.Contains("&")){
+    filename.ReplaceAll("&&", "&");
+    vector<TString> filenames = TStringToVector(filename, '&');
+    vector<TString> f; 
+    for(int k = 0; k < (int) filenames.size(); k++){
+      f = GetAllFiles(path, filenames.at(k), verbose);
+      for(int i = 0; i < (int) f.size(); i++) theFiles.push_back(f.at(i));
+    }
+    if(theFiles.size() == 0) cout << "ERROR: Files not found..." << endl;
+    return theFiles;
+  }
 
   TString command("ls ");
   if(filename != "")
@@ -259,9 +287,11 @@ vector<TString> GetAllFiles(TString path, TString  filename, Bool_t verbose) {
       path + "/" + filename + ".root " +
       path + "/" + filename + "_[0-9].root " +
       path + "/" + filename + "_[0-9][0-9].root " +
+      path + "/" + filename + "_[0-9][0-9][0-9].root " +
       path + "/Tree_" + filename + ".root " +
       path + "/Tree_" + filename + "_[0-9].root " +
-      path + "/Tree_" + filename + "_[0-9][0-9].root";
+      path + "/Tree_" + filename + "_[0-9][0-9].root " +
+      path + "/Tree_" + filename + "_[0-9][0-9][0-9].root";
   else command += path;
 
   command += " 2> /dev/null";
@@ -276,7 +306,6 @@ vector<TString> GetAllFiles(TString path, TString  filename, Bool_t verbose) {
   else {
     TString line;
     while (line.Gets(pipe)) {
-      if(line.Contains("13")) continue;
       if (result != "")	result += "\n";
       result += line;
     }
@@ -292,8 +321,14 @@ vector<TString> GetAllFiles(TString path, TString  filename, Bool_t verbose) {
       delete filesfound;
     }
   }
-
   if (theFiles.size() == 0) cout << ("ERROR [GetAllFiles]: Could not find data!\n");
+  // Removing duplicated files
+  for(int i = 1; i < (int) theFiles.size(); i++){
+    if(theFiles.at(i) == theFiles.at(i-1)){
+      theFiles.erase(theFiles.begin()+i);
+      i--;
+    }
+  }
   return theFiles;
 }
 
@@ -326,9 +361,9 @@ void CheckTreesInDir(TString path, TString treeName, Int_t verbose){
 }
 
 //=== Get a histogram from a list of files
-TH1D* GetHistoFromFiles(vector<TString> Files, TString histoName){
+TH1* GetHistoFromFiles(vector<TString> Files, TString histoName){
   Int_t nFiles = Files.size(); TFile *f;
-  TH1D *h = nullptr; TH1D *htemp = nullptr;
+  TH1 *h = nullptr; TH1D *htemp = nullptr;
   for(Int_t i = 0; i < nFiles; i++){
     f = TFile::Open(Files.at(i));
     if(!f->FindKey(histoName)){
@@ -346,19 +381,26 @@ TH1D* GetHistoFromFiles(vector<TString> Files, TString histoName){
   return h;
 }
 
+TChain* GetTreeFromFiles(vector<TString> Files, TString treeName){
+  Int_t nFiles = Files.size(); TFile* f;
+  TChain* t = new TChain(treeName);
+  for(Int_t i = 0; i < nFiles; i++) t->Add(Files.at(i));
+  return t;
+}
+
 //=== Saving histos from a file to another
 void SaveCountHistos(vector<TString> Files, TString filename){ 
-  TH1D* _SumOfWeights;
-  TH1D* _SumOfLHEweights;
-  TH1D* _Count;
+  TH1F* _SumOfWeights;
+  TH1F* _SumOfLHEweights;
+  TH1F* _Count;
 
-  _SumOfWeights    = GetHistoFromFiles(Files, "SumGenWeights");
-  _SumOfLHEweights = GetHistoFromFiles(Files, "CountLHE");
-  _Count           = GetHistoFromFiles(Files, "Count");
+ _SumOfWeights    = (TH1F*)GetHistoFromFiles(Files, "SumWeights"); // SumGenWeights
+ _SumOfLHEweights = (TH1F*)GetHistoFromFiles(Files, "CountLHE");
+  _Count           = (TH1F*)GetHistoFromFiles(Files, "Count");
   
   TFile* _file = TFile::Open(filename, "UPDATE");
   if(_SumOfWeights) _SumOfWeights->Write();
-  if(_SumOfLHEweights) _SumOfLHEweights->Write();
+//  if(_SumOfLHEweights) _SumOfLHEweights->Write();
   if(_Count) _Count->Write();
 }
 

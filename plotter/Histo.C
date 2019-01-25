@@ -51,6 +51,7 @@ void Histo::SetStyle(){
 }
 
 void Histo::ReCalcValues(){
+	StackOverflow();
 	yield = Integral();
 	max = GetMaximum();
 }
@@ -98,14 +99,17 @@ void Histo::AddToLegend(TLegend* leg, Bool_t doyi){
   if(DrawStyle == "hist") op = "l";
   else{
     if      (type == itSignal){
-      if(GetFillColor() == 0) op = "l";
+      if(GetFillColor() == 0) op = "lp";
       else op = "f";
     }
     else if (type == itData)   op = "pe";
     else if (type == itCompare)op = "pe";
   }
   
-  if(doyi) leg->AddEntry(h2, Form(process + ": %1.0f", yield), op);
+  if(doyi){
+    ReCalcValues();
+    leg->AddEntry(h2, Form(process + ": %1.0f", yield), op);
+  }
   else leg->AddEntry(h2, tag, op);
 }
 

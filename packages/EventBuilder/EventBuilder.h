@@ -5,6 +5,7 @@
 #include "LeptonSF.h"
 //#include "PUWeight.h"
 
+
 class EventBuilder : public PAFChainItemSelector{
 
   public:
@@ -31,6 +32,17 @@ class EventBuilder : public PAFChainItemSelector{
 
     Float_t TriggerSF; Float_t TriggerSF_Up; Float_t TriggerSF_Down; Float_t TriggerSF_err;
     Float_t PUSF;      Float_t PUSF_Up;      Float_t PUSF_Down;
+
+    TH2F* ElecTrigEffNum;
+    TH2F* ElecTrigEffDen;
+    TH2F* MuonTrigEffNum;
+    TH2F* MuonTrigEffDen;
+    TH2F* ElElTrigEffNum;
+    TH2F* MuMuTrigEffNum;
+    TH2F* ElMuTrigEffNum;
+    TH2F* ElElTrigEffDen;
+    TH2F* MuMuTrigEffDen;
+    TH2F* ElMuTrigEffDen;
 
     Float_t NormWeight; // Nominal
     Float_t Weight;  // CrossSection/NumberOfGenEvents
@@ -67,6 +79,7 @@ class EventBuilder : public PAFChainItemSelector{
     Bool_t gIsDoubleElec;
     Bool_t gIsMuonEG;
     Bool_t  gIsData;
+    Bool_t  gIsRunH;
     Int_t run;
     Int_t year;
     Int_t   gSelection;

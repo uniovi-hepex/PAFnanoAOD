@@ -30,6 +30,8 @@ class LeptonSF {
   Float_t GetTrigDoubleMuSF(Float_t eta1, Float_t eta2) const;
   Float_t GetTrigDoubleElSF(Float_t eta1, Float_t eta2) const;
   Float_t GetTrigElMuSF    (Float_t eta1, Float_t eta2) const;
+  Float_t GetTrigSingleMuonSF(Float_t pt, Float_t eta) const;
+  Float_t GetTrigSingleElecSF(Float_t pt, Float_t eta) const;
   // Trigger SF errors
   Float_t GetTrigDoubleMuSF_err(Float_t eta1, Float_t eta2) const;
   Float_t GetTrigDoubleElSF_err(Float_t eta1, Float_t eta2) const;
@@ -44,8 +46,8 @@ class LeptonSF {
   std::vector<Int_t> loadedHistos;
 
  protected:
-  TH2D* GetHistogramFromFileD(const char* file, const char* histo, const char* hname);
-  TH2F* GetHistogramFromFileF(const char* file, const char* histo, const char* hname) const;
+  TH2* GetHistogramFromFileD(const char* file, const char* histo, const char* hname);
+  TH2* GetHistogramFromFileF(const char* file, const char* histo, const char* hname) const;
   
  private:
   // Muon SFs
@@ -71,6 +73,7 @@ class LeptonSF {
   TH2D*  fMuonTightIP2DttH;
  
   // Elec SFs
+  TH2F*  fElecTrackerSFF;
   TH2D*  fElecTrackerSF;
   TH2D*  fElecIdSF;
   TH2D*  fElecIsoSF; 
@@ -86,7 +89,10 @@ class LeptonSF {
   TH2F *fDoubleMuSF;
   TH2F *fDoubleElSF;
   TH2F *fMuEGSF;
+  TH2F *fSingleMuonTrigSF;
+  TH2F *fSingleElecTrigSF;
 
   Bool_t gIs2017;
+  Int_t era;
 };
 #endif

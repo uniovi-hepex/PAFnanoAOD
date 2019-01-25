@@ -43,10 +43,10 @@ Float_t stopMass; Float_t lspMass;
 
 //=============================================================================
 // Global Enums
-enum  ESelector               {iStopSelec, iTopSelec, iTWSelec, iWWSelec, 
-			 iHWWSelec,  ittDMSelec, ittHSelec, iWZSelec, i4tSelec, iStopTopSelec, nSel};
-const TString kTagSel[nSel] = {"Stop",     "Top",     "TW",     "WW", "HWW",    
-"ttDM", "ttH", "WZ", "tttt", "StopTop" };
+enum  ESelector               {iStopSelec, iTopSelec, itt5TeV, iTWSelec, iWWSelec, 
+			 iHWWSelec,  ittDMSelec, ittHSelec, iWZSelec, i4tSelec, iStopTopSelec, iTTbarSemilep, nSel};
+const TString kTagSel[nSel] = {"Stop",     "Top",     "tt5TeV",     "WW", "HWW",    
+"ttDM", "ttH", "WZ", "tttt", "StopTop", "TTbarSemilep" };
 
 //=============================================================================
 // Datasets:
@@ -59,13 +59,14 @@ const TString kTagSel[nSel] = {"Stop",     "Top",     "TW",     "WW", "HWW",
 
     //>>> 2017 datasets
     TString data2017[] = { 
-    //"Run2017B_12Sep2017_v1",  "Run2017C_12Sep2017_v1"};
-    //"Run2017D_PromptReco_v1", 
-    //"Run2017E_PromptReco_v1"
-    "Run2017F_PromptReco_v1"
+    "Run2017B",
+    "Run2017C",
+    "Run2017D",
+    "Run2017E",
+    "Run2017F"
     };
 
-    const unsigned int nData2017 = 1;
+    const unsigned int nData2017 = 5;
 
     TString *SelectedDataset   = data2017;
     unsigned int SelectedNdata = nData2017;
@@ -73,13 +74,10 @@ const TString kTagSel[nSel] = {"Stop",     "Top",     "TW",     "WW", "HWW",
 //=============================================================================
 // Tabs
 // Tab in the spreadsheet https://docs.google.com/spreadsheets/d/1b4qnWfZrimEGYc1z4dHl21-A9qyJgpqNUbhOlvCzjbE
-const TString tab2016       = "DR80XSummer16asymptoticMiniAODv2_2";
-const TString tab2016noSkim = "DR80XSummer16asymptoticMiniAODv2_2_noSkim"; 
-const TString tab2017       = "2017data";
-const TString tab2017v2     = "2017data_v2";
+const TString tab2017       = "2017NANOAOD";
 
 Int_t G_year = 2017;
-TString SelectedTab = tab2016noSkim;
+TString SelectedTab = tab2017;
 
 
 //=============================================================================
@@ -87,6 +85,10 @@ TString SelectedTab = tab2016noSkim;
 void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots, 
 		    Long64_t nEvents, Long64_t FirstEvent,
 		    Float_t uxsec, TString options) {
+
+   if(options.Contains("2016")) G_year = 2016;
+   else if(options.Contains("2017")) G_year = 2017;
+   else if(options.Contains("2018")) G_year = 2018;
 
   // By adding this line we get all the helper functions in PAF (PAF_INFO...)
   PAFProject* myProject = 0;
@@ -137,6 +139,9 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
 
   // Selection
   ESelector sel = iTopSelec;
+  if(Selection == "tt5TeV" || Selection == "5TeV") sel = itt5TeV;
+  else sel = iTopSelec;
+  
 /*  if     (Selection == "StopDilep" || Selection == "stop"    ) sel = iStopSelec;
   else if(Selection == "Top"       || Selection == "TOP"     ) sel = iTopSelec;
   else if(Selection == "TW"        || Selection == "tW"      ) sel = iTWSelec;
@@ -175,14 +180,15 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
   TString pathToFiles = dataPath + dm->FindLocalFolder();
     
   // Deal with data samples
-  if(sampleName == "DoubleEG" || sampleName == "DoubleMuon" || sampleName == "MuonEG" || sampleName.BeginsWith("Single")){
+  if(sampleName.BeginsWith("Double") || sampleName.BeginsWith("MET") || sampleName.BeginsWith("MuonEG") || sampleName.BeginsWith("Single")){
     if(verbose) cout << ("\033[1;39m >>> DATA SAMPLES \033[0m\n");
     G_Event_Weight = 1.; G_IsData = true;
 
     TString *datasuffix             = SelectedDataset;
     const unsigned int nDataSamples = SelectedNdata;
     for(unsigned int i = 0; i < nDataSamples; i++) {
-      TString asample = Form("Tree_%s_%s",sampleName.Data(), datasuffix[i].Data());
+      //TString asample = Form("Tree_%s_%s",sampleName.Data(), datasuffix[i].Data());
+      TString asample = Form("Tree_%s_%s_Nano14Dec2018",sampleName.Data(), datasuffix[i].Data());
       //myProject->AddDataFiles(dm->GetRealDataFiles(asample));
       vector<TString> tempFiles = dm->GetRealDataFiles(asample);
 			Files.insert(Files.end(), (tempFiles).begin(), (tempFiles).end());
@@ -194,7 +200,7 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
     G_IsData = false; 
     if(options.Contains("Data") || options.Contains("data")) G_IsData = true;
     TString theSample = "";
-    if(sampleName.BeginsWith("LocalFile:")|| sampleName.BeginsWith("/")){ // LocalFile
+    if(sampleName.BeginsWith("LocalFile:") || sampleName.BeginsWith("/")){ // LocalFile
       theSample = sampleName.ReplaceAll("LocalFile:", ""); 
       if(verbose) cout << " >>> Analysing a local sample: " << theSample << endl;
       sampleName = TString( theSample(theSample.Last('/')+1, theSample.Sizeof())).ReplaceAll(".root", "").ReplaceAll("Tree_", "").ReplaceAll("_*", "").ReplaceAll("*", "");
@@ -204,6 +210,12 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
       GetCount(Files, G_IsData);
       xsec = uxsec;
       G_Event_Weight = xsec/Count;
+      cout << ">>>>>> SumOfWeights = " << SumOfWeights << endl;
+      if(SumOfWeights != Count && !G_IsData){ // is aMCatNLO
+        G_IsMCatNLO = true;
+        if(verbose) cout << " >>> This is an aMCatNLO sample!!" << endl;
+        G_Event_Weight = xsec/SumOfWeights;
+      }
     }
     else if(sampleName.BeginsWith("Scan:")){ // T2tt sample
       stopMass = GetStopMass(options);
@@ -362,7 +374,6 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
 
   // Create PAF Project whith that environment
   myProject = new PAFProject(pafmode); 
-  //myProject->SetDefaultTreeName("Events");
   
   // Add TMVA library for TMVA Analysis
   if(sel == ittDMSelec || sel == iTWSelec){
@@ -374,6 +385,7 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
   
   // Add the input data files
   myProject->AddDataFiles(Files); 
+  myProject->SetDefaultTreeName("Events");
 
   // Deal with first and last event
   if     (nEvents > 0 && FirstEvent == 0) myProject->SetNEvents(nEvents);
@@ -383,6 +395,11 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
   }
 
   // Set output file
+  if(options.Contains("out:")){
+    TString op = options(options.Index("out:")+4,options.Sizeof());
+    if(op.Contains(",")) op = op(0, op.Index(","));
+    sampleName = op;
+  }
   TString outputFile = outputDir + "/Tree_" + sampleName + ".root";
   PAF_INFO("RunAnalyserPAF", Form("Output file is \"%s\"\n\n",outputFile.Data()));
   myProject->SetOutputFile(outputFile);
@@ -418,7 +435,13 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
   myProject->AddSelectorPackage("LeptonSelector");
   myProject->AddSelectorPackage("JetSelector");
   myProject->AddSelectorPackage("EventBuilder");
-  myProject->AddSelectorPackage("TopAnalysis");
+//  if(Selection == "TTbarSemilep" || Selection == "TTbarSemi") 
+//    myProject->AddSelectorPackage("CombiningTTbarSemilep");
+  //myProject->AddSelectorPackage("TTbarSemilep");
+  if(Selection == "tt5TeV" || Selection == "5TeV"){
+    myProject->AddSelectorPackage("Top5TeV");
+  }
+  else myProject->AddSelectorPackage("TopAnalysis");
 /*  if      (sel == iStopSelec)    myProject->AddSelectorPackage("StopAnalysis");
   else if (sel == ittDMSelec)    myProject->AddSelectorPackage("ttDM");
   else if (sel == iTopSelec )    myProject->AddSelectorPackage("TopAnalysis");
@@ -438,16 +461,16 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
 
   // Additional packages
   //----------------------------------------------------------------------------
-  myProject->AddPackage("ElecScaleClass");
+  //myProject->AddPackage("ElecScaleClass");
   myProject->AddPackage("Lepton");
   myProject->AddPackage("Jet");
   myProject->AddPackage("mt2");
   myProject->AddPackage("Functions");
   myProject->AddPackage("LeptonSF");
   myProject->AddPackage("BTagSFUtil");
- // myProject->AddPackage("PUWeight");
+  myProject->AddPackage("PUWeight");
 
-  myProject->AddSelectorPackage("prueba");
+  //myProject->AddSelectorPackage("prueba");
   // Let's rock!
   //----------------------------------------------------------------------------
   myProject->Run();
@@ -456,7 +479,7 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
   //=============================================================================
   //== Save info in files
   //=============================================================================
-  SaveCountHistos(Files, outputFile);
+  //SaveCountHistos(Files, outputFile);
 }
 
 
@@ -468,17 +491,18 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
 //=============================================================================
 void GetCount(std::vector<TString> Files, Bool_t IsData){
 	Int_t nFiles = Files.size(); TFile *f;
-	TH1D *hcount; TH1D *hsum; TTree* tree;
+	TH1F *hcount; TH1F *hsum; TTree* tree;
 	if(verbose) cout << "\033[1;30m=================================================\033[0m\n";
 	for(Int_t i = 0; i < nFiles; i++){
 		if(verbose) cout << Form("\033[1;32m >>> Including file: %s \033[0m\n", Files.at(i).Data());
 		//cout << "Including file: " << Files.at(i) << endl;
 		f = TFile::Open(Files.at(i));
-    f->GetObject("tree", tree);
+    f->GetObject("Events", tree);
 		f->GetObject("Count", hcount);
-		Count        += tree  -> GetEntries();
+		if(!IsData) f->GetObject("SumWeights", hsum);
+		Count        += hcount-> GetBinContent(1);
     nTrueEntries += tree  -> GetEntries();
-    SumOfWeights += tree  -> GetEntries();
+    SumOfWeights += hsum  -> GetBinContent(1);
 		f->Close();    
 	}
 }

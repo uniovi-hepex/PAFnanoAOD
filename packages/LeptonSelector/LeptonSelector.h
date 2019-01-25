@@ -26,14 +26,15 @@ class LeptonSelector : public PAFChainItemSelector{
 
   protected:
 
+    TH1F* fhDummy;
     LeptonSF *LepSF;
-    ElecScaleClass *ElecScale;
+    //ElecScaleClass *ElecScale;
     Bool_t gIsData;
     Bool_t gIsFastSim;
     Int_t  gSelection;
     Bool_t gIs2017;
-    TString gOptions;
     Int_t  gChannel;
+    TString gOptions;
     TString localPath;
 
     // Trigger     
