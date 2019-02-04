@@ -1,35 +1,36 @@
 # Preliminary definitions of samples and so on
 
-samples=( #"TTTo2L2Nu" "TTToSemiLeptonic"
-#          "tbarW_noFullHad" "tW_noFullHad"
-#          "DYJetsToLL_M_10to50_MLM" "DYJetsToLL_M_50" #"DYJetsToLL_M5to50_madgraphMLM"
-#          "WJetsToLNu_MLM" "WWTo2L2Nu"
-#          "ZZTo4L" "ZZTo2L2Nu"
-#          "ZZZ"
-#          "WZ" "WZTo2L2Q" "WZTo3LNu"
-#          "TTWJetsToQQ" "TTWJetsToLNu"
-#          "TTZToQQ" "TTZToLLNuNu_M_10" "TTZToLL_M_1to10"
-         "MuonEG" "SingleElectron" "SingleMuon" "DoubleMuon" "DoubleEG" "MET")
+samples=("TTTo2L2Nu" "TTToSemiLeptonic"
+         "tbarW_noFullHad" "tW_noFullHad"
+         "DYJetsToLL_M_10to50_MLM" "DYJetsToLL_M_50" #"DYJetsToLL_M5to50_madgraphMLM"
+         "WJetsToLNu_MLM" "WWTo2L2Nu"
+         "ZZTo4L" "ZZTo2L2Nu"
+         "ZZZ"
+         "WZ" "WZTo2L2Q" "WZTo3LNu"
+         "TTWJetsToQQ" "TTWJetsToLNu"
+         "TTZToQQ" "TTZToLLNuNu_M_10" "TTZToLL_M_1to10")
+datasamples=("MuonEG" "SingleElectron" "SingleMuon" "DoubleMuon" "DoubleEG" "MET")
 
 samples_syst=( #"TTTo2L2Nu_TuneCP5up" "TTTo2L2Nu_TuneCP5down"
               "TTTo2L2Nu_hdampUP" "TTTo2L2Nu_hdampDOWN")
 
-runsamples=( #"TTTo2L2Nu" "TTToSemiLeptonic"
-#             "tbarW_noFullHad_ext1 & tbarW_noFullHad" "tW_noFullHad"
-#             "DYJetsToLL_M_10to50_MLM" "DYJetsToLL_M_50 & DYJetsToLL_M_50_ext1" #"DYJetsToLL_M5to50_madgraphMLM"
-#             "WJetsToLNu_MLM" "WWTo2L2Nu"
-#             "ZZTo4L & ZZTo4L_ext1" "ZZTo2L2Nu"
-#             "ZZZ"
-#             "WZ" "WZTo2L2Q" "WZTo3LNu"
-#             "TTWJetsToQQ" "TTWJetsToLNu"
-#             "TTZToQQ" "TTZToLLNuNu_M_10" "TTZToLL_M_1to10"
-            "MuonEG" "SingleElectron" "SingleMuon" "DoubleMuon" "DoubleEG" "MET")
+runsamples=("TTTo2L2Nu" "TTToSemiLeptonic"
+            "tbarW_noFullHad_ext1 & tbarW_noFullHad" "tW_noFullHad"
+            "DYJetsToLL_M_10to50_MLM" "DYJetsToLL_M_50 & DYJetsToLL_M_50_ext1" #"DYJetsToLL_M5to50_madgraphMLM"
+            "WJetsToLNu_MLM" "WWTo2L2Nu"
+            "ZZTo4L & ZZTo4L_ext1" "ZZTo2L2Nu"
+            "ZZZ"
+            "WZ" "WZTo2L2Q" "WZTo3LNu"
+            "TTWJetsToQQ" "TTWJetsToLNu"
+            "TTZToQQ" "TTZToLLNuNu_M_10" "TTZToLL_M_1to10")
+runsamples_data=("MuonEG" "SingleElectron" "SingleMuon" "DoubleMuon" "DoubleEG" "MET")
 
 runsamples_syst=( #"TTTo2L2Nu_TuneCP5up" "TTTo2L2Nu_TuneCP5down"
                  "TTTo2L2Nu_hdampUP" "TTTo2L2Nu_hdampDOWN")
 
 
 uplimit=$((${#runsamples[@]}-1))
+uplimit_data=$((${#runsamples_data[@]}-1))
 uplimit_syst=$((${#runsamples_syst[@]}-1))
 
 init="Tree_"
@@ -68,12 +69,18 @@ if [ "$1" == "an" ]; then
     echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Starting analysis"
     cd ../..
   
-    echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Running general-purpose samples..."
-    for ((i=0; i<=$uplimit; i++)); do
-        root -l -b -q "RunAnalyserPAF.C(\"${runsamples[i]}\", \"$sel\", $2)"
+#     echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Running general-purpose samples..."
+#     for ((i=0; i<=$uplimit; i++)); do
+#       root -l -b -q "RunAnalyserPAF.C(\"${runsamples[i]}\", \"$sel\", $2)"
+#         resetpaf -a
+#     done
+
+    echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Running data samples..."
+    for ((i=0; i<=$uplimit_data; i++)); do
+        root -l -b -q "RunAnalyserPAF.C(\"${runsamples_data[i]}\", \"$sel\", $2, -6, 0, 1.0, \"makeHadd\")"
         resetpaf -a
     done
-
+    
 #     echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Running samples for systematic uncertanties..."
 #     for ((i=0; i<=$uplimit_syst; i++)); do
 #         root -l -b -q "RunAnalyserPAF.C(\"${runsamples_syst[i]}\", \"$sel\", $2)"
@@ -107,24 +114,83 @@ elif [ "$1" == "ch" ]; then
   echo "...cores."
   echo " "
 
-  echo "%%%%%%%%> Checking general-purpose samples..."
-  while [ $allok != ${#samples[@]} ]; do
+#   echo "%%%%%%%%> Checking general-purpose samples..."
+#   while [ $allok != ${#samples[@]} ]; do
+#     checker=$(($checker+1))
+#     allok=0
+#     for ((i=0; i<=$uplimit; i++)); do
+#       unset path
+#       unset actualsize
+#       
+#       path=$plotspath$slash$init${samples[i]}$final
+#       
+#       if [ ! -e $path ]; then
+#         echo " "
+#         echo "%%%% => ROOT file not found. The sample that is missing is:"
+#         echo ${samples[i]}
+#         echo "Reanalysing..."
+#         echo " "
+#         
+#         root -l -b -q "RunAnalyserPAF.C(\"${runsamples[i]}\", \"$sel\", $2)"
+#         resetpaf -a
+#         
+#         allok=$(($allok-8))
+#       fi
+#       
+#       if [ -e $path ]; then
+#         actualsize=$(wc -c <"$path")
+#         if [ $actualsize -le $minimumsize ]; then
+#           echo " "
+#           echo "%%%% => ROOT file with..."
+#           echo $actualsize
+#           echo "...bytes of size, which are lower than the minimum. This sample is:"
+#           echo ${samples[i]}
+#           echo "Reanalysing..."
+#           echo " "
+#           root -l -b -q "RunAnalyserPAF.C(\"${runsamples[i]}\", \"$sel\", $2)"
+#           resetpaf -a
+#           
+#           allok=$(($allok-8))
+#         fi
+#       fi
+#       
+#       allok=$(($allok+1))
+#     done
+#     
+#     if [ $checker == 10 ]; then
+#       echo " "
+#       echo "%%%% => ERROR: limit of iterations (10) reached. There has been a problem with the execution or the general-purpose sample files."
+#       echo "%%%% => The bash script will now end."
+#       echo " "
+#       cd plotter/top
+#       return
+#     fi
+#     sleep 5
+#   done
+  
+  
+  
+  path=""
+  checker=0
+  actualsize=0
+  
+  echo "%%%%%%%%> Checking data samples..."
+  while [ $allok != ${#samples_data[@]} ]; do
     checker=$(($checker+1))
     allok=0
-    for ((i=0; i<=$uplimit; i++)); do
+    for ((i=0; i<=$uplimit_data; i++)); do
       unset path
       unset actualsize
       
-      path=$plotspath$slash$init${samples[i]}$final
+      path=$plotspath$slash$init${samples_data[i]}$final
       
       if [ ! -e $path ]; then
         echo " "
         echo "%%%% => ROOT file not found. The sample that is missing is:"
-        echo ${samples[i]}
+        echo ${samples_data[i]}
         echo "Reanalysing..."
         echo " "
-        
-        root -l -b -q "RunAnalyserPAF.C(\"${runsamples[i]}\", \"$sel\", $2)"
+        root -l -b -q "RunAnalyserPAF.C(\"${runsamples_data[i]}\", \"$sel\", $2, -6, 0, 1.0, \"makeHadd\")"
         resetpaf -a
         
         allok=$(($allok-8))
@@ -137,10 +203,10 @@ elif [ "$1" == "ch" ]; then
           echo "%%%% => ROOT file with..."
           echo $actualsize
           echo "...bytes of size, which are lower than the minimum. This sample is:"
-          echo ${samples[i]}
+          echo ${samples_data[i]}
           echo "Reanalysing..."
           echo " "
-          root -l -b -q "RunAnalyserPAF.C(\"${runsamples[i]}\", \"$sel\", $2)"
+          root -l -b -q "RunAnalyserPAF.C(\"${runsamples_data[i]}\", \"$sel\", $2, -6, 0, 1.0, \"makeHadd\")"
           resetpaf -a
           
           allok=$(($allok-8))
@@ -149,10 +215,9 @@ elif [ "$1" == "ch" ]; then
       
       allok=$(($allok+1))
     done
-    
     if [ $checker == 10 ]; then
       echo " "
-      echo "%%%% => ERROR: limit of iterations (10) reached. There has been a problem with the execution or the general-purpose sample files."
+      echo "%%%% => ERROR: limit of iterations (10) reached. There has been a problem with the execution or the sample files for systematic uncertanties."
       echo "%%%% => The bash script will now end."
       echo " "
       cd plotter/top
@@ -160,11 +225,13 @@ elif [ "$1" == "ch" ]; then
     fi
     sleep 5
   done
-
-  path=""
-  checker=0
-  actualsize=0
   
+  
+  
+#   path=""
+#   checker=0
+#   actualsize=0
+#   
 #   echo "%%%%%%%%> Checking samples for systematic uncertanties..."
 #   while [ $allok != ${#samples_syst[@]} ]; do
 #     checker=$(($checker+1))
