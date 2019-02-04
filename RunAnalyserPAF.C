@@ -20,9 +20,9 @@ R__LOAD_LIBRARY(FunctionsPAF.C+)
 #include <fstream>
 
 //=============================================================================
-void RunAnalyserPAF(TString sampleName  = "TTbar_Powheg", TString Selection = "StopDilep", 
-		    Int_t nSlots = 1, Long64_t nEvents = 0, Long64_t FirstEvent = 0, 
-		    Float_t uxsec = 1.0, TString options = "");
+void RunAnalyserPAF(TString sampleName = "TTbar_Powheg", TString Selection = "StopDilep",
+                    Int_t nSlots = 1, Long64_t nEvents = 0, Long64_t FirstEvent = 0,
+                    Float_t uxsec = 1.0, TString options = "");
 
 //=============================================================================
 void GetCount(vector<TString> Files, Bool_t IsData = false);
@@ -43,10 +43,11 @@ Float_t stopMass; Float_t lspMass;
 
 //=============================================================================
 // Global Enums
-enum  ESelector               {iStopSelec, iTopSelec, itt5TeV, iTWSelec, iWWSelec, 
-			 iHWWSelec,  ittDMSelec, ittHSelec, iWZSelec, i4tSelec, iStopTopSelec, iTTbarSemilep, nSel};
-const TString kTagSel[nSel] = {"Stop",     "Top",     "tt5TeV",     "WW", "HWW",    
-"ttDM", "ttH", "WZ", "tttt", "StopTop", "TTbarSemilep" };
+enum  ESelector               {iStopSelec, iTopSelec, itt5TeV, iTWSelec, iWWSelec,
+                               iHWWSelec,  ittDMSelec, ittHSelec, iWZSelec,
+                               i4tSelec, iStopTopSelec, iTTbarSemilep, nSel};
+const TString kTagSel[nSel] = {"Stop", "Top", "tt5TeV", "WW", "HWW", "ttDM",
+                               "ttH", "WZ", "tttt", "StopTop", "TTbarSemilep"};
 
 //=============================================================================
 // Datasets:
@@ -58,7 +59,7 @@ const TString kTagSel[nSel] = {"Stop",     "Top",     "tt5TeV",     "WW", "HWW",
     const unsigned int nData2016 = 3;
 
     //>>> 2017 datasets
-    TString data2017[] = { 
+    TString data2017[] = {
     "Run2017B",
     "Run2017C",
     "Run2017D",
@@ -82,13 +83,13 @@ TString SelectedTab = tab2017;
 
 //=============================================================================
 // Main function
-void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots, 
-		    Long64_t nEvents, Long64_t FirstEvent,
-		    Float_t uxsec, TString options) {
+void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
+                    Long64_t nEvents, Long64_t FirstEvent,
+                    Float_t uxsec, TString options) {
 
-   if(options.Contains("2016")) G_year = 2016;
-   else if(options.Contains("2017")) G_year = 2017;
-   else if(options.Contains("2018")) G_year = 2018;
+   if      (options.Contains("2016")) G_year = 2016;
+   else if (options.Contains("2017")) G_year = 2017;
+   else if (options.Contains("2018")) G_year = 2018;
 
   // By adding this line we get all the helper functions in PAF (PAF_INFO...)
   PAFProject* myProject = 0;
@@ -138,31 +139,35 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
   if(options.Contains("FastSim")) G_IsFastSim = true;
 
   // Selection
-  ESelector sel = iTopSelec;
-  if(Selection == "tt5TeV" || Selection == "5TeV") sel = itt5TeV;
-  else sel = iTopSelec;
   
-/*  if     (Selection == "StopDilep" || Selection == "stop"    ) sel = iStopSelec;
-  else if(Selection == "Top"       || Selection == "TOP"     ) sel = iTopSelec;
-  else if(Selection == "TW"        || Selection == "tW"      ) sel = iTWSelec;
-  else if(Selection == "ttDM"      || Selection == "ttMET"   ) sel = ittDMSelec;
-  else if(Selection == "ttH"       || Selection == "TTH"     ) sel = ittHSelec;
-  else if(Selection == "tttt"      || Selection == "4t"      ) sel = i4tSelec;
-  else if(Selection == "StopTop"   || Selection == "topSUSY" ) sel = iStopTopSelec;
-  else if(Selection == "WW"                                  ) sel = iWWSelec;
-  else if(Selection == "HWW"                                 ) sel = iHWWSelec;
-  else if(Selection == "WZ"                                  ) sel = iWZSelec;
-  else { 
-    PAF_ERROR("RunAnalyserPAF", Form("Wrong selection \"%s\".",
-				     Selection.Data()));
+//   ESelector sel = iTopSelec;
+//   if(Selection == "tt5TeV" || Selection == "5TeV") sel = itt5TeV;
+//   else sel = iTopSelec;
+  
+  TString lowSel = Selection; ESelector sel;
+  lowSel.ToLower();
+  
+  if      (lowSel == "stopdilep" || lowSel == "stop" ) sel = iStopSelec;
+  else if (lowSel == "top"                           ) sel = iTopSelec;
+  else if (lowSel == "tw"                            ) sel = iTWSelec;
+  else if (lowSel == "ttdm" || lowSel == "ttmet"     ) sel = ittDMSelec;
+  else if (lowSel == "tth"                           ) sel = ittHSelec;
+  else if (lowSel == "tttt"    || lowSel == "4t"     ) sel = i4tSelec;
+  else if (lowSel == "stoptop" || lowSel == "topsusy") sel = iStopTopSelec;
+  else if (lowSel == "ww"                            ) sel = iWWSelec;
+  else if (lowSel == "hww"                           ) sel = iHWWSelec;
+  else if (lowSel == "wz"                            ) sel = iWZSelec;
+  else if (lowSel == "tt5tev" || lowSel == "5tev"    ) sel = itt5TeV;
+  else {
+    PAF_ERROR("RunAnalyserPAF", Form("Wrong selection \"%s\".", Selection.Data()));
     TString suppsel = kTagSel[0];
-    for (unsigned int i = 1; i < nSel; i++) {
+    for (UInt_t i = 1; i < nSel; i++) {
       suppsel += ", ";
       suppsel += kTagSel[i];
     }
     PAF_ERROR("RunAnalyserPAF", Form("Supported selections: %s", suppsel.Data()));
     PAF_FATAL("RunAnalyserPAF", "Cannot continue. Exiting!");
-//  }*/
+ }
 
   cout << "\n" << endl;
   if(verbose) cout << Form("\033[1;35m >>> Analysis: %s \033[0m\n", kTagSel[sel].Data());

@@ -30,8 +30,9 @@ void draw(TString level = "1btag", TString chan = "ElMu");
 
 void plot(){
   int ichan; int ilev; TString chan; TString lev;
-  //draw("dilepton", "Elec");
-  draw("2jets", "ElMu"); return;
+//   draw("dilepton", "Elec");
+//   draw("2jets", "ElMu");
+//   return;
   for(ichan = 0; ichan < nChan; ichan++){
     chan = vChan.at(ichan);
     for(ilev = 0; ilev < nLev; ilev++){
