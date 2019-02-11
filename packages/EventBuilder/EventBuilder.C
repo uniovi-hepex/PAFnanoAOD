@@ -462,26 +462,38 @@ Bool_t EventBuilder::TrigElMu(){
   return pass;
 }
 
-// ########################### MET FILTERS
 
-Bool_t EventBuilder::PassesMETfilters(){
-  if(gSelection == itt5TeV) return true;
-  // https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFiltersRun2#Moriond_2017
-  if(gIsFastSim) return true;
-  if( (Get<Bool_t>("Flag_HBHENoiseFilter") &&        // MET filters for data and MC
-        Get<Bool_t>("Flag_HBHENoiseIsoFilter") &&
-        Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
-        Get<Bool_t>("Flag_goodVertices") ) //&&
-        //Get<Int_t>("Flag_badMuonFilter") &&
-       // Get<Int_t>("Flag_badChargedHadronFilter"))
-    /*  && (
-        gIsFastSim || // no more MET filters for Fast Sim
-        (!gIsData && Get<Int_t>("Flag_globalTightHalo2016Filter")) || // for MC
-        // --> This is the right thing!: //
-        ( gIsData && Get<Int_t>("Flag_globalTightHalo2016Filter") && Get<Int_t>("Flag_eeBadScFilter")) ) // for Data
-*/
-        //( Get<Int_t>("Flag_eeBadScFilter")) ) // for Data
-        //( gIsData && Get<Int_t>("Flag_globalTightHalo2016Filter")) ) // for Data
-    ) return true;
+
+// ########################### MET FILTERS
+Bool_t EventBuilder::PassesMETfilters() {
+  if      (gSelection == itt5TeV) return true;
+  else if (gSelection == iTopSelec) { // Updated on 2019-02-11 for both data and MC
+    if (gIsData) {
+      if ((Get<Bool_t>("Flag_goodVertices")                      &&
+          Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
+          Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
+          Get<Bool_t>("Flag_HBHENoiseIsoFilter")                 &&
+          Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
+          Get<Bool_t>("Flag_BadPFMuonFilter")                    &&
+          Get<Bool_t>("Flag_BadChargedCandidateFilter")          &&
+          Get<Bool_t>("Flag_eeBadScFilter")                      //&&
+          //Get<Bool_t>("ecalBadCalibReducedMINIAODFilter")   // WE DO NOT HAVE THIS ONE
+        )) return true;
+      else return false;
+    }
+    else { // ONLY FULLSIM
+      if ((Get<Bool_t>("Flag_goodVertices")                      &&
+          Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
+          Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
+          Get<Bool_t>("Flag_HBHENoiseIsoFilter")                 &&
+          Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
+          Get<Bool_t>("Flag_BadPFMuonFilter")                    &&
+          Get<Bool_t>("Flag_BadChargedCandidateFilter")          &&
+          Get<Bool_t>("Flag_ecalBadCalibFilter")                 //&&
+          //Get<Bool_t>("ecalBadCalibReducedMINIAODFilter")   // WE DO NOT HAVE THIS ONE
+        )) return true;
+      else return false;
+    }
+  }
   else return false;
 }
