@@ -476,8 +476,9 @@ Bool_t EventBuilder::PassesMETfilters() {
           Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
           Get<Bool_t>("Flag_BadPFMuonFilter")                    &&
           Get<Bool_t>("Flag_BadChargedCandidateFilter")          &&
-          Get<Bool_t>("Flag_eeBadScFilter")                      //&&
-          //Get<Bool_t>("ecalBadCalibReducedMINIAODFilter")   // WE DO NOT HAVE THIS ONE
+          Get<Bool_t>("Flag_eeBadScFilter")                      &&
+          Get<Bool_t>("Flag_ecalBadCalibFilter")                 //&& // WE ARE APPLYING THIS ONE INSTEAD OF THE NEXT ONE THAT DOES NOT EXIST EXACTLY
+          //Get<Bool_t>("ecalBadCalibReducedMINIAODFilter")           // WE DO NOT HAVE THIS ONE
         )) return true;
       else return false;
     }
@@ -489,8 +490,8 @@ Bool_t EventBuilder::PassesMETfilters() {
           Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
           Get<Bool_t>("Flag_BadPFMuonFilter")                    &&
           Get<Bool_t>("Flag_BadChargedCandidateFilter")          &&
-          Get<Bool_t>("Flag_ecalBadCalibFilter")                 //&&
-          //Get<Bool_t>("ecalBadCalibReducedMINIAODFilter")   // WE DO NOT HAVE THIS ONE
+          Get<Bool_t>("Flag_ecalBadCalibFilter")                 //&& // WE ARE APPLYING THIS ONE INSTEAD OF THE NEXT ONE THAT DOES NOT EXIST EXACTLY
+          //Get<Bool_t>("ecalBadCalibReducedMINIAODFilter")           // WE DO NOT HAVE THIS ONE
         )) return true;
       else return false;
     }
