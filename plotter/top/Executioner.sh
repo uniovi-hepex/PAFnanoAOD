@@ -77,7 +77,7 @@ if [ "$1" == "an" ]; then
 
     echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Running data samples..."
     for ((i=0; i<=$uplimit_data; i++)); do
-        root -l -b -q "RunAnalyserPAF.C(\"${runsamples_data[i]}\", \"$sel\", $2, -6, 0, 1.0, \"makeHadd\")"
+        root -l -b -q "RunAnalyserPAF.C(\"${runsamples_data[i]}\", \"$sel\", $2, -4, 0, 1.0, \"makeHadd\")"
         resetpaf -a
     done
     
@@ -190,7 +190,7 @@ elif [ "$1" == "ch" ]; then
         echo ${samples_data[i]}
         echo "Reanalysing..."
         echo " "
-        root -l -b -q "RunAnalyserPAF.C(\"${runsamples_data[i]}\", \"$sel\", $2, -6, 0, 1.0, \"makeHadd\")"
+        root -l -b -q "RunAnalyserPAF.C(\"${runsamples_data[i]}\", \"$sel\", $2, -4, 0, 1.0, \"makeHadd\")"
         resetpaf -a
         
         allok=$(($allok-8))
@@ -206,7 +206,7 @@ elif [ "$1" == "ch" ]; then
           echo ${samples_data[i]}
           echo "Reanalysing..."
           echo " "
-          root -l -b -q "RunAnalyserPAF.C(\"${runsamples_data[i]}\", \"$sel\", $2, -6, 0, 1.0, \"makeHadd\")"
+          root -l -b -q "RunAnalyserPAF.C(\"${runsamples_data[i]}\", \"$sel\", $2, -4, 0, 1.0, \"makeHadd\")"
           resetpaf -a
           
           allok=$(($allok-8))
