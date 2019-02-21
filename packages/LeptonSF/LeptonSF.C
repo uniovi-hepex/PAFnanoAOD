@@ -204,7 +204,7 @@ void LeptonSF::loadHisto(Int_t iHisto, Int_t wp){
   else if(iHisto == iElecReco){
     histoname = "EGamma_SF2D";
     if(gIs2017){
-      filename = "Elec2017_runBCDEF_passingRECO"; // BCDEF
+      filename = "ElecReco_2017v2"; // BCDEF
       if     (era==runB) filename = "runB_passingRECO";
       else if(era==runC) filename = "runC_passingRECO";
       else if(era==runD) filename = "runD_passingRECO";
@@ -221,7 +221,7 @@ void LeptonSF::loadHisto(Int_t iHisto, Int_t wp){
     if     (gIs2017){
       // https://soffi.web.cern.ch/soffi/EGM-ID/SF-17Nov2017-MCv2-IDv1-020618/Electrons/egammaEffi.txt_EGM2D_runBCDEF_passingTight94X.root
       if(wp == iTight){  
-        filename = "ElecTightCBid94X";  
+        filename = "ElecTightCutBased_2017v2";  
         if     (era==runB) filename = "runB_passingTight94X";
         else if(era==runC) filename = "runC_passingTight94X";
         else if(era==runD) filename = "runD_passingTight94X";
