@@ -369,15 +369,15 @@ Bool_t EventBuilder::PassesSingleElecTrigger(){
     else pass =  Get<Bool_t>("HLT_Ele27_WPTight_Gsf") || Get<Bool_t>("HLT_Ele23_WPLoose_Gsf");
   }
   else if(year == 2017){
-    if     (era == runA || era == runB || era == runC || era == runD || era == runE || era == runF){
-      pass = Get<Bool_t>("HLT_Ele32_WPTight_Gsf_L1DoubleEG") || Get<Bool_t>("HLT_Ele35_WPTight_Gsf") || Get<Bool_t>("HLT_Ele38_WPTight_Gsf") || Get<Bool_t>("HLT_Ele40_WPTight_Gsf");
+    if     (gIsData || era == runA || era == runB || era == runC || era == runD || era == runE || era == runF){
+      pass = Get<Bool_t>("HLT_Ele32_WPTight_Gsf_L1DoubleEG") || Get<Bool_t>("HLT_Ele35_WPTight_Gsf");// || Get<Bool_t>("HLT_Ele38_WPTight_Gsf") || Get<Bool_t>("HLT_Ele40_WPTight_Gsf");
       //pass = Get<Bool_t>("HLT_Ele32_WPTight_Gsf_L1DoubleEG") || Get<Bool_t>("HLT_Ele35_WPTight_Gsf");
     }
     //else if(era == runD || era == runE || era == runF){
     //  pass = Get<Bool_t>("HLT_Ele32_WPTight_Gsf") || Get<Bool_t>("HLT_Ele35_WPTight_Gsf");
     //}
     else{
-      pass = Get<Bool_t>("HLT_Ele32_WPTight_Gsf_L1DoubleEG") || Get<Bool_t>("HLT_Ele35_WPTight_Gsf") || Get<Bool_t>("HLT_Ele38_WPTight_Gsf") || Get<Bool_t>("HLT_Ele40_WPTight_Gsf");
+      pass = Get<Bool_t>("HLT_Ele32_WPTight_Gsf_L1DoubleEG") || Get<Bool_t>("HLT_Ele35_WPTight_Gsf");// || Get<Bool_t>("HLT_Ele38_WPTight_Gsf") || Get<Bool_t>("HLT_Ele40_WPTight_Gsf");
     }
   }
 
