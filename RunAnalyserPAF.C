@@ -196,13 +196,13 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
       TString asample = Form("Tree_%s_%s_Nano14Dec2018",sampleName.Data(), datasuffix[i].Data());
       //myProject->AddDataFiles(dm->GetRealDataFiles(asample));
       vector<TString> tempFiles = dm->GetRealDataFiles(asample);
-			Files.insert(Files.end(), (tempFiles).begin(), (tempFiles).end());
+      Files.insert(Files.end(), (tempFiles).begin(), (tempFiles).end());
       if(verbose) cout << Form("\033[1;39m >>> Searching for: \033[1;34m %s \033[1;39m ... \033[0m\n", asample.Data());
     }
     GetCount(Files, G_IsData);
   }
   else{ // Deal with MC samples 
-    G_IsData = false; 
+    G_IsData = false;
     if(options.Contains("Data") || options.Contains("data")) G_IsData = true;
     TString theSample = "";
     if(sampleName.BeginsWith("LocalFile:") || sampleName.BeginsWith("/")){ // LocalFile
@@ -249,7 +249,7 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
     } 
     else{ // Use dataset manager
       Float_t sumNorm = 1; long double totalXSec = 0; long double totalNorm = 0;
-      TString sampleChain = TString(sampleName);  
+      TString sampleChain = TString(sampleName);
       if(sampleName.Contains("&")) sampleName = TString(sampleName(0, sampleName.First('&'))); // For output file
       sampleName.ReplaceAll(" ", "");
       Int_t nFiles = sampleChain.CountChar('&') + 1;
