@@ -12,7 +12,6 @@ TopAnalysis::TopAnalysis() : PAFChainItemSelector() {
   isSS            = 0;
   event           = 0;
   lumiblock       = 0;
-  run             = 0;
 
   for(Int_t i = 0; i < 254; i++) TLHEWeight[i] = 0;
   
@@ -89,14 +88,14 @@ void TopAnalysis::Initialise(){
   if (gSampleName == "TTbar_Powheg") gIsLHE = true;
 
   makeTree   = true;
-  makeHistos = true;
+  makeHistos = false;
   if(makeTree){
     fTree   = CreateTree("MiniTree","Created with PAF");
     SetLeptonVariables();
     SetJetVariables();
     SetEventVariables();
   }
-  InitHistos();
+  if (makeHistos) InitHistos();
   era = -1;
   if(gOptions.Contains("eraB")) era = runB;
   if(gOptions.Contains("eraC")) era = runC;
@@ -119,8 +118,9 @@ void TopAnalysis::Initialise(){
 
 void TopAnalysis::InsideLoop(){
   event     = Get<ULong64_t>("event");
-  run       = Get<ULong64_t>("run");
-  lumiblock = Get<ULong64_t>("luminosityBlock");
+//   if (event != 711898884 && event != 542316965 && event != 430402000 && event != 1086078276 && event != 124930767) return;
+  
+  lumiblock = Get<UInt_t>("luminosityBlock");
   // Vectors with the objects
   genLeptons     = GetParam<vector<Lepton>>("genLeptons");
   selLeptons     = GetParam<vector<Lepton>>("selLeptons");
@@ -161,13 +161,13 @@ void TopAnalysis::InsideLoop(){
   if(gIsTTbar) FillCorrHistos();
 
   // Number of events in fiducial region
-  if(!gIsData){
+  if(!gIsData && makeHistos) {
     if(genLeptons.size() >= 2){ // MIND THE POSSIBLE SKIM (on reco leptons) IN THE SAMPLE!!
       Int_t GenChannel = -1;
-      if(genLeptons.at(0).isElec && genLeptons.at(1).isMuon) GenChannel = iElMu; 
-      if(genLeptons.at(0).isMuon && genLeptons.at(1).isElec) GenChannel = iElMu; 
-      if(genLeptons.at(0).isMuon && genLeptons.at(1).isMuon) GenChannel = iMuon; 
-      if(genLeptons.at(0).isElec && genLeptons.at(1).isElec) GenChannel = iElec; 
+      if(genLeptons.at(0).isElec && genLeptons.at(1).isMuon) GenChannel = iElMu;
+      if(genLeptons.at(0).isMuon && genLeptons.at(1).isElec) GenChannel = iElMu;
+      if(genLeptons.at(0).isMuon && genLeptons.at(1).isMuon) GenChannel = iMuon;
+      if(genLeptons.at(0).isElec && genLeptons.at(1).isElec) GenChannel = iElec;
       if( ( (genLeptons.at(0).p.Pt() > 27 && genLeptons.at(1).p.Pt() > 20) || (genLeptons.at(0).p.Pt() > 20 && genLeptons.at(1).p.Pt() > 27) )
           && (TMath::Abs(genLeptons.at(0).p.Eta()) < 2.4 && TMath::Abs(genLeptons.at(1).p.Eta()) < 2.4) 
           && ( (genLeptons.at(0).p + genLeptons.at(1).p).M() > 20 ) ){
@@ -193,29 +193,31 @@ void TopAnalysis::InsideLoop(){
     }
   }
 
+  if (makeHistos) {
   // Fill hDummy histos...
   if(gChannel < 0) return;
   fhDummy[gChannel]->Fill(1);
-  if(TNSelLeps >= 2){
-    fhDummy_2leps[gChannel]->Fill(1);
-    if(TPassTrigger){
-      fhDummy_trigger[gChannel]->Fill(1);
-      if(TPassMETFilters) {
-        fhDummy_metfilters[gChannel]->Fill(1);
-        if(!isSS){
-          fhDummy_OS[gChannel]->Fill(1);
-          if((selLeptons.at(0).p + selLeptons.at(1).p).M() > 20){ 
-            fhDummy_minv[gChannel]->Fill(1);
-            if(selLeptons.at(0).p.Pt() > 27){
-              fhDummy_lep0pt[gChannel]->Fill(1);
-              if(TChannel == iElMu || (TMath::Abs((selLeptons.at(0).p + selLeptons.at(1).p).M() - 91) > 15)  ){ 
-                fhDummy_mz[gChannel]->Fill(1);
-                if(TChannel == iElMu || TMET > 40){   // MET > 40 in ee, µµ
-                  fhDummy_met[gChannel]->Fill(1);
-                  if(TNJets >= 2){
-                    fhDummy_njets[gChannel]->Fill(1);
-                    if(TNBtags >= 1){
-                      fhDummy_nbtags[gChannel]->Fill(1);
+    if(TNSelLeps >= 2){
+      fhDummy_2leps[gChannel]->Fill(1);
+      if(TPassTrigger){
+        fhDummy_trigger[gChannel]->Fill(1);
+        if(TPassMETFilters) {
+          fhDummy_metfilters[gChannel]->Fill(1);
+          if(!isSS){
+            fhDummy_OS[gChannel]->Fill(1);
+            if((selLeptons.at(0).p + selLeptons.at(1).p).M() > 20){ 
+              fhDummy_minv[gChannel]->Fill(1);
+              if(selLeptons.at(0).p.Pt() > 27){
+                fhDummy_lep0pt[gChannel]->Fill(1);
+                if(TChannel == iElMu || (TMath::Abs((selLeptons.at(0).p + selLeptons.at(1).p).M() - 91) > 15)  ){ 
+                  fhDummy_mz[gChannel]->Fill(1);
+                  if(TChannel == iElMu || TMET > 40){   // MET > 40 in ee, µµ
+                    fhDummy_met[gChannel]->Fill(1);
+                    if(TNJets >= 2){
+                      fhDummy_njets[gChannel]->Fill(1);
+                      if(TNBtags >= 1){
+                        fhDummy_nbtags[gChannel]->Fill(1);
+                      }
                     }
                   }
                 }
@@ -229,52 +231,84 @@ void TopAnalysis::InsideLoop(){
  
   // Event Selection
   // ===================================================================================================================
-  if(TNSelLeps >= 2 && TPassTrigger){// && TPassMETFilters){ 
+  if (TNSelLeps >= 2 && TPassTrigger && TPassMETFilters) {
     for(Int_t sys = 0; sys < nSysts; sys++){
       if(!gDoSyst && sys > 0) break;
-      if(gIsData  && sys > 0) break; 
+      if(gIsData  && sys > 0) break;
      
       // Get values or the corresponding variation
       SetVariables(sys);
+      if (invmass > 20 && lep0pt > 25 && lep1pt > 20) {
+//         if(isSS) fHSSyields[gChannel][sys] -> Fill(idilepton, weight);
+//         else {
+//           fHyields[gChannel][sys] -> Fill(idilepton, weight);
+//           FillHistos(gChannel, idilepton, sys);
+//           if(sys == 0) FillDYHistos(gChannel); // Only once
+//         }
 
-      if(invmass > 20 && lep0pt > 25 && lep1pt > 20){
-        if(isSS) fHSSyields[gChannel][sys] -> Fill(idilepton, weight);
-        else{    
-          fHyields[gChannel][sys] -> Fill(idilepton, weight);
-          FillHistos(gChannel, idilepton, sys);
-          if(sys == 0) FillDYHistos(gChannel); // Only once
-        }
-
-        if(TChannel == iElMu || (TMath::Abs(invmass - 91) > 15)  ){ //  Z Veto in ee, µµ
-          if(isSS) fHSSyields[gChannel][sys] -> Fill(iZVeto, weight);
-          else{      fHyields[gChannel][sys] -> Fill(iZVeto, weight);
-            FillHistos(gChannel, iZVeto, sys);}
-
-          if(TChannel == iElMu || met > 40){   // MET > 40 in ee, µµ
-            if(isSS) fHSSyields[gChannel][sys] -> Fill(iMETcut, weight);
-            else{      fHyields[gChannel][sys] -> Fill(iMETcut, weight);
-              FillHistos(gChannel, iMETcut, sys);}
-
-            if(njets > 1){ //At least 2 jets
-              if(isSS) fHSSyields[gChannel][sys] -> Fill(i2jets, weight);
-              else{      fHyields[gChannel][sys] -> Fill(i2jets, weight);
-                FillHistos(gChannel, i2jets, sys); }
-
-              if(nbtags > 0){ // At least 1 b-tag
-                if(isSS) fHSSyields[gChannel][sys] -> Fill(i1btag, weight);
-                else{   
-                  fHyields[gChannel][sys] -> Fill(i1btag, weight);
-                  FillHistos(gChannel, i1btag, sys); 
-                }
-              }
-            }
-          }
-        }
-        if(makeTree) fTree->Fill();
-      }   
+//         if (TChannel == iElMu || (TMath::Abs(invmass - 91) > 15)  ){ //  Z Veto in ee, µµ
+//           if (isSS) fHSSyields[gChannel][sys] -> Fill(iZVeto, weight);
+//           else {      fHyields[gChannel][sys] -> Fill(iZVeto, weight);
+//             FillHistos(gChannel, iZVeto, sys);}
+// 
+//           if(TChannel == iElMu || met > 40){   // MET > 40 in ee, µµ
+//             if(isSS) fHSSyields[gChannel][sys] -> Fill(iMETcut, weight);
+//             else{      fHyields[gChannel][sys] -> Fill(iMETcut, weight);
+//               FillHistos(gChannel, iMETcut, sys);}
+// 
+//             if(njets > 1){ //At least 2 jets
+//               if(isSS) fHSSyields[gChannel][sys] -> Fill(i2jets, weight);
+//               else{      fHyields[gChannel][sys] -> Fill(i2jets, weight);
+//                 FillHistos(gChannel, i2jets, sys); }
+// 
+//               if(nbtags > 0){ // At least 1 b-tag
+//                 if(isSS) fHSSyields[gChannel][sys] -> Fill(i1btag, weight);
+//                 else{   
+//                   fHyields[gChannel][sys] -> Fill(i1btag, weight);
+//                   FillHistos(gChannel, i1btag, sys);
+//                 }
+//                 if (!isSS and makeTree) fTree->Fill();
+//               }
+//             }
+//           }
+//         }
+      if(makeTree && !isSS) fTree->Fill();
+      }
     }
   }
+  
+//   if (event == 711898884 || event == 542316965 || event == 430402000 || event == 1086078276 || event == 124930767) {
+//     PAF_DEBUG("TopAnalysis", Form("============================== EVENTO %ul =============================================", event));
+//     PAF_DEBUG("TopAnalysis", Form("TChannel: $i", TChannel));
+//     PAF_DEBUG("TopAnalysis", Form("sel leptons: %i", TNSelLeps));
+//     
+//     if (TNSelLeps > 0) {
+//       PAF_DEBUG("TopAnalysis", Form("lepton[0] is muon: %i", selLeptons.at(0).isMuon));
+//       PAF_DEBUG("TopAnalysis", Form("lepton[0] is elec: %i", selLeptons.at(0).isElec));
+//       PAF_DEBUG("TopAnalysis", Form("lepton[0] pt: %f", selLeptons.at(0).Pt()));
+//       PAF_DEBUG("TopAnalysis", Form("lepton[0] eta: %f", selLeptons.at(0).Eta()));
+//       if (TNSelLeps > 1) {
+//       PAF_DEBUG("TopAnalysis", Form("lepton[1] is muon: %i", selLeptons.at(1).isMuon));
+//       PAF_DEBUG("TopAnalysis", Form("lepton[1] is elec: %i", selLeptons.at(1).isElec));
+//       PAF_DEBUG("TopAnalysis", Form("lepton[1] pt: %f", selLeptons.at(1).Pt()));
+//       PAF_DEBUG("TopAnalysis", Form("lepton[1] eta: %f", selLeptons.at(1).Eta()));
+//       }
+//     }
+//     PAF_DEBUG("TopAnalysis", Form("njets: %i", TNJets));
+//     PAF_DEBUG("TopAnalysis", Form("nbjets: %i", TNBtags));
+//     if (TNJets > 0) {
+//       PAF_DEBUG("TopAnalysis", Form("jet[0] pt: %f", selJets.at(0).Pt()));
+//       PAF_DEBUG("TopAnalysis", Form("jet[0] eta: %f", selJets.at(0).Eta()));
+//       PAF_DEBUG("TopAnalysis", Form("jet[0] isbtag: %i", selJets.at(0).isBtag));
+//       if (TNJets > 1) {
+//         PAF_DEBUG("TopAnalysis", Form("jet[1] pt: %f", selJets.at(1).Pt()));
+//         PAF_DEBUG("TopAnalysis", Form("jet[1] eta: %f", selJets.at(1).Eta()));
+//         PAF_DEBUG("TopAnalysis", Form("jet[1] isbtag: %i", selJets.at(1).isBtag));
+//       }
+//     }
+//   }
 }
+
 
 
 //#####################################################################
@@ -290,7 +324,7 @@ void TopAnalysis::GetLeptonVariables(std::vector<Lepton> selLeptons, std::vector
   else if(selLeptons.at(0).isMuon && selLeptons.at(1).isMuon) gChannel = iMuon;
   else if(selLeptons.at(0).isElec && selLeptons.at(1).isElec) gChannel = iElec;
   if(TNSelLeps > 1){
-    TMll = (selLeptons.at(0).p + selLeptons.at(1).p).M();      
+    TMll = (selLeptons.at(0).p + selLeptons.at(1).p).M();
     TDilep_Pt = (selLeptons.at(0).p + selLeptons.at(1).p).Pt();
   }
   TChannel = gChannel;
@@ -399,10 +433,10 @@ void TopAnalysis::GetGenJetVariables(std::vector<Jet> genJets, std::vector<Jet> 
 }
 
 void TopAnalysis::GetMET(){
-    TRun        = gIsData? int(Get<UInt_t>("run")) : 1;
+    TRun        = gIsData ? Get<UInt_t>("run") : 1;
     TMET        = Get<Float_t>("MET_pt");
     TMET_Phi    = Get<Float_t>("MET_phi");  // MET phi
-    if((int) selLeptons.size() >= 2) TMT2        = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMET, TMET_Phi);
+    if((Int_t) selLeptons.size() >= 2) TMT2        = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMET, TMET_Phi);
     TMETJESUp = 0; TMETJESDown = 0; TGenMET = 0; TgenTop1Pt = 0; TgenTop2Pt = 0;
     if(gIsData) TNVert = Get<Int_t>("PV_npvs");
     if(gIsData) return;
@@ -703,96 +737,95 @@ void TopAnalysis::FillCorrHistos(){
 }
 
 void TopAnalysis::SetLeptonVariables(){
-  fTree->Branch("TNVetoLeps",   &TNVetoLeps,   "TNVetoLeps/I");
-  fTree->Branch("TNSelLeps",    &TNSelLeps,    "TNSelLeps/I");
+//   fTree->Branch("TNVetoLeps",   &TNVetoLeps,   "TNVetoLeps/I");
+//   fTree->Branch("TNSelLeps",    &TNSelLeps,    "TNSelLeps/I");
   fTree->Branch("TChannel",     &TChannel,     "TChannel/I");
-  fTree->Branch("TIsSS",        &TIsSS,        "TIsSS/B");
-  fTree->Branch("TMll",         &TMll,         "TMll/F");
-  fTree->Branch("TDilep_Pt",    &TDilep_Pt,    "TDilep_Pt/F");
-  fTree->Branch("TLep0Pt",      &TLep0Pt,      "TLep0Pt/F");
-  fTree->Branch("TLep0Eta",     &TLep0Eta,     "TLep0Eta/F");
-  fTree->Branch("TLep0Phi",     &TLep0Phi,     "TLep0Phi/F");
-  fTree->Branch("TLep0M",       &TLep0M,       "TLep0M/F");
-  fTree->Branch("TLep0Id",      &TLep0Id,      "TLep0Id/I");
-  fTree->Branch("TLep1Pt",      &TLep1Pt,      "TLep1Pt/F");
-  fTree->Branch("TLep1Eta",     &TLep1Eta,     "TLep1Eta/F");
-  fTree->Branch("TLep1Phi",     &TLep1Phi,     "TLep1Phi/F");
-  fTree->Branch("TLep1M",       &TLep1M,       "TLep1M/F");
-  fTree->Branch("TLep1Id",      &TLep1Id,      "TLep1Id/I");
+//   fTree->Branch("TIsSS",        &TIsSS,        "TIsSS/B");
+//   fTree->Branch("TMll",         &TMll,         "TMll/F");
+//   fTree->Branch("TDilep_Pt",    &TDilep_Pt,    "TDilep_Pt/F");
+//   fTree->Branch("TLep0Pt",      &TLep0Pt,      "TLep0Pt/F");
+//   fTree->Branch("TLep0Eta",     &TLep0Eta,     "TLep0Eta/F");
+//   fTree->Branch("TLep0Phi",     &TLep0Phi,     "TLep0Phi/F");
+//   fTree->Branch("TLep0M",       &TLep0M,       "TLep0M/F");
+//   fTree->Branch("TLep0Id",      &TLep0Id,      "TLep0Id/I");
+//   fTree->Branch("TLep1Pt",      &TLep1Pt,      "TLep1Pt/F");
+//   fTree->Branch("TLep1Eta",     &TLep1Eta,     "TLep1Eta/F");
+//   fTree->Branch("TLep1Phi",     &TLep1Phi,     "TLep1Phi/F");
+//   fTree->Branch("TLep1M",       &TLep1M,       "TLep1M/F");
+//   fTree->Branch("TLep1Id",      &TLep1Id,      "TLep1Id/I");
 }
 
 void TopAnalysis::SetJetVariables(){
-  fTree->Branch("TNJets",        &TNJets,      "TNJets/I");
-  fTree->Branch("TNFwdJets",     &TNFwdJets,   "TNFwdJets/I");
-  fTree->Branch("TNBtags",       &TNBtags,     "TNBtags/I");
-  fTree->Branch("TJet_Csv",      TJet_Csv,     "TJet_Csv[TNJets]/F");
-  fTree->Branch("TJet_Pt",       TJet_Pt,      "TJet_Pt[TNJets]/F");
-  fTree->Branch("TJet_Eta",      TJet_Eta,     "TJet_Eta[TNJets]/F");
-  fTree->Branch("TJet_Phi",      TJet_Phi,     "TJet_Phi[TNJets]/F");
-  fTree->Branch("TJet_M",        TJet_M,       "TJet_M[TNJets]/F");
-  fTree->Branch("TJet0Pt",       &TJet0Pt,     "TJet0Pt/F");
-  fTree->Branch("TJet0Eta",      &TJet0Eta,    "TJet0Eta/F");
-  fTree->Branch("TJet0Phi",      &TJet0Phi,    "TJet0Phi/F");
-  fTree->Branch("TJet0M",        &TJet0M,      "TJet0M/F");
-  fTree->Branch("TJet0Csv",      &TJet0Csv,    "TJet0Csv/F");
-  fTree->Branch("TJet0IsBTag",   &TJet0IsBTag, "TJet0IsBTag/I");
-  fTree->Branch("TJet1Pt",       &TJet1Pt,     "TJet1Pt/F");
-  fTree->Branch("TJet1Eta",      &TJet1Eta,    "TJet1Eta/F");
-  fTree->Branch("TJet1Phi",      &TJet1Phi,    "TJet1Phi/F");
-  fTree->Branch("TJet1M",        &TJet1M,      "TJet1M/F");
-  fTree->Branch("TJet1Csv",      &TJet1Csv,    "TJet1Csv/F");
-  fTree->Branch("TJet1IsBTag",   &TJet1IsBTag, "TJet1IsBTag/I");
-  fTree->Branch("TBtagPt",       &TBtagPt,     "TBtagPt/F");
+//   fTree->Branch("TNJets",        &TNJets,      "TNJets/I");
+//   fTree->Branch("TNFwdJets",     &TNFwdJets,   "TNFwdJets/I");
+//   fTree->Branch("TNBtags",       &TNBtags,     "TNBtags/I");
+//   fTree->Branch("TJet_Csv",      TJet_Csv,     "TJet_Csv[TNJets]/F");
+//   fTree->Branch("TJet_Pt",       TJet_Pt,      "TJet_Pt[TNJets]/F");
+//   fTree->Branch("TJet_Eta",      TJet_Eta,     "TJet_Eta[TNJets]/F");
+//   fTree->Branch("TJet_Phi",      TJet_Phi,     "TJet_Phi[TNJets]/F");
+//   fTree->Branch("TJet_M",        TJet_M,       "TJet_M[TNJets]/F");
+//   fTree->Branch("TJet0Pt",       &TJet0Pt,     "TJet0Pt/F");
+//   fTree->Branch("TJet0Eta",      &TJet0Eta,    "TJet0Eta/F");
+//   fTree->Branch("TJet0Phi",      &TJet0Phi,    "TJet0Phi/F");
+//   fTree->Branch("TJet0M",        &TJet0M,      "TJet0M/F");
+//   fTree->Branch("TJet0Csv",      &TJet0Csv,    "TJet0Csv/F");
+//   fTree->Branch("TJet0IsBTag",   &TJet0IsBTag, "TJet0IsBTag/I");
+//   fTree->Branch("TJet1Pt",       &TJet1Pt,     "TJet1Pt/F");
+//   fTree->Branch("TJet1Eta",      &TJet1Eta,    "TJet1Eta/F");
+//   fTree->Branch("TJet1Phi",      &TJet1Phi,    "TJet1Phi/F");
+//   fTree->Branch("TJet1M",        &TJet1M,      "TJet1M/F");
+//   fTree->Branch("TJet1Csv",      &TJet1Csv,    "TJet1Csv/F");
+//   fTree->Branch("TJet1IsBTag",   &TJet1IsBTag, "TJet1IsBTag/I");
+//   fTree->Branch("TBtagPt",       &TBtagPt,     "TBtagPt/F");
 
-  fTree->Branch("TNJetsJESUp",           &TNJetsJESUp,         "TNJetsJESUp/I");
-  fTree->Branch("TNJetsJESDown",           &TNJetsJESDown,         "TNJetsJESDown/I");
-  fTree->Branch("TNJetsJERUp",           &TNJetsJERUp,         "TNJetsJERUp/I");
-
-  fTree->Branch("TNBtagsBtagUp",     &TNBtagsBtagUp,   "TNBtagsBtagUp/I");
-  fTree->Branch("TNBtagsBtagDown",   &TNBtagsBtagDown, "TNBtagsBtagDown/I");
-  fTree->Branch("TNBtagsMisTagUp",     &TNBtagsMisTagUp,   "TNBtagsMisTagUp/I");
-  fTree->Branch("TNBtagsMisTagDown",   &TNBtagsMisTagDown, "TNBtagsMisTagDown/I");
-
-  fTree->Branch("TNBtagsJESUp",   &TNBtagsJESUp, "TNBtagsJESUp/I");
-  fTree->Branch("TNBtagsJESDown",  &TNBtagsJESDown, "TNBtagsJESDown/I");
-
-  fTree->Branch("TJetJESUp_Pt",      TJetJESUp_Pt,      "TJetJESUp_Pt[TNJetsJESUp]/F");
-  fTree->Branch("TJetJESDown_Pt",    TJetJESDown_Pt,    "TJetJESDown_Pt[TNJetsJESDown]/F");
-  fTree->Branch("TJetJER_Pt",        TJetJER_Pt,        "TJetJER_Pt[TNJetsJERUp]/F");
-
-  fTree->Branch("THT",          &THT,          "THT/F");
-  fTree->Branch("THTJESUp",     &THTJESUp,     "THTJESUp/F");
-  fTree->Branch("THTJESDown",   &THTJESDown,   "THTJESDown/F");
+//   fTree->Branch("TNJetsJESUp",           &TNJetsJESUp,         "TNJetsJESUp/I");
+//   fTree->Branch("TNJetsJESDown",           &TNJetsJESDown,         "TNJetsJESDown/I");
+//   fTree->Branch("TNJetsJERUp",           &TNJetsJERUp,         "TNJetsJERUp/I");
+// 
+//   fTree->Branch("TNBtagsBtagUp",     &TNBtagsBtagUp,   "TNBtagsBtagUp/I");
+//   fTree->Branch("TNBtagsBtagDown",   &TNBtagsBtagDown, "TNBtagsBtagDown/I");
+//   fTree->Branch("TNBtagsMisTagUp",     &TNBtagsMisTagUp,   "TNBtagsMisTagUp/I");
+//   fTree->Branch("TNBtagsMisTagDown",   &TNBtagsMisTagDown, "TNBtagsMisTagDown/I");
+// 
+//   fTree->Branch("TNBtagsJESUp",   &TNBtagsJESUp, "TNBtagsJESUp/I");
+//   fTree->Branch("TNBtagsJESDown",  &TNBtagsJESDown, "TNBtagsJESDown/I");
+// 
+//   fTree->Branch("TJetJESUp_Pt",      TJetJESUp_Pt,      "TJetJESUp_Pt[TNJetsJESUp]/F");
+//   fTree->Branch("TJetJESDown_Pt",    TJetJESDown_Pt,    "TJetJESDown_Pt[TNJetsJESDown]/F");
+//   fTree->Branch("TJetJER_Pt",        TJetJER_Pt,        "TJetJER_Pt[TNJetsJERUp]/F");
+// 
+//   fTree->Branch("THT",          &THT,          "THT/F");
+//   fTree->Branch("THTJESUp",     &THTJESUp,     "THTJESUp/F");
+//   fTree->Branch("THTJESDown",   &THTJESDown,   "THTJESDown/F");
 }
 
 void TopAnalysis::SetEventVariables(){
   fTree->Branch("TWeight",      &TWeight,      "TWeight/F");
-  fTree->Branch("TWeight_LepEffUp",      &TWeight_LepEffUp,      "TWeight_LepEffUp/F");
-  fTree->Branch("TWeight_LepEffDown",    &TWeight_LepEffDown,    "TWeight_LepEffDown/F");
-  fTree->Branch("TWeight_ElecEffUp",      &TWeight_ElecEffUp,      "TWeight_ElecEffUp/F");
-  fTree->Branch("TWeight_ElecEffDown",    &TWeight_ElecEffDown,    "TWeight_ElecEffDown/F");
-  fTree->Branch("TWeight_MuonEffUp",      &TWeight_MuonEffUp,      "TWeight_MuonEffUp/F");
-  fTree->Branch("TWeight_MuonEffDown",    &TWeight_MuonEffDown,    "TWeight_MuonEffDown/F");
-  fTree->Branch("TWeight_TrigUp",        &TWeight_TrigUp,        "TWeight_TrigUp/F");
-  fTree->Branch("TWeight_TrigDown",      &TWeight_TrigDown,      "TWeight_TrigDown/F");
-  fTree->Branch("TWeight_PUUp",        &TWeight_PUUp,        "TWeight_PUUp/F");
-  fTree->Branch("TWeight_PUDown",        &TWeight_PUDown,        "TWeight_PUDown/F");
+//   fTree->Branch("TWeight_LepEffUp",      &TWeight_LepEffUp,      "TWeight_LepEffUp/F");
+//   fTree->Branch("TWeight_LepEffDown",    &TWeight_LepEffDown,    "TWeight_LepEffDown/F");
+//   fTree->Branch("TWeight_ElecEffUp",      &TWeight_ElecEffUp,      "TWeight_ElecEffUp/F");
+//   fTree->Branch("TWeight_ElecEffDown",    &TWeight_ElecEffDown,    "TWeight_ElecEffDown/F");
+//   fTree->Branch("TWeight_MuonEffUp",      &TWeight_MuonEffUp,      "TWeight_MuonEffUp/F");
+//   fTree->Branch("TWeight_MuonEffDown",    &TWeight_MuonEffDown,    "TWeight_MuonEffDown/F");
+//   fTree->Branch("TWeight_TrigUp",        &TWeight_TrigUp,        "TWeight_TrigUp/F");
+//   fTree->Branch("TWeight_TrigDown",      &TWeight_TrigDown,      "TWeight_TrigDown/F");
+//   fTree->Branch("TWeight_PUUp",        &TWeight_PUUp,        "TWeight_PUUp/F");
+//   fTree->Branch("TWeight_PUDown",        &TWeight_PUDown,        "TWeight_PUDown/F");
 
   fTree->Branch("TEvent",          &event,           "TEvent/l");
-  fTree->Branch("TRun",            &run,             "TRun/l");
-  fTree->Branch("TLuminosityBlock",&lumiblock,       "TLuminosityBlock/l");
-  fTree->Branch("TLHEWeight",      TLHEWeight,       "TLHEWeight[254]/F");
-  fTree->Branch("TPassMETFilters", &TPassMETFilters, "TPassMETFilters/B");
-  fTree->Branch("TPassTrigger",    &TPassTrigger,    "TPassTrigger/B");
-  fTree->Branch("TRun",            &TRun,            "TRun/I");
-  fTree->Branch("TNVert",          &TNVert,          "TNVert/I");
-  fTree->Branch("TMET",            &TMET,            "TMET/F");
-  fTree->Branch("TGenMET",         &TGenMET,         "TGenMET/F");
-  fTree->Branch("TgenTop1Pt",   &TgenTop1Pt,   "TgenTop1Pt/F");
-  fTree->Branch("TgenTop2Pt",   &TgenTop2Pt,   "TgenTop2Pt/F");
-  fTree->Branch("TMET_Phi",     &TMET_Phi,     "TMET_Phi/F");
-  fTree->Branch("TMETJESUp",    &TMETJESUp,    "TMETJESUp/F");
-  fTree->Branch("TMETJESDown",  &TMETJESDown,  "TMETJESDown/F");
+  fTree->Branch("TLuminosityBlock",&lumiblock,       "TLuminosityBlock/i");
+//   fTree->Branch("TLHEWeight",      TLHEWeight,       "TLHEWeight[254]/F");
+//   fTree->Branch("TPassMETFilters", &TPassMETFilters, "TPassMETFilters/B");
+//   fTree->Branch("TPassTrigger",    &TPassTrigger,    "TPassTrigger/B");
+  fTree->Branch("TRun",            &TRun,            "TRun/i");
+//   fTree->Branch("TNVert",          &TNVert,          "TNVert/I");
+//   fTree->Branch("TMET",            &TMET,            "TMET/F");
+//   fTree->Branch("TGenMET",         &TGenMET,         "TGenMET/F");
+//   fTree->Branch("TgenTop1Pt",   &TgenTop1Pt,   "TgenTop1Pt/F");
+//   fTree->Branch("TgenTop2Pt",   &TgenTop2Pt,   "TgenTop2Pt/F");
+//   fTree->Branch("TMET_Phi",     &TMET_Phi,     "TMET_Phi/F");
+//   fTree->Branch("TMETJESUp",    &TMETJESUp,    "TMETJESUp/F");
+//   fTree->Branch("TMETJESDown",  &TMETJESDown,  "TMETJESDown/F");
 }
 
 TString TopAnalysis::GetSuffix(int iCh, int iCut, int iSyst){
@@ -804,7 +837,6 @@ void TopAnalysis::SetVariables(int sys){
   // Global variables to fill the histos where
   // the value changes according to the variation
   // that you choose
-
   // Global
   nleps = selLeptons.size(); weight = TWeight;
   met = TMET; mt2 = TMT2; ht = THT; nvert = TNVert; invmass = TMll;
