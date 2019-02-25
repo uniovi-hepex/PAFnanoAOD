@@ -85,30 +85,34 @@ void EventBuilder::Initialise(){
 
   Float_t binsEta[] = {0, 1, 2.1, 2.4}; Int_t nbinsEta = 3;
   Float_t binsPt[]   = {20, 40, 80, 120, 200}; Int_t nbinsPt = 4;
-  if(gSelection == itt5TeV){
-  //ElecTrigEffNum = CreateH2F("ElecTrigEffNum","", nbinsEta, binsEta, nbinsPt, binsPt);
-  //ElecTrigEffDen = CreateH2F("ElecTrigEffDen","", nbinsEta, binsEta, nbinsPt, binsPt);
+  
+  makeeffhistos = false;
+  if (makeeffhistos) {
+    if(gSelection == itt5TeV){
+    //ElecTrigEffNum = CreateH2F("ElecTrigEffNum","", nbinsEta, binsEta, nbinsPt, binsPt);
+    //ElecTrigEffDen = CreateH2F("ElecTrigEffDen","", nbinsEta, binsEta, nbinsPt, binsPt);
 
-    Float_t binsEta2[] = {-2.4, -2.1, -1, 0, 1, 2.1, 2.4}; 
-    Float_t binsPt2[]   = {20, 30, 40, 50, 60, 80, 120}; 
-    ElecTrigEffNum = CreateH2F("ElecTrigEffNum","", nbinsEta, binsEta2, nbinsPt, binsPt2);
-    ElecTrigEffDen = CreateH2F("ElecTrigEffDen","", nbinsEta, binsEta2, nbinsPt, binsPt2);
-    MuonTrigEffNum = CreateH2F("MuonTrigEffNum","", nbinsEta, binsEta2, nbinsPt, binsPt2);
-    MuonTrigEffDen = CreateH2F("MuonTrigEffDen","", nbinsEta, binsEta2, nbinsPt, binsPt2);
+      Float_t binsEta2[] = {-2.4, -2.1, -1, 0, 1, 2.1, 2.4}; 
+      Float_t binsPt2[]   = {20, 30, 40, 50, 60, 80, 120}; 
+      ElecTrigEffNum = CreateH2F("ElecTrigEffNum","", nbinsEta, binsEta2, nbinsPt, binsPt2);
+      ElecTrigEffDen = CreateH2F("ElecTrigEffDen","", nbinsEta, binsEta2, nbinsPt, binsPt2);
+      MuonTrigEffNum = CreateH2F("MuonTrigEffNum","", nbinsEta, binsEta2, nbinsPt, binsPt2);
+      MuonTrigEffDen = CreateH2F("MuonTrigEffDen","", nbinsEta, binsEta2, nbinsPt, binsPt2);
+    }
+    else{
+      ElecTrigEffNum = CreateH2F("ElecTrigEffNum","", nbinsEta, binsEta, nbinsPt, binsPt);
+      ElecTrigEffDen = CreateH2F("ElecTrigEffDen","", nbinsEta, binsEta, nbinsPt, binsPt);
+      MuonTrigEffNum = CreateH2F("MuonTrigEffNum","", nbinsEta, binsEta, nbinsPt, binsPt);
+      MuonTrigEffDen = CreateH2F("MuonTrigEffDen","", nbinsEta, binsEta, nbinsPt, binsPt);
+    }
+    ElElTrigEffNum = CreateH2F("ElElTrigEffNum", "", nbinsEta, binsEta, nbinsPt, binsPt);
+    MuMuTrigEffNum = CreateH2F("MuMuTrigEffNum", "", nbinsEta, binsEta, nbinsPt, binsPt);
+    ElMuTrigEffNum = CreateH2F("ElMuTrigEffNum", "", nbinsEta, binsEta, nbinsPt, binsPt);
+    ElElTrigEffDen = CreateH2F("ElElTrigEffDen", "", nbinsEta, binsEta, nbinsPt, binsPt);
+    MuMuTrigEffDen = CreateH2F("MuMuTrigEffDen", "", nbinsEta, binsEta, nbinsPt, binsPt);
+    ElMuTrigEffDen = CreateH2F("ElMuTrigEffDen", "", nbinsEta, binsEta, nbinsPt, binsPt);
   }
-  else{
-    ElecTrigEffNum = CreateH2F("ElecTrigEffNum","", nbinsEta, binsEta, nbinsPt, binsPt);
-    ElecTrigEffDen = CreateH2F("ElecTrigEffDen","", nbinsEta, binsEta, nbinsPt, binsPt);
-    MuonTrigEffNum = CreateH2F("MuonTrigEffNum","", nbinsEta, binsEta, nbinsPt, binsPt);
-    MuonTrigEffDen = CreateH2F("MuonTrigEffDen","", nbinsEta, binsEta, nbinsPt, binsPt);
-  }
-  ElElTrigEffNum = CreateH2F("ElElTrigEffNum", "", nbinsEta, binsEta, nbinsPt, binsPt);
-  MuMuTrigEffNum = CreateH2F("MuMuTrigEffNum", "", nbinsEta, binsEta, nbinsPt, binsPt);
-  ElMuTrigEffNum = CreateH2F("ElMuTrigEffNum", "", nbinsEta, binsEta, nbinsPt, binsPt);
-  ElElTrigEffDen = CreateH2F("ElElTrigEffDen", "", nbinsEta, binsEta, nbinsPt, binsPt);
-  MuMuTrigEffDen = CreateH2F("MuMuTrigEffDen", "", nbinsEta, binsEta, nbinsPt, binsPt);
-  ElMuTrigEffDen = CreateH2F("ElMuTrigEffDen", "", nbinsEta, binsEta, nbinsPt, binsPt);
-
+  
   selLeptons = std::vector<Lepton>();
   vetoLeptons = std::vector<Lepton>();
 
@@ -172,10 +176,12 @@ void EventBuilder::InsideLoop(){
       mupt = muon.Pt() < 120 ? muon.Pt() : 119;
       elpt = elec.Pt() < 120 ? elec.Pt() : 119;
     }
-    if(muon.Pt() > 20 && PassesSingleMuonTrigger())                              ElecTrigEffDen->Fill(elec.Eta(), elpt);
-    if(muon.Pt() > 20 && PassesSingleMuonTrigger() && PassesSingleElecTrigger()) ElecTrigEffNum->Fill(elec.Eta(), elpt);
-    if(elec.Pt() > 20 && PassesSingleElecTrigger())                              MuonTrigEffDen->Fill(muon.Eta(), mupt);
-    if(elec.Pt() > 20 && PassesSingleElecTrigger() && PassesSingleMuonTrigger()) MuonTrigEffNum->Fill(muon.Eta(), mupt);
+    if (makeeffhistos) {
+      if(muon.Pt() > 20 && PassesSingleMuonTrigger())                              ElecTrigEffDen->Fill(elec.Eta(), elpt);
+      if(muon.Pt() > 20 && PassesSingleMuonTrigger() && PassesSingleElecTrigger()) ElecTrigEffNum->Fill(elec.Eta(), elpt);
+      if(elec.Pt() > 20 && PassesSingleElecTrigger())                              MuonTrigEffDen->Fill(muon.Eta(), mupt);
+      if(elec.Pt() > 20 && PassesSingleElecTrigger() && PassesSingleMuonTrigger()) MuonTrigEffNum->Fill(muon.Eta(), mupt);
+    }
   }
 
   if(selLeptons.size() >= 2){ // Dilepton Channels
@@ -183,17 +189,19 @@ void EventBuilder::InsideLoop(){
     if(pt > 25){
       float eta = TMath::Abs(selLeptons.at(0).Eta());
       float eta2 = selLeptons.at(1).Eta();
-      if(gChannel==iMuon){
-        MuMuTrigEffDen->Fill(eta,pt);
-        if(TrigMuMu()) MuMuTrigEffNum->Fill(eta,pt);
-      }
-      else if(gChannel==iElec){
-        ElElTrigEffDen->Fill(eta,pt);
-        if(TrigElEl()) ElElTrigEffNum->Fill(eta,pt);
-      }
-      else if(gChannel==iElMu){
-        ElMuTrigEffDen->Fill(eta,pt);
-        if(TrigElMu()) ElMuTrigEffNum->Fill(eta,pt);
+      if (makeeffhistos) {
+        if(gChannel==iMuon){
+          MuMuTrigEffDen->Fill(eta,pt);
+          if(TrigMuMu()) MuMuTrigEffNum->Fill(eta,pt);
+        }
+        else if(gChannel==iElec){
+          ElElTrigEffDen->Fill(eta,pt);
+          if(TrigElEl()) ElElTrigEffNum->Fill(eta,pt);
+        }
+        else if(gChannel==iElMu){
+          ElMuTrigEffDen->Fill(eta,pt);
+          if(TrigElMu()) ElMuTrigEffNum->Fill(eta,pt);
+        }
       }
     }
   }

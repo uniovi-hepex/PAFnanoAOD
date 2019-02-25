@@ -25,6 +25,7 @@ class EventBuilder : public PAFChainItemSelector{
     Bool_t passTrigger2;
     Bool_t isSS;
     Bool_t gIsFastSim;
+    Bool_t makeeffhistos;
 
     //Float_t  TrigSFElec;      Float_t  TrigSFMuon;      Float_t  TrigSFElMu;
     //Float_t  TrigSFElec_Up;   Float_t  TrigSFElMu_Up;   Float_t  TrigSFMuon_Up;
