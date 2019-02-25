@@ -434,8 +434,8 @@ void TopAnalysis::GetGenJetVariables(std::vector<Jet> genJets, std::vector<Jet> 
 
 void TopAnalysis::GetMET(){
     TRun        = gIsData ? Get<UInt_t>("run") : 1;
-    TMET        = Get<Float_t>("MET_pt");
-    TMET_Phi    = Get<Float_t>("MET_phi");  // MET phi
+    TMET        = Get<Float_t>("METFixEE2017_pt"); // MET_pt
+    TMET_Phi    = Get<Float_t>("METFixEE2017_phi");  // MET phi
     if((Int_t) selLeptons.size() >= 2) TMT2        = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMET, TMET_Phi);
     TMETJESUp = 0; TMETJESDown = 0; TGenMET = 0; TgenTop1Pt = 0; TgenTop2Pt = 0;
     if(gIsData) TNVert = Get<Int_t>("PV_npvs");

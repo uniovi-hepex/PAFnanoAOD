@@ -250,8 +250,10 @@ Bool_t LeptonSelector::isGoodLepton(Lepton lep){
     }
     if(lep.isElec){
       passId = getElecCutBasedId(iTight) && lostHits <= 1;
-      passIso = getRelIso03POG(iTight);
-      PAF_DEBUG("LeptonSelector", Form("This electron has passID %i and passIso %i", passId, passIso));
+      
+//       passIso = getRelIso03POG(iTight);
+      passIso = 1; // getRelIso03POG(iTight); // Isolation already included in CutBasedID!!
+      PAF_DEBUG("LeptonSelector", Form("This electron has passID %i and passIso (it will always be 1) %i", passId, passIso));
       PAF_DEBUG("LeptonSelector", Form("This electron has passETA %i", (TMath::Abs(etaSC) > 1.4442 && TMath::Abs(etaSC) < 1.566)));
       if(TMath::Abs(etaSC) > 1.4442 && TMath::Abs(etaSC) < 1.566) return false;
     }
@@ -288,7 +290,7 @@ Bool_t LeptonSelector::isLooseLepton(Lepton lep){
     }
     if(lep.isElec){
       passId = getElecCutBasedId(iTight) && lostHits <= 1;
-      passIso = getRelIso03POG(iTight);
+      passIso = 1; //getRelIso03POG(iTight); // Isolation already included in CutBasedID!!
       if(TMath::Abs(etaSC) > 1.4442 && TMath::Abs(etaSC) < 1.566) return false;
     }
     if(lep.p.Pt() < 18 || TMath::Abs(lep.p.Eta()) > 2.4) return false;
