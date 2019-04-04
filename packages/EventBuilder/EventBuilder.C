@@ -38,6 +38,7 @@ EventBuilder::EventBuilder() : PAFChainItemSelector(),
 			       gIsDoubleMuon(false),
 			       gIsDoubleElec(false),
 			       gIsMuonEG(false),
+			       gIsMET(false),
 			       gIsData(false),
 			       run(-1),
 			       gSelection(-1),
@@ -84,13 +85,13 @@ void EventBuilder::Initialise(){
   if(gSelection==itt5TeV) year = -1;  
 
   Float_t binsEta[] = {0, 1, 2.1, 2.4}; Int_t nbinsEta = 3;
-  Float_t binsPt[]   = {20, 40, 80, 120, 200}; Int_t nbinsPt = 4;
+  Float_t binsPt[]   = {20, 30, 40, 50, 60}; Int_t nbinsPt = 4;
   if(gSelection == itt5TeV){
   //ElecTrigEffNum = CreateH2F("ElecTrigEffNum","", nbinsEta, binsEta, nbinsPt, binsPt);
   //ElecTrigEffDen = CreateH2F("ElecTrigEffDen","", nbinsEta, binsEta, nbinsPt, binsPt);
 
-    Float_t binsEta2[] = {-2.4, -2.1, -1, 0, 1, 2.1, 2.4}; 
-    Float_t binsPt2[]   = {20, 30, 40, 50, 60, 80, 120}; 
+    Float_t binsEta2[] = {0, 1, 2.1, 2.4}; 
+    Float_t binsPt2[]   = {20, 30, 40, 50, 60}; 
     ElecTrigEffNum = CreateH2F("ElecTrigEffNum","", nbinsEta, binsEta2, nbinsPt, binsPt2);
     ElecTrigEffDen = CreateH2F("ElecTrigEffDen","", nbinsEta, binsEta2, nbinsPt, binsPt2);
     MuonTrigEffNum = CreateH2F("MuonTrigEffNum","", nbinsEta, binsEta2, nbinsPt, binsPt2);
@@ -113,13 +114,14 @@ void EventBuilder::Initialise(){
   vetoLeptons = std::vector<Lepton>();
 
   gIsDoubleElec = false; gIsDoubleMuon = false; gIsSingleElec = false;
-  gIsSingleMuon = false; gIsMuonEG = false;
+  gIsSingleMuon = false; gIsMuonEG = false; gIsMET = false;
   if(gSampleName.Contains("DoubleEG")) gIsDoubleElec = true;
   else if(gSampleName.Contains("DoubleMuon")) gIsDoubleMuon = true;
   else if(gSampleName.Contains("SingleElec")) gIsSingleElec = true;
   else if(gSampleName.Contains("SingleMuon")) gIsSingleMuon = true;
   else if(gSampleName.Contains("MuonEG"))     gIsMuonEG     = true;
   else if(gSampleName.Contains("HighEGJet"))  gIsSingleElec = true;
+  else if(gSampleName.Contains("MET"))        gIsMET = true;
   if(gOptions.Contains("DoubleEG")) gIsDoubleElec = true;
   else if(gOptions.Contains("SingleElec")) gIsSingleElec = true;
 
@@ -180,18 +182,27 @@ void EventBuilder::InsideLoop(){
 
   if(selLeptons.size() >= 2){ // Dilepton Channels
     float pt = selLeptons.at(0).Pt() < 200 ? selLeptons.at(0).Pt() : 199;
-    if(pt > 25){
+    float pt2= selLeptons.at(1).Pt();
+    float TWeight = 1;
+    //if(!gIsData){
+    //  Float_t lepSF = selLeptons.at(0).GetSF( 0)*selLeptons.at(1).GetSF( 0);
+    //  Float_t PUSF  = Get<Float_t>("puWeight");
+    //  TWeight       = NormWeight*lepSF*PUSF;
+    //}
+    Float_t MET = year == 2017? Get<Float_t>("METFixEE2017_pt") : Get<Float_t>("MET_pt");
+
+    if(pt > 25 && pt2 > 20 && MET > 120){
       float eta = TMath::Abs(selLeptons.at(0).Eta());
       float eta2 = selLeptons.at(1).Eta();
-      if(gChannel==iMuon){
+      if(gChannel==iMuon && PassesMETtrigger()){
         MuMuTrigEffDen->Fill(eta,pt);
         if(TrigMuMu()) MuMuTrigEffNum->Fill(eta,pt);
       }
-      else if(gChannel==iElec){
+      else if(gChannel==iElec && PassesMETtrigger()){
         ElElTrigEffDen->Fill(eta,pt);
         if(TrigElEl()) ElElTrigEffNum->Fill(eta,pt);
       }
-      else if(gChannel==iElMu){
+      else if(gChannel==iElMu && PassesMETtrigger()){
         ElMuTrigEffDen->Fill(eta,pt);
         if(TrigElMu()) ElMuTrigEffNum->Fill(eta,pt);
       }
@@ -413,6 +424,17 @@ Bool_t EventBuilder::PassesSingleMuonTrigger(){
   return pass;
 }
 
+Bool_t EventBuilder::PassesMETtrigger(){
+  Bool_t pass = false;
+  int era = -1; if(gIsData) era = GetRunEra(Get<Int_t>("run"));
+  if(gIsData){
+    if(era == runB) pass = Get<Bool_t>("HLT_PFMET120_PFMHT120_IDTight");
+    else pass = Get<Bool_t>("HLT_PFMET120_PFMHT120_IDTight") || Get<Bool_t>("HLT_PFMET120_PFMHT120_IDTight_PFHT60");
+  }
+  else pass = Get<Bool_t>("HLT_PFMET120_PFMHT120_IDTight") || Get<Bool_t>("HLT_PFMET120_PFMHT120_IDTight_PFHT60");
+  return pass;
+}
+
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 // In principle, you don't want to change the functions below...
 
@@ -422,6 +444,7 @@ Bool_t EventBuilder::TrigElEl(){
   else if(gIsData){
     if     (gIsDoubleElec) pass =  PassesDoubleElecTrigger();
     else if(gIsSingleElec) pass = !PassesDoubleElecTrigger() && PassesSingleElecTrigger();
+    else if(gIsMET)        pass = PassesDoubleElecTrigger() || PassesSingleElecTrigger();
     else pass = false; //PassesDoubleElecTrigger() || PassesSingleElecTrigger();
   }
   else pass = PassesDoubleElecTrigger() || PassesSingleElecTrigger();
@@ -437,6 +460,7 @@ Bool_t EventBuilder::TrigMuMu(){
   else if(gIsData){
     if     (gIsDoubleMuon) pass =  PassesDoubleMuonTrigger();
     else if(gIsSingleMuon) pass = !PassesDoubleMuonTrigger() && PassesSingleMuonTrigger();
+    else if(gIsMET)        pass = PassesDoubleMuonTrigger() || PassesSingleMuonTrigger();
     else pass = false; //PassesDoubleMuonTrigger() || PassesSingleMuonTrigger();
   }
   else pass = PassesDoubleMuonTrigger() || PassesSingleMuonTrigger();
@@ -456,6 +480,7 @@ Bool_t EventBuilder::TrigElMu(){
     if(gIsMuonEG    ) pass =  PassesElMuTrigger();
     else if(gIsSingleMuon) pass = !PassesElMuTrigger() &&  PassesSingleMuonTrigger();
     else if(gIsSingleElec) pass = !PassesElMuTrigger() && !PassesSingleMuonTrigger() && PassesSingleElecTrigger();
+    else if(gIsMET)        pass = PassesElMuTrigger() || PassesSingleMuonTrigger() || PassesSingleElecTrigger();
     else pass = false; //PassesElMuTrigger() || PassesSingleMuonTrigger() | PassesSingleElecTrigger();
   }
   else pass = PassesElMuTrigger() || PassesSingleMuonTrigger() | PassesSingleElecTrigger();
