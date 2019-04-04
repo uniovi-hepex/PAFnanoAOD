@@ -164,7 +164,7 @@ void TopAnalysis::InsideLoop(){
       if(genLeptons.at(0).isMuon && genLeptons.at(1).isElec) GenChannel = iElMu; 
       if(genLeptons.at(0).isMuon && genLeptons.at(1).isMuon) GenChannel = iMuon; 
       if(genLeptons.at(0).isElec && genLeptons.at(1).isElec) GenChannel = iElec; 
-      if( ( (genLeptons.at(0).p.Pt() > 27 && genLeptons.at(1).p.Pt() > 20) || (genLeptons.at(0).p.Pt() > 20 && genLeptons.at(1).p.Pt() > 27) )
+      if( ( (genLeptons.at(0).p.Pt() > 25 && genLeptons.at(1).p.Pt() > 20) || (genLeptons.at(0).p.Pt() > 20 && genLeptons.at(1).p.Pt() > 25) )
           && (TMath::Abs(genLeptons.at(0).p.Eta()) < 2.4 && TMath::Abs(genLeptons.at(1).p.Eta()) < 2.4) 
           && ( (genLeptons.at(0).p + genLeptons.at(1).p).M() > 20 ) ){
         fHFiduYields[GenChannel-1][0] -> Fill(idilepton);
