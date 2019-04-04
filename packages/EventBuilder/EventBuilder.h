@@ -72,12 +72,14 @@ class EventBuilder : public PAFChainItemSelector{
     Bool_t PassesElMuTrigger();
     Bool_t PassesSingleElecTrigger();
     Bool_t PassesSingleMuonTrigger();
+    Bool_t PassesMETtrigger();
 
     Bool_t gIsSingleMuon;
     Bool_t gIsSingleElec;
     Bool_t gIsDoubleMuon;
     Bool_t gIsDoubleElec;
     Bool_t gIsMuonEG;
+    Bool_t gIsMET;
     Bool_t  gIsData;
     Bool_t  gIsRunH;
     Int_t run;
