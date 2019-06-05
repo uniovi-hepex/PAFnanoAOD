@@ -146,6 +146,8 @@ void EventBuilder::Initialise(){
   PUSF = 1;
   PUSF_Up = 1;
   PUSF_Down = 1;
+  
+  makeeffhistos = false;  // THIS IS PUT HERE SO WE DON'T DO THE TRIG EFF HISTOS BUT ALSO BECAUSE (at least for 2017's nanoAODv4) MET TRIGGERS ARE BADLY SET
 
 }
 
@@ -433,7 +435,7 @@ Bool_t EventBuilder::PassesSingleMuonTrigger(){
   return pass;
 }
 
-Bool_t EventBuilder::PassesMETtrigger(){
+Bool_t EventBuilder::PassesMETtrigger(){ // THIS IS WROOOOOOOOOOOOOOONG (at least for 2017's nanoAODv4)
   Bool_t pass = false;
   int era = -1; if(gIsData) era = GetRunEra(Get<Int_t>("run"));
   if(gIsData){
