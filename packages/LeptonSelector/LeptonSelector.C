@@ -246,19 +246,19 @@ Bool_t LeptonSelector::isGoodLepton(Lepton lep){
     if(lep.isMuon){
       passId  = getMuonId(iTight);
       passIso = getRelIso04POG(iTight);
-      PAF_DEBUG("LeptonSelector", Form("This muon has passID %i and passIso %i", passId, passIso));
+//       PAF_DEBUG("LeptonSelector", Form("This muon has passID %i and passIso %i", passId, passIso));
     }
     if(lep.isElec){
       passId = getElecCutBasedId(iTight) && lostHits <= 1;
       
 //       passIso = getRelIso03POG(iTight);
       passIso = 1; // getRelIso03POG(iTight); // Isolation already included in CutBasedID!!
-      PAF_DEBUG("LeptonSelector", Form("This electron has passID %i and passIso (it will always be 1) %i", passId, passIso));
-      PAF_DEBUG("LeptonSelector", Form("This electron has passETA %i", (TMath::Abs(etaSC) > 1.4442 && TMath::Abs(etaSC) < 1.566)));
+//       PAF_DEBUG("LeptonSelector", Form("This electron has passID %i and passIso (it will always be 1) %i", passId, passIso));
+//       PAF_DEBUG("LeptonSelector", Form("This electron has passETA %i", (TMath::Abs(etaSC) > 1.4442 && TMath::Abs(etaSC) < 1.566)));
       if(TMath::Abs(etaSC) > 1.4442 && TMath::Abs(etaSC) < 1.566) return false;
     }
-    PAF_DEBUG("LeptonSelector", Form("This muon or electron has passpT and exterior ETA %i", (lep.p.Pt() > 18 && TMath::Abs(lep.p.Eta()) < 2.4)));
-    PAF_DEBUG("LeptonSelector", Form("This muon or electron has passVertex %i", ( (lep.isElec && getGoodVertex(iTight)) || (lep.isMuon && getGoodVertex(iMedium) ))));
+//     PAF_DEBUG("LeptonSelector", Form("This muon or electron has passpT and exterior ETA %i", (lep.p.Pt() > 18 && TMath::Abs(lep.p.Eta()) < 2.4)));
+//     PAF_DEBUG("LeptonSelector", Form("This muon or electron has passVertex %i", ( (lep.isElec && getGoodVertex(iTight)) || (lep.isMuon && getGoodVertex(iMedium) ))));
     if(lep.p.Pt() < 18 || TMath::Abs(lep.p.Eta()) > 2.4) return false;
     if(passId && passIso && ( (lep.isElec && getGoodVertex(iTight)) || (lep.isMuon && getGoodVertex(iMedium) ))) return true;
     else return false;
@@ -320,7 +320,7 @@ void LeptonSelector::InsideLoop(){
   nElec     = Get<Int_t>("nElectron");
   nMuon     = Get<Int_t>("nMuon");
   
-  PAF_DEBUG("LeptonSelector", Form("For event %u there are %i muons and %i electrons", evt, nMuon,nElec));
+//   PAF_DEBUG("LeptonSelector", Form("For event %u there are %i muons and %i electrons", evt, nMuon,nElec));
   
   // Loop over the gen leptons and get gen info...
   if(!gIsData){
@@ -369,18 +369,18 @@ void LeptonSelector::InsideLoop(){
 //      if(!mcPrompt)   tL.SetGenMatch(kLGMfake);
     }
     */
-    PAF_DEBUG("LeptonSelector", Form("for event %i, lepton number %i of type %i and charge %i...", evt, i, LepType, charge));
+//     PAF_DEBUG("LeptonSelector", Form("for event %i, lepton number %i of type %i and charge %i...", evt, i, LepType, charge));
     if(isGoodLepton(tL)){
       //if(1){
       tL.SetSF(   LepSF->GetLeptonSF(     pt, eta, tL.type) ); // Set SF and error
       tL.SetSFerr(LepSF->GetLeptonSFerror(pt, eta, tL.type) );
       tL.idMVA = lepMVASUSYId;
-      PAF_DEBUG("LeptonSelector", "...passes the cuts!");
+//       PAF_DEBUG("LeptonSelector", "...passes the cuts!");
       selLeptons.push_back(tL);
     }
     else {
       vetoLeptons.push_back(tL);
-      PAF_DEBUG("LeptonSelector", "...does not pass the cuts! :(");
+//       PAF_DEBUG("LeptonSelector", "...does not pass the cuts! :(");
     }
     if(isVetoLepton(tL)){ // If you need to veto extra leptons...
       vetoLeptons.push_back(tL);

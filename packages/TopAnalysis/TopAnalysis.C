@@ -164,19 +164,11 @@ void TopAnalysis::InsideLoop(){
   if(!gIsData && makeHistos) {
     if(genLeptons.size() >= 2){ // MIND THE POSSIBLE SKIM (on reco leptons) IN THE SAMPLE!!
       Int_t GenChannel = -1;
-<<<<<<< HEAD
       if(genLeptons.at(0).isElec && genLeptons.at(1).isMuon) GenChannel = iElMu;
       if(genLeptons.at(0).isMuon && genLeptons.at(1).isElec) GenChannel = iElMu;
       if(genLeptons.at(0).isMuon && genLeptons.at(1).isMuon) GenChannel = iMuon;
       if(genLeptons.at(0).isElec && genLeptons.at(1).isElec) GenChannel = iElec;
-      if( ( (genLeptons.at(0).p.Pt() > 27 && genLeptons.at(1).p.Pt() > 20) || (genLeptons.at(0).p.Pt() > 20 && genLeptons.at(1).p.Pt() > 27) )
-=======
-      if(genLeptons.at(0).isElec && genLeptons.at(1).isMuon) GenChannel = iElMu; 
-      if(genLeptons.at(0).isMuon && genLeptons.at(1).isElec) GenChannel = iElMu; 
-      if(genLeptons.at(0).isMuon && genLeptons.at(1).isMuon) GenChannel = iMuon; 
-      if(genLeptons.at(0).isElec && genLeptons.at(1).isElec) GenChannel = iElec; 
       if( ( (genLeptons.at(0).p.Pt() > 25 && genLeptons.at(1).p.Pt() > 20) || (genLeptons.at(0).p.Pt() > 20 && genLeptons.at(1).p.Pt() > 25) )
->>>>>>> bd2037d4832b748bf3b100f1539eca43d410ec43
           && (TMath::Abs(genLeptons.at(0).p.Eta()) < 2.4 && TMath::Abs(genLeptons.at(1).p.Eta()) < 2.4) 
           && ( (genLeptons.at(0).p + genLeptons.at(1).p).M() > 20 ) ){
         fHFiduYields[GenChannel-1][0] -> Fill(idilepton);

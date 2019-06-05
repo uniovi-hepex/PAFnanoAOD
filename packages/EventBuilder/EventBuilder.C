@@ -214,6 +214,7 @@ void EventBuilder::InsideLoop(){
           ElMuTrigEffDen->Fill(eta,pt);
           if (TrigElMu()) ElMuTrigEffNum->Fill(eta,pt);
         }
+      }
     }
   }
 
