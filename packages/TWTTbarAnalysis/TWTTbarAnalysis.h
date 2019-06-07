@@ -7,12 +7,9 @@
 #include <vector>
 
 const Int_t nChannels = 3;
-enum eLevels  {idilepton, iZVeto, iMETcut, i2jets, i1btag, i1j1b, i2j1b, i2j2b, nLevels};
 enum eSysts   {inorm, nSysts};
 const Int_t nWeights = 248;
 const TString gChanLabel[nChannels] = {"ElMu", "Muon","Elec"};
-const TString sCut[nLevels] = {"dilepton", "ZVeto", "MET", "2jets", "1btag", "1j1b", "2j1b","2j2b"};
-const TString gSys[nSysts] = {"0"};
 
 
 class TWTTbarAnalysis : public PAFChainItemSelector{
@@ -26,20 +23,20 @@ class TWTTbarAnalysis : public PAFChainItemSelector{
     std::vector<Lepton> genLeptons  ;
     std::vector<Lepton> selLeptons  ;
     std::vector<Lepton> vetoLeptons ;
-    std::vector<Jet> selJets ;
-    std::vector<Jet> selJetsJecUp   ;
-    std::vector<Jet> selJetsJecDown ;
-    std::vector<Jet> selJetsJER     ;
+    std::vector<Jet>    selJets ;
+    std::vector<Jet>    selJetsJecUp   ;
+    std::vector<Jet>    selJetsJecDown ;
+    std::vector<Jet>    selJetsJER     ;
 
-    std::vector<Jet> Jets15  ;
-    std::vector<Jet> genJets  ;
-    std::vector<Jet> mcJets  ;
-    std::vector<Jet> vetoJets;
+    std::vector<Jet>    Jets15  ;
+    std::vector<Jet>    genJets  ;
+    std::vector<Jet>    mcJets  ;
+    std::vector<Jet>    vetoJets;
 
-    std::vector<Jet> SergioJets;
-    std::vector<Jet> SergioLooseCentralJets;
-    std::vector<Jet> SergioLooseFwdJets;
-    std::vector<Lepton> SergioLeps;
+    std::vector<Jet>    GenJets;
+    std::vector<Jet>    GenLooseCentralJets;
+    std::vector<Jet>    GenLooseFwdJets;
+    std::vector<Lepton> GenLeps;
     
     TTree* fMini1j1t;
     
@@ -79,10 +76,10 @@ class TWTTbarAnalysis : public PAFChainItemSelector{
     Float_t  TVetoJet3_Pt;
     Float_t  TVetoJet3_Eta;
   
-    void CalculateTWTTbarVariables();
-    void get20Jets();
-    void ReSetTWTTbarVariables();
-    void SetTWTTbarVariables();
+    void     CalculateTWTTbarVariables();
+    void     get20Jets();
+    void     ResetTWTTbarVariables();
+    void     SetTWTTbarVariables();
     Double_t getDilepMETJetPt(Int_t sys = 0);
     Double_t getDilepPt();
     Double_t getDilepJetPt(const TString& sys = "Norm");
@@ -117,17 +114,17 @@ class TWTTbarAnalysis : public PAFChainItemSelector{
 
 
     //Variables
-    Float_t TWeight;   // Total nominal weight
-    Float_t TMll;      // Invariant mass
-    Float_t TMllJESUp;   // Invariant mass
-    Float_t TMllJESDown; // Invariant mass
-    Float_t TMllJERUp;   // Invariant mass
-    Float_t TMET;      // MET
+    Float_t TWeight;
+    Float_t TMll;
+    Float_t TMllJESUp;
+    Float_t TMllJESDown;
+    Float_t TMllJERUp;
+    Float_t TMET;
     Float_t TGenMET;
-    Float_t TMET_Phi;  // MET phi
-    Float_t TMET_PhiJESUp;  // MET phi
-    Float_t TMET_PhiJESDown;  // MET phi
-    Float_t TMET_PhiJERUp;  // MET phi
+    Float_t TMET_Phi;
+    Float_t TMET_PhiJESUp;
+    Float_t TMET_PhiJESDown;
+    Float_t TMET_PhiJERUp;
     Float_t TLeadingJetPt    ;
     Float_t TLeadingJetEta   ;
     Float_t TLeadingJetCSV   ;
@@ -146,14 +143,14 @@ class TWTTbarAnalysis : public PAFChainItemSelector{
     Float_t TLep_E[10];
     Float_t TLep_Charge[10];
 
-    Int_t TNJets;            // Jets...
-    Int_t TNVetoJets;            // Jets...
-    Int_t TNBtags;
+    Int_t   TNJets;
+    Int_t   TNVetoJets;
+    Int_t   TNBtags;
     Float_t TJet_Pt[20];
     Float_t TJet_Eta[20];
     Float_t TJet_Phi[20];
     Float_t TJet_E[20];
-    Int_t TJet_isBJet[20];
+    Int_t   TJet_isBJet[20];
     Float_t THT;       // HT
     Float_t THTtot;
     Float_t THTtotJESUp;
@@ -174,12 +171,11 @@ class TWTTbarAnalysis : public PAFChainItemSelector{
     Float_t TDR_L1L2_J1J2   ;
     Float_t TDR_L1L2_J1J2MET;
 
-    // ADDED:
     Float_t TM_LeadingB       ;
     Float_t TM_SubLeadingB    ;
-    Float_t TM_LeadingBj2        ; // nueva
-    Float_t TM_SubLeadingBj2     ; // nueva
-    Float_t TM_bjetlepton_minmax ; // variable de ATLAS
+    Float_t TM_LeadingBj2        ;
+    Float_t TM_SubLeadingBj2     ;
+    Float_t TM_bjetlepton_minmax ;
     Float_t TE_LLB            ;
     Float_t TMT_LLMETB        ;
     Float_t TM_LLB            ;
@@ -308,20 +304,20 @@ class TWTTbarAnalysis : public PAFChainItemSelector{
     Bool_t TpassrecoJESDown    ;
     Bool_t TpassrecoJERUp      ;
     Float_t TWeight_normal     ;
-    Int_t nSergioJets;
-    Int_t nSergiobJets;
-    Int_t nSergioLooseCentralJets;
-    Int_t nSergioLooseCentralbJets;
-    Int_t nSergioLooseFwdJets;
-    Int_t nSergioLeps;
-    Int_t nSergioGenJets;
-    Int_t nSergioGenLeps;
-    Int_t nSergioGenMET;
+    Int_t nGenJets;
+    Int_t nGenbJets;
+    Int_t nGenLooseCentralJets;
+    Int_t nGenLooseCentralbJets;
+    Int_t nGenLooseFwdJets;
+    Int_t nGenLeps;
+    Int_t nGenJets;
+    Int_t nGenLeps;
+    Int_t nGenMET;
     Jet tJ;
     TLorentzVector tpJ;
     Lepton tL;
     TLorentzVector tpL;
-    TLorentzVector SergioMET;
+    TLorentzVector GenMET;
     TLorentzVector tMET;
 
     // For systematics...

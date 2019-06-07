@@ -323,13 +323,19 @@ void LeptonSelector::InsideLoop(){
 //   PAF_DEBUG("LeptonSelector", Form("For event %u there are %i muons and %i electrons", evt, nMuon,nElec));
   
   // Loop over the gen leptons and get gen info...
-  if(!gIsData){
-    ngenLep         = Get<Int_t>("nGenDressedLepton");
-    for(Int_t i = 0; i < ngenLep; i++){
+  if (!gIsData) {
+    ngenLep = Get<Int_t>("nGenDressedLepton");
+    for (Int_t i = 0; i < ngenLep; i++) {
       GetGenLeptonVariables(i);
       tL = Lepton(tP, charge, type);
-      //if(tL.p.Pt() > 20 && TMath::Abs(tL.p.Eta()) < 2.4) genLeptons.push_back(tL);
-      genLeptons.push_back(tL);
+      
+      if (gSelection == iTWTTbarSelec) {
+        if (tL.p.Pt() > 20 && TMath::Abs(tL.p.Eta()) < 2.4) {
+          if (tL.isMuon) genLeptons.push_back(tL);
+          else if (tL.isElec  && (TMath::Abs(tL.p.Eta()) < 1.4442 || TMath::Abs(tL.p.Eta()) > 1.566)) genLeptons.push_back(tL);
+        }
+      }
+      else genLeptons.push_back(tL);
     }
   }
 

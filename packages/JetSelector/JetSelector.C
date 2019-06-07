@@ -267,12 +267,17 @@ void JetSelector::InsideLoop(){
   }
 
   // Loop over Gen and MC jets...
-  if(!gIsData){  
+  if (!gIsData) {
     ngenJet = Get<Int_t>("nGenJet");
     for(Int_t i = 0; i < ngenJet; i++){
       GetGenJetVariables(i);
       tJ = Jet(tpJ, 0, 1, flavmc);
-      genJets.push_back(tJ);    
+      if (gSelection == iTWTTbarSelec) {
+        if (tJ.p.Pt() > 20) {
+          genJets.push_back(tJ);
+        }
+      }
+      else genJets.push_back(tJ);
     }
 
     /*nJet = Get<Int_t>("nJet");

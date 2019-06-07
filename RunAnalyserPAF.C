@@ -43,11 +43,8 @@ Float_t stopMass; Float_t lspMass;
 
 //=============================================================================
 // Global Enums
-enum  ESelector               {iStopSelec, iTopSelec, itt5TeV, iTWSelec, iWWSelec,
-                               iHWWSelec,  ittDMSelec, ittHSelec, iWZSelec,
-                               i4tSelec, iStopTopSelec, iTTbarSemilep, nSel};
-const TString kTagSel[nSel] = {"Stop", "Top", "tt5TeV", "WW", "HWW", "ttDM",
-                               "ttH", "WZ", "tttt", "StopTop", "TTbarSemilep"};
+enum  ESelector               {iStopSelec, iTopSelec, itt5TeV, iTWTTbarSelec, nSel};
+const TString kTagSel[nSel] = {"Stop", "Top", "tt5TeV", "TWTTbar", "TTbarSemilep"};
 
 //=============================================================================
 // Datasets:
@@ -87,9 +84,9 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
                     Long64_t nEvents, Long64_t FirstEvent,
                     Float_t uxsec, TString options) {
 
-   if      (options.Contains("2016")) G_year = 2016;
-   else if (options.Contains("2017")) G_year = 2017;
-   else if (options.Contains("2018")) G_year = 2018;
+  if      (options.Contains("2016")) G_year = 2016;
+  else if (options.Contains("2017")) G_year = 2017;
+  else if (options.Contains("2018")) G_year = 2018;
 
   // By adding this line we get all the helper functions in PAF (PAF_INFO...)
   PAFProject* myProject = 0;
@@ -120,10 +117,10 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
 
   vector<TString> tempfiles;
   Files.clear();
-	SumOfWeights = 0;
-	Count = 0;
-	nTrueEntries = 0;
-	xsec = 0;
+  SumOfWeights = 0;
+  Count = 0;
+  nTrueEntries = 0;
+  xsec = 0;
   NormISRweights = 0;
 
 
@@ -167,7 +164,7 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
     }
     PAF_ERROR("RunAnalyserPAF", Form("Supported selections: %s", suppsel.Data()));
     PAF_FATAL("RunAnalyserPAF", "Cannot continue. Exiting!");
- }
+}
 
   cout << "\n" << endl;
   if(verbose) cout << Form("\033[1;35m >>> Analysis: %s \033[0m\n", kTagSel[sel].Data());
@@ -296,7 +293,7 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
 
   // Output dir and tree name
   //----------------------------------------------------------------------------
-	
+  
   TString username(gSystem->GetUserInfo(gSystem->GetUid())->fUser);
   TString outPrefix("./");
   if(username=="vischia")
@@ -360,7 +357,7 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
     cout << Form("\033[1;36m >>> Running chunk number %i, starting in event %lli... will loop over %lli events (last event = %lli)\n\n\033[0m", iChunk, FirstEvent, nEvents, FirstEvent + nEvents);
     sampleName += Form("_%i", iChunk);
   }
- 
+
   if(options.Contains("pretend")) return; 
   
   // PAF mode selection (based on number of slots)
@@ -418,7 +415,7 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
   myProject->SetInputParam("sampleName",        sampleName       );
   myProject->SetInputParam("IsData",            G_IsData         );
   myProject->SetInputParam("weight",            G_Event_Weight   );
-  myProject->SetInputParam("IsMCatNLO",         G_IsMCatNLO      );  
+  myProject->SetInputParam("IsMCatNLO",         G_IsMCatNLO      );
   myProject->SetInputParam("iSelection",        (int) sel        );
   myProject->SetInputParam("WorkingDir",        WorkingDir       );
   myProject->SetInputParam("pathToHeppyTrees",  pathToFiles);
@@ -433,38 +430,24 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
   myProject->SetInputParam("stopMass"       , int(stopMass)    );
   myProject->SetInputParam("lspMass"        , int(lspMass)     );
   myProject->SetInputParam("NormISRweights" , NormISRweights   );
-  myProject->SetInputParam("doSyst"         , G_DoSystematics  ); 
-  myProject->SetInputParam("Year"           , G_year); 
+  myProject->SetInputParam("doSyst"         , G_DoSystematics  );
+  myProject->SetInputParam("Year"           , G_year);
   
   
   // Name of analysis class
   //----------------------------------------------------------------------------
+  // Basic selectors
   myProject->AddSelectorPackage("LeptonSelector");
   myProject->AddSelectorPackage("JetSelector");
   myProject->AddSelectorPackage("EventBuilder");
-//  if(Selection == "TTbarSemilep" || Selection == "TTbarSemi") 
-//    myProject->AddSelectorPackage("CombiningTTbarSemilep");
-  //myProject->AddSelectorPackage("TTbarSemilep");
-  if(Selection == "tt5TeV" || Selection == "5TeV"){
-    myProject->AddSelectorPackage("Top5TeV");
+  
+  // Analysis selector
+  if      (Selection == "tt5TeV"  || Selection == "5TeV") myProject->AddSelectorPackage("Top5TeV");
+  else if (Selection == "TWTTbar" || Selection == "tWttbar" || Selection == "twttbar") myProject->AddSelectorPackage("TWTTbarAnalysis");
+  else {
+    PAF_INFO("RunAnalyserPAF", "No analysis chosen: by default, the top one will be selected.");
+    myProject->AddSelectorPackage("TopAnalysis");
   }
-  else myProject->AddSelectorPackage("TopAnalysis");
-/*  if      (sel == iStopSelec)    myProject->AddSelectorPackage("StopAnalysis");
-  else if (sel == ittDMSelec)    myProject->AddSelectorPackage("ttDM");
-  else if (sel == iTopSelec )    myProject->AddSelectorPackage("TopAnalysis");
-  else if (sel == ittHSelec )    myProject->AddSelectorPackage("ttHAnalysis");
-  else if (sel == i4tSelec)      myProject->AddSelectorPackage("t4Analysis");
-  else if (sel == iStopTopSelec) myProject->AddSelectorPackage("StopTopAnalysis");
-  else if (sel == iTWSelec  ){
-    //myProject->AddSelectorPackage("TopAnalysis");
-    myProject->AddSelectorPackage("TWAnalysis");
-  }
-  else if (sel == iWWSelec  )  myProject->AddSelectorPackage("WWAnalysis");
-  else if (sel == iHWWSelec )  myProject->AddSelectorPackage("HWWAnalysis");
-  else if (sel == iWZSelec  )  myProject->AddSelectorPackage("WZAnalysis");
-  else                         PAF_FATAL("RunAnalyserPAF", "No selector defined for this analysis!!!!");
-  */
-
 
   // Additional packages
   //----------------------------------------------------------------------------
@@ -477,7 +460,6 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
   myProject->AddPackage("BTagSFUtil");
   myProject->AddPackage("PUWeight");
 
-  //myProject->AddSelectorPackage("prueba");
   // Let's rock!
   //----------------------------------------------------------------------------
   myProject->Run();
@@ -497,21 +479,19 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
 //=== Auxiliary functions
 //=============================================================================
 void GetCount(std::vector<TString> Files, Bool_t IsData){
-	Int_t nFiles = Files.size(); TFile *f;
-	TH1F *hcount; TH1F *hsum; TTree* tree;
-	if(verbose) cout << "\033[1;30m=================================================\033[0m\n";
-	for(Int_t i = 0; i < nFiles; i++){
-		if(verbose) cout << Form("\033[1;32m >>> Including file: %s \033[0m\n", Files.at(i).Data());
-		//cout << "Including file: " << Files.at(i) << endl;
-		f = TFile::Open(Files.at(i));
+  Int_t nFiles = Files.size(); TFile *f;
+  TH1F *hcount; TH1F *hsum; TTree* tree;
+  if(verbose) cout << "\033[1;30m=================================================\033[0m\n";
+  for(Int_t i = 0; i < nFiles; i++){
+    if(verbose) cout << Form("\033[1;32m >>> Including file: %s \033[0m\n", Files.at(i).Data());
+    //cout << "Including file: " << Files.at(i) << endl;
+    f = TFile::Open(Files.at(i));
     f->GetObject("Events", tree);
-		f->GetObject("Count", hcount);
-		if(!IsData) f->GetObject("SumWeights", hsum);
-		Count        += hcount-> GetBinContent(1);
+    f->GetObject("Count", hcount);
+    if(!IsData) f->GetObject("SumWeights", hsum);
+    Count        += hcount-> GetBinContent(1);
     nTrueEntries += tree  -> GetEntries();
     SumOfWeights += hsum  -> GetBinContent(1);
-		f->Close();    
-	}
+    f->Close();
+  }
 }
-
-
