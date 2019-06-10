@@ -147,7 +147,7 @@ void EventBuilder::Initialise(){
   PUSF_Up = 1;
   PUSF_Down = 1;
   
-  makeeffhistos = false;  // THIS IS PUT HERE SO WE DON'T DO THE TRIG EFF HISTOS BUT ALSO BECAUSE (at least for 2017's nanoAODv4) MET TRIGGERS ARE BADLY SET
+  makeeffhistos = true;  // THIS IS PUT HERE SO WE DON'T DO THE TRIG EFF HISTOS BUT ALSO BECAUSE (at least for 2017's nanoAODv4) MET TRIGGERS ARE BADLY SET
 
 }
 
