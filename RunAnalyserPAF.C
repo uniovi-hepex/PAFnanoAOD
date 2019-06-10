@@ -43,9 +43,12 @@ Float_t stopMass; Float_t lspMass;
 
 //=============================================================================
 // Global Enums
-enum  ESelector               {iStopSelec, iTopSelec, itt5TeV, iTWTTbarSelec, nSel};
-const TString kTagSel[nSel] = {"Stop", "Top", "tt5TeV", "TWTTbar", "TTbarSemilep"};
-
+enum  ESelector               {iStopSelec, iTopSelec, itt5TeV, iTWSelec, iWWSelec,
+                               iHWWSelec,  ittDMSelec, ittHSelec, iWZSelec, i4tSelec,
+                               iStopTopSelec, iTTbarSemilep, iTWTTbarSelec, nSel};
+const TString kTagSel[nSel] = {"Stop", "Top", "tt5TeV", "WW",
+                              "HWW", "ttDM", "ttH", "WZ", "tttt",
+                              "StopTop", "TTbarSemilep", "TWTTbar"};
 //=============================================================================
 // Datasets:
     //>>> 2016 datasets
