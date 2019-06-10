@@ -442,6 +442,7 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
   
   // Analysis selector
   if      (sel == itt5TeV)       myProject->AddSelectorPackage("Top5TeV");
+  else if (sel == iTopSelec)     myProject->AddSelectorPackage("TopAnalysis");
   else if (sel == iTWTTbarSelec) myProject->AddSelectorPackage("TWTTbarAnalysis");
   else {
     PAF_INFO("RunAnalyserPAF", "No analysis chosen: by default, the top one will be selected.");

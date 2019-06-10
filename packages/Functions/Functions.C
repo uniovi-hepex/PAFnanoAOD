@@ -931,7 +931,8 @@ Float_t GetBestDijetMassNoB(vector<Jet> selJets){
   }
   return dijetMass;
 }
-  
+
+
 Int_t NBtagNJets(Int_t nJets, Int_t nBtags){
   if(     nJets == 0) return 0;
   else if(nJets == 1) return 1+nBtags;
@@ -941,7 +942,8 @@ Int_t NBtagNJets(Int_t nJets, Int_t nBtags){
   else if(nJets == 5) return 15+nBtags;
   else if(nJets == 6) return 21+nBtags;
   else return 28;
-} 
+}
+
 
 Int_t GetRunEra(Int_t run){
   int era = runA;
@@ -952,7 +954,21 @@ Int_t GetRunEra(Int_t run){
     else if(run <= 304826 && run > 303434) era = runE;
     else if(run <= 306462 && run > 304910) era = runF;
 return era;
-
 }
 
 
+TLorentzVector GetColVector(vector<TLorentzVector> col) {
+  TLorentzVector vec; vec = col.at(0);
+  for (UShort_t i = 1; i < col.size(); i++) vec += col.at(i);
+  return vec;
+}
+
+
+Double_t GetDeltaPhi(vector<TLorentzVector> col1, vector<TLorentzVector> col2) {
+  return GetColVector(col1).DeltaPhi(GetColVector(col2));
+}
+
+
+Double_t GetDeltaR(vector<TLorentzVector> col1, vector<TLorentzVector> col2) {
+  return GetColVector(col1).DeltaR(GetColVector(col2));
+}
