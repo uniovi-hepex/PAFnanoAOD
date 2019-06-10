@@ -127,8 +127,8 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
   TString WorkingDir = gSystem->WorkingDirectory();
 
   // VARIABLES TO BE USED AS PARAMETERS...
-  Float_t G_Event_Weight  = 1.0;         
-  Bool_t  G_IsData        = false;       
+  Float_t G_Event_Weight  = 1.0;
+  Bool_t  G_IsData        = false;
   Bool_t  G_IsMCatNLO     = false;
   Bool_t  G_DoSystematics = false;
   G_IsFastSim     = false;
@@ -136,11 +136,6 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
   if(options.Contains("FastSim")) G_IsFastSim = true;
 
   // Selection
-  
-//   ESelector sel = iTopSelec;
-//   if(Selection == "tt5TeV" || Selection == "5TeV") sel = itt5TeV;
-//   else sel = iTopSelec;
-  
   TString lowSel = Selection; ESelector sel;
   lowSel.ToLower();
   
@@ -155,6 +150,7 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
   else if (lowSel == "hww"                           ) sel = iHWWSelec;
   else if (lowSel == "wz"                            ) sel = iWZSelec;
   else if (lowSel == "tt5tev" || lowSel == "5tev"    ) sel = itt5TeV;
+  else if (lowSel == "twttbar"                       ) sel = iTWTTbarSelec;
   else {
     PAF_ERROR("RunAnalyserPAF", Form("Wrong selection \"%s\".", Selection.Data()));
     TString suppsel = kTagSel[0];
@@ -442,8 +438,8 @@ void RunAnalyserPAF(TString sampleName, TString Selection, Int_t nSlots,
   myProject->AddSelectorPackage("EventBuilder");
   
   // Analysis selector
-  if      (Selection == "tt5TeV"  || Selection == "5TeV") myProject->AddSelectorPackage("Top5TeV");
-  else if (Selection == "TWTTbar" || Selection == "tWttbar" || Selection == "twttbar") myProject->AddSelectorPackage("TWTTbarAnalysis");
+  if      (sel == itt5TeV)       myProject->AddSelectorPackage("Top5TeV");
+  else if (sel == iTWTTbarSelec) myProject->AddSelectorPackage("TWTTbarAnalysis");
   else {
     PAF_INFO("RunAnalyserPAF", "No analysis chosen: by default, the top one will be selected.");
     myProject->AddSelectorPackage("TopAnalysis");
