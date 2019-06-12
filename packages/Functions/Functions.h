@@ -139,4 +139,8 @@ Float_t GetBestDijetMassNoB(vector<Jet> selJets);
 Int_t NBtagNJets(Int_t nJets, Int_t nBtags);
 Int_t GetRunEra(Int_t run);
 
+TLorentzVector GetColVector(vector<TLorentzVector> col);
+Double_t GetDeltaPhi(vector<TLorentzVector> col1, vector<TLorentzVector> col2);
+Double_t GetDeltaR(vector<TLorentzVector> col1, vector<TLorentzVector> col2);
+
 #endif

@@ -96,6 +96,7 @@ class TopAnalysis : public PAFChainItemSelector{
 
     //Variables
     ULong64_t event;
+    UInt_t    lumiblock;
     Float_t TWeight;   // Total nominal weight
     Float_t TMll;      // Invariant mass
     Float_t TDilep_Pt;
@@ -103,7 +104,7 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t TElec_Pt;
     Float_t TMuon_Eta;
     Float_t TElec_Eta;
-    Int_t   TRun;
+    UInt_t  TRun;
     Int_t   TNVert;
     Float_t TMET;      // MET
     Float_t TMT2;      // MET

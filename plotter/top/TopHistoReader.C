@@ -1,4 +1,4 @@
-#ifndef TopHistoReader_H 
+#ifndef TopHistoReader_H
 #define TopHistoReader_H 11
 
 const TString DefaultPathY    = "/nfs/fanae/user/juanr/AnalysisPAF/TopTrees/jul7/";

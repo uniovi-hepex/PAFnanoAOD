@@ -1,17 +1,18 @@
 R__LOAD_LIBRARY(Histo.C+)
 R__LOAD_LIBRARY(Looper.C+)
 R__LOAD_LIBRARY(Plot.C+)
-R__LOAD_LIBRARY(TopHistoReader.C+)
+R__LOAD_LIBRARY(top/TopHistoReader_from.C+)
 
 #include "Histo.h"
 #include "Looper.h"
 #include "Plot.h"
 
 bool doOnlyDoubleLepDatasets = false;
-TString Era = "";
-Float_t Lumi = 41.2;
-TString path =  "/nfs/fanae/user/juanr/nanoAOD/Top_temp/jan20/";
-TString plotDir = "/nfs/fanae/user/juanr/www/plots2017/nanoAODv4/";
+TString Era        = "";
+Float_t Lumi       = 41.2;
+TString path       =  "/nfs/fanae/user/juanr/nanoAOD/Top_temp/jan20/";
+// TString plotDir = "/nfs/fanae/user/juanr/www/plots2017/nanoAODv4/";
+TString plotDir    = "/nfs/fanae/user/vrbouza/www/Proyectos/stop/nanoAODv4/";
 
 
 //TString chan = "Elec";
@@ -29,8 +30,9 @@ void draw(TString level = "1btag", TString chan = "ElMu");
 
 void plot(){
   int ichan; int ilev; TString chan; TString lev;
-  //draw("dilepton", "Elec");
-  draw("2jets", "ElMu"); return;
+//   draw("dilepton", "Elec");
+//   draw("2jets", "ElMu");
+//   return;
   for(ichan = 0; ichan < nChan; ichan++){
     chan = vChan.at(ichan);
     for(ilev = 0; ilev < nLev; ilev++){
