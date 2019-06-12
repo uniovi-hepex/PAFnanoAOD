@@ -53,8 +53,10 @@ class LeptonSF {
   // Muon SFs
   TGraphAsymmErrors*  fMuonTrackerSF;    
   TH2D*  fMuonIdSFSUSY;     
+  TH2D*  fMuonIdSF;     
   TH2D*  fMuonIdSF_BCDEF;     
   TH2D*  fMuonIdSF_GH;     
+  TH2D*  fMuonIsoSF;     
   TH2D*  fMuonIsoSF_BCDEF;     
   TH2D*  fMuonIsoSF_GH;     
   TH2D*  fMuonIsoSFSUSY;     
