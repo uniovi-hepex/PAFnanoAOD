@@ -13,7 +13,7 @@ class BTagSFUtil{
     
   BTagSFUtil(const string& MeasurementType, 
 	     const TString& BTagSFPath, const string& BTagAlgorithm, 
-	     const TString& OperatingPoint, int SystematicIndex = 0, TString FastSimDataset = "");
+	     const TString& OperatingPoint, int SystematicIndex = 0, int year = 2017, TString FastSimDataset = "");
   ~BTagSFUtil();
 
   float GetJetSF(float JetDiscriminant, int JetFlavor, float JetPt, float JetEta);
@@ -34,6 +34,7 @@ class BTagSFUtil{
   float ScaleFactorLight(float JetPt, float JetEta, int SystematicFlag);
   float ScaleFactorJet(int JetFlavor, float JetPt, float JetEta, int SystematicFlag);
 
+  void  LoadHistos(int year, const TString& tagger, const TString& wp);
   float TagEfficiencyB(float JetPt, float JetEta);
   float TagEfficiencyC(float JetPt, float JetEta);
   float TagEfficiencyLight(float JetPt, float JetEta);
@@ -46,6 +47,10 @@ class BTagSFUtil{
   float TaggerCut;
 
   TF1 *funSFb, *funSFlight[4][3];
+ 
+  TH2F* btagmceff;
+  TH2F* btagmceffC;
+  TH2F* btagmceffL;
 
   int nBTagPtBins;
   float BTagPtBinEdge[50];
