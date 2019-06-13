@@ -18,13 +18,14 @@ TWTTbarAnalysis::TWTTbarAnalysis() : PAFChainItemSelector() {
 
 void TWTTbarAnalysis::Initialise() {
   gIsData     = GetParam<Bool_t>("IsData");
-  gSelection  = GetParam<Int_t>("iSelection");
+  selection  = GetParam<Int_t>("iSelection");
   gSampleName = GetParam<TString>("sampleName");
   gDoSyst     = GetParam<Bool_t>("doSyst");
   gPar        = GetParam<TString>("_options");
   if (gPar.Contains("Semi")) {
     cout << "> Running the semileptonic ttbar sample" << endl;
   }
+  gSelection     = GetSelection(selection);
   gIsTTbar    = false;
   gIsLHE      = false;
 

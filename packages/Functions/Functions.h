@@ -10,16 +10,32 @@
 
 using namespace std;
 enum runEra{runA,runB,runC,runD,runE,runF,runG,runH};
+int GetSelection(TString sel);
 
-// enum 
+enum eChannel{iNoChannel, iElMu, iMuon, iElec, i2lss, iTriLep, iFourLep, iSS1tau, iOS1tau, i2lss_fake, iTriLep_fake, iElEl, iMuMu, i1Tau_emufakeOS ,i1Tau_emufakeSS, i2LOS, TotalDefinedChannels};
+enum sel{itt, itWtt, nSel};
+const TString LabSelection[] = {"top", "tWtt"};
 
+enum sys{iNom, 
+  iJesUp, iJesDown, iJERUp, iJERDown, 
+  iBtagUp, iBtagDown, iBtagMisUp, iBtagMisDown, 
+  iLepEffUp, iLepEffDown, 
+  iTrigUp, iTrigDown, 
+  iPUUp, iPUDown, 
+  iFSUp, iFSDown,
+  nSys
+};
+
+const Int_t   nLHEWeight  = 254;
+const Float_t Zm          = 91.1876;
+//enum eChannel{iElMu, iElec, iMuon, nChannels};
 
 enum iSFs{
   iMuonReco, iMuonId, iMuonIdSUSY, iMuonIsoTightId, iMuonIsoMediumId, iMuonIsoSUSY, iMuonIP2D, iMuonSIP3D,
   iMuonFastSim, iMuonIdFastSimStop, iMuonIsoFastSimStop,
   iElecReco, iElecId, iElecIdSUSY, iElecIso, iElecIsoSUSY, iElecIP2D, iElecSIP3D, 
   iElecFastSim, iElecIdFastSimStop, iElecIsoFastSimStop,
-  iTrigDoubleMuon, iTrigDoubleElec, iTrigElMu,iTrigSingleMuon,iTrigSingleElec,
+  iTrigDoubleMuon, iTrigDoubleElec, iTrigElMu,
   iMuonlepMVA2lSSttH, iMuonlepMVA3l4lttH, 
   iMuonLooseTracksttH, iMuonLooseMiniIsottH, iMuonTightIP2DttH,
   iEleclepMVA2lSSttH, iEleclepMVA3l4lttH, 
@@ -42,24 +58,6 @@ const TString SFTString[nfiles] = {
 
 enum wps{iVeto, iVeryLoose, iLoose, iMedium, iTight, iVeryTight, iExtreamlyTight, iWPforStop, iLooseWPforStop};
 
-enum sel{iStopSelec, iTopSelec, itt5TeV, iTWSelec, iWWSelec, iHWWSelec,  ittDMSelec, ittHSelec, iWZSelec, i4tSelec, iStopTopSelec, iTTbarSemilep, nSel};
-const TString LabSelection[] = {"stop", "top", "tW", "WW", "tt+DM", "ttH", "WZ", "tttt"};
-
-enum eChannel{iNoChannel, iElMu, iMuon, iElec, i2lss, iTriLep, iFourLep, iSS1tau, iOS1tau, i2lss_fake, iTriLep_fake, iElEl, iMuMu, i1Tau_emufakeOS ,i1Tau_emufakeSS, i2LOS, TotalDefinedChannels};
-
-enum sys{iNom, 
-  iJesUp, iJesDown, iJERUp, iJERDown, 
-  iBtagUp, iBtagDown, iBtagMisUp, iBtagMisDown, 
-  iLepEffUp, iLepEffDown, 
-  iTrigUp, iTrigDown, 
-  iPUUp, iPUDown, 
-  iFSUp, iFSDown,
-  nSys
-};
-
-const Int_t   nLHEWeight  = 254;
-const Float_t Zm          = 91.1876;
-//enum eChannel{iElMu, iElec, iMuon, nChannels};
 
 
 bool LepMomentumComparator(Lepton i, Lepton j);

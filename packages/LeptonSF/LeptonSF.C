@@ -48,16 +48,18 @@ LeptonSF::LeptonSF(TString path, TString options):
   fSingleElecTrigSF(0)
    {         
 
-  path_to_SF_histos = path;
-  if(options.Contains("2017")) gIs2017 = true; 
-  if(options.Contains("eraB")) era = runB;
-  if(options.Contains("eraC")) era = runC;
-  if(options.Contains("eraD")) era = runD;
-  if(options.Contains("eraE")) era = runE;
-  if(options.Contains("eraF")) era = runF;
-  else gIs2017 = false;
   era = -1;
-  gIs2017 = true;
+  path_to_SF_histos = path;
+  gIs2016 = false; gIs2017 = false; gIs2018 = false;
+  if     (options.Contains("2016")) gIs2016 = true; 
+  else if(options.Contains("2017")) gIs2017 = true; 
+  else if(options.Contains("2018")) gIs2018 = true; 
+
+  if     (options.Contains("eraB")) era = runB;
+  else if(options.Contains("eraC")) era = runC;
+  else if(options.Contains("eraD")) era = runD;
+  else if(options.Contains("eraE")) era = runE;
+  else if(options.Contains("eraF")) era = runF;
 };
 
 
@@ -344,10 +346,6 @@ void LeptonSF::loadHisto(Int_t iHisto, Int_t wp){
     fMuEGSF = (TH2F*) GetHistogramFromFileF(path_to_SF_histos + filename + ".root", histoname, "fMuEGSF"); 
   }
 
-  else if(iHisto == iTrigSingleMuon){
-    filename = "EfficienciesAndSF_RunBtoF"; histoname = "IsoMu24_OR_IsoTkMu24_PtEtaBins/abseta_pt_ratio";
-    fSingleMuonTrigSF = (TH2F*) GetHistogramFromFileF(path_to_SF_histos + filename + ".root", histoname, "fSingleMuonTrigSF");
-  }
   PAF_INFO("Lepton SF", Form("Loaded histogram %s from file %s%s.root", histoname.Data(), path_to_SF_histos.Data(), filename.Data()));
   loadedHistos.push_back(iHisto);
 }
@@ -625,3 +623,4 @@ Float_t LeptonSF::GetFSSFerr(Float_t pt, Float_t eta, Int_t id){
   else         SFerr = fElecFastSim ->GetBinError(fElecFastSim  ->FindBin(pt, eta));
   return SFerr;
 }
+

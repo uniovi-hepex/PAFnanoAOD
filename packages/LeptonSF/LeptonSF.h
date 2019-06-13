@@ -94,7 +94,9 @@ class LeptonSF {
   TH2F *fSingleMuonTrigSF;
   TH2F *fSingleElecTrigSF;
 
+  Bool_t gIs2016;
   Bool_t gIs2017;
+  Bool_t gIs2018;
   Int_t era;
 };
 #endif

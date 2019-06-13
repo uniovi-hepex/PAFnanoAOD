@@ -86,6 +86,7 @@ class EventBuilder : public PAFChainItemSelector{
     Int_t run;
     Int_t year;
     Int_t   gSelection;
+    TString selection;
     TString gSampleName;
     TString gPathToHeppyTrees;
     Float_t  gXSec;
@@ -99,7 +100,9 @@ class EventBuilder : public PAFChainItemSelector{
     Int_t nProcessedEvents;
 
     TString gOptions;
+    Bool_t gIs2016;
     Bool_t gIs2017;
+    Bool_t gIs2018;
     Bool_t gIsData2017;
   
 

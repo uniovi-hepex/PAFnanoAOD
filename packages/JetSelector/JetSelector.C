@@ -41,13 +41,21 @@ void JetSelector::Summary(){}
 
 void JetSelector::Initialise(){
   gIsData    = GetParam<Bool_t>("IsData");
-  gSelection = GetParam<Int_t>("iSelection");
+  selection = GetParam<Int_t>("iSelection");
   gIsFastSim   = GetParam<Bool_t>("IsFastSim");
   gSampleName  = GetParam<TString>("sampleName");
   gDoSys       = GetParam<Bool_t>("doSyst");
-  gIs2017eccop = false;
   gOptions     = GetParam<TString>("_options");
-  if(gOptions.Contains("2017eccop")) gIs2017eccop = true;
+  gSelection     = GetSelection(selection);
+
+  gIs2017 = false; gIs2016 = false; gIs2018 = false;
+  year = 0;
+  if(gOptions.Contains("2017")) gIs2017 = true;
+  if(gOptions.Contains("2018")) gIs2018 = true;
+  if(gOptions.Contains("2016")) gIs2016 = true;
+  if(gIs2018) year = 2018;
+  if(gIs2017) year = 2017;
+  if(gIs2016) year = 2016;
 
   gIsFSRUp = false; gIsFSRDown = false;
   if     (gSampleName.Contains("TTbar_Powheg") && gSampleName.Contains("fsrUp"))   gIsFSRUp = true;
@@ -56,85 +64,28 @@ void JetSelector::Initialise(){
   //---- Select your wp for b-tagging and pt, eta for the jets
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-  if(gSelection == iTopSelec || gSelection == iStopTopSelec || gSelection == ittDMSelec || gSelection == itt5TeV){
-    taggerName="CSVv2";
+  if(gSelection == itt){
+    taggerName="DeepFlav";
     stringWP = "Medium";
     jet_MaxEta = 2.4;
     jet_MinPt  = 30;
     vetoJet_minPt = 30;
     vetoJet_maxEta = 5.0;
     minDR = 0.4;
-    if(gIs2017eccop){
-      taggerName=="CSVv2_94XSF_V1_B_F"; // DeepCSV_94XSF_V1_B_F
-    }
-  }
-  else if (gSelection == i4tSelec){
-    taggerName="CSVv2"; // Soon to be: taggerName="DeepCSV" 
-    stringWP = "Medium";
-    jet_MaxEta = 2.4;
-    jet_MinPt  = 40;
-    vetoJet_minPt = 25;
-    vetoJet_maxEta = 2.4;
-    minDR = 0.4;
-  }
-  else if (gSelection == iWZSelec){
-    taggerName="CSVv2"; // Soon to be: taggerName="DeepCSV" 
-    stringWP = "Medium";
-    jet_MaxEta = 2.4;
-    jet_MinPt  = 40;
-    vetoJet_minPt = 25;
-    vetoJet_maxEta = 2.4;
-    minDR = 0.4;
-  }
-  else if (gSelection == iTWSelec){
-    taggerName="CSVv2";
-    stringWP = "Medium";
-    jet_MaxEta = 2.4;
-    jet_MinPt  = 30;
-    vetoJet_minPt = 15.;
-    vetoJet_maxEta = 4.7;
-    minDR = 0.4;
-  }
-  else if(gSelection == iWWSelec){
-    taggerName="CSVv2";
-    stringWP = "Loose";
-    jet_MaxEta = 4.7;
-    jet_MinPt  = 30;
-    vetoJet_minPt = 20;
-    vetoJet_maxEta = 2.4;
-    minDR = 0.4;
-  }
-  else if(gSelection == iWZSelec){
-    taggerName="CSVv2";
-    stringWP = "Medium";
-    jet_MaxEta = 2.4;
-    jet_MinPt  = 30;
-    vetoJet_minPt = 20;
-    vetoJet_maxEta = 2.4;
-    minDR = 0.4;
-  }
-  else{
-    taggerName="CSVv2";
-    stringWP = "Medium";
-    jet_MaxEta = 2.4;
-    vetoJet_maxEta = 2.4;
-    jet_MinPt  = 30;
-    vetoJet_minPt = 20;
-    minDR = 0.4;
   }
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-  if (gSelection == iTopSelec || gSelection == iStopTopSelec || gSelection == iTWSelec || gSelection == itt5TeV) MeasType = "mujets";
+  MeasType = "mujets";
   TString pwd  = GetParam<TString>("WorkingDir");
   TString BTagSFPath = Form("%s/packages/BTagSFUtil", pwd.Data());
   
   TString FastSimDataset = "";
   if(gIsFastSim) FastSimDataset = "1";
-  fBTagSFnom = new BTagSFUtil(MeasType, BTagSFPath, taggerName.Data(), stringWP,  0, FastSimDataset);
-  fBTagSFbUp = new BTagSFUtil(MeasType, BTagSFPath, taggerName.Data(), stringWP,  1, FastSimDataset);
-  fBTagSFbDo = new BTagSFUtil(MeasType, BTagSFPath, taggerName.Data(), stringWP, -1, FastSimDataset);
-  fBTagSFlUp = new BTagSFUtil(MeasType, BTagSFPath, taggerName.Data(), stringWP,  3, FastSimDataset);
-  fBTagSFlDo = new BTagSFUtil(MeasType, BTagSFPath, taggerName.Data(), stringWP, -3, FastSimDataset);
+  fBTagSFnom = new BTagSFUtil(MeasType, BTagSFPath, taggerName.Data(), stringWP,  0, year);
+  fBTagSFbUp = new BTagSFUtil(MeasType, BTagSFPath, taggerName.Data(), stringWP,  1, year);
+  fBTagSFbDo = new BTagSFUtil(MeasType, BTagSFPath, taggerName.Data(), stringWP, -1, year);
+  fBTagSFlUp = new BTagSFUtil(MeasType, BTagSFPath, taggerName.Data(), stringWP,  3, year);
+  fBTagSFlDo = new BTagSFUtil(MeasType, BTagSFPath, taggerName.Data(), stringWP, -3, year);
 
   Leptons  = std::vector<Lepton>();
   selJets  = std::vector<Jet>();
@@ -202,9 +153,6 @@ void JetSelector::InsideLoop(){
 
   Leptons = GetParam<vector<Lepton>>("selLeptons"); 
   VetoLeptons = GetParam<vector<Lepton>>("vetoLeptons");
-  if (gSelection == i4tSelec){
-    for(Int_t i = 0; i < (Int_t) VetoLeptons.size(); i++) Leptons.push_back(VetoLeptons.at(i));
-  }
 
   //evt = (UInt_t)Get<ULong64_t>("evt");
   //rho = Get<Float_t>("rho");
@@ -258,7 +206,7 @@ void JetSelector::InsideLoop(){
 
       // Fill the veto collections
       if (tJ.p.Pt() > vetoJet_minPt && TMath::Abs(tJ.p.Eta()) < vetoJet_maxEta){
-        if (gSelection == iTopSelec || gSelection == itt5TeV){
+        if (gSelection == itt){
           if(TMath::Abs(tJ.p.Eta()) > 2.4)  vetoJets.push_back(tJ);
         }
         else  vetoJets.push_back(tJ);
@@ -272,7 +220,7 @@ void JetSelector::InsideLoop(){
     for(Int_t i = 0; i < ngenJet; i++){
       GetGenJetVariables(i);
       tJ = Jet(tpJ, 0, 1, flavmc);
-      if (gSelection == iTWTTbarSelec) {
+      if (gSelection == itWtt) {
         if (tJ.p.Pt() > 20) {
           genJets.push_back(tJ);
         }
@@ -336,10 +284,9 @@ void JetSelector::InsideLoop(){
 Bool_t JetSelector::IsBtag(Jet j){
   if(j.Pt() < 20) return false;
   Bool_t isbtag;
-  if(gIsData || gSelection == i4tSelec || gSelection == iWZSelec) isbtag = fBTagSFnom->IsTagged(j.csv, -999999, j.p.Pt(), j.p.Eta(), (UInt_t)j.p.Pt());
   // using "weights" as scale factors in the tW analysis :)
-  else if(gSelection == iTWSelec) isbtag = fBTagSFnom->IsTagged(j.csv, -999999, j.p.Pt(), j.p.Eta(), (UInt_t)j.p.Pt());
-  //else if(stringWP == "Loose") isbtag = fBTagSFnom->IsTagged(j.csv, -999999, j.p.Pt(), j.p.Eta(), (UInt_t)j.p.Pt());
+  if(gSelection == itWtt) isbtag = fBTagSFnom->IsTagged(j.csv, -999999, j.p.Pt(), j.p.Eta(), (UInt_t)j.p.Pt());
+
   else                         isbtag = fBTagSFnom->IsTagged(j.csv,j.flavmc, j.p.Pt(), j.p.Eta(), (UInt_t)j.p.Pt());
   if(gIsFastSim && BtagSFFS == 1. && isbtag){
     BtagSFFS = fBTagSFnom->GetFastSimBtagSF(j.flavmc, j.p.Eta(), j.p.Pt(), j.csv);

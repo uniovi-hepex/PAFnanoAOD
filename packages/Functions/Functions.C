@@ -1,6 +1,17 @@
 #include "Functions.h"
 #include "mt2.h"
 
+
+int GetSelection(TString sel){
+  int i; int n = nSel;
+  int iSel = -1;
+  for(i = 0; i < n; i++)
+    if(sel == LabSelection[i]) iSel = i;
+  return iSel;
+}
+
+
+
 // ==================================================================
 // ==================== Kinematic variables ========================
 // ==================================================================

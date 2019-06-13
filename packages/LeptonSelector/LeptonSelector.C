@@ -20,30 +20,28 @@ void LeptonSelector::Initialise(){
   fhDummy = CreateH1F("fhDummy","fhDummy", 1, 0, 2);
   gIsData        = GetParam<Bool_t>("IsData");
   gIsFastSim     = GetParam<Bool_t>("IsFastSim");
-  gSelection     = GetParam<Int_t>("iSelection");
+  selection      = GetParam<Int_t>("selection");
   gOptions       = GetParam<TString>("_options");
   localPath      = GetParam<TString>("WorkingDir");
 
-  gIs2017 = true;
+  gSelection     = GetSelection(selection);
+
+  gIs2017 = false; gIs2016 = false; gIs2018 = false;
   if(gOptions.Contains("2017")) gIs2017 = true;
-  if(gOptions.Contains("2018")) gIs2017 = true;
-  gIs2017 = true;
+  if(gOptions.Contains("2018")) gIs2018 = true;
+  if(gOptions.Contains("2016")) gIs2016 = true;
 
   LepSF     = new LeptonSF(localPath + "/InputFiles/", gOptions);
   //ElecScale = new ElecScaleClass(localPath + "/InputFiles/ElecScale.dat");
 
   if(!gIsData){
-    // Select SFs for each analysis !!!!!!
-    if(gSelection == iTopSelec || gSelection == iTWSelec || gSelection == iWWSelec || gSelection == itt5TeV){
-      LepSF->loadHisto(iTrigDoubleMuon);
-      LepSF->loadHisto(iTrigDoubleElec);
-      LepSF->loadHisto(iTrigElMu);
-      LepSF->loadHisto(iElecReco);
-      LepSF->loadHisto(iElecId,   iTight);
-      LepSF->loadHisto(iMuonIsoTightId,   iTight);
-      LepSF->loadHisto(iMuonId,   iTight);
-    }
-    else std::cout << ">>>>>>>>>>>> WRONG SELECTION!!!!!!!!" << std::endl;
+    LepSF->loadHisto(iTrigDoubleMuon);
+    LepSF->loadHisto(iTrigDoubleElec);
+    LepSF->loadHisto(iTrigElMu);
+    LepSF->loadHisto(iElecReco);
+    LepSF->loadHisto(iElecId,   iTight);
+    LepSF->loadHisto(iMuonIsoTightId,   iTight);
+    LepSF->loadHisto(iMuonId,   iTight);
   }
 
   selLeptons   = std::vector<Lepton>();
@@ -63,22 +61,15 @@ Bool_t LeptonSelector::getSIPcut(Float_t cut){
 }
 
 Bool_t LeptonSelector::getGoodVertex(Int_t wp){
-  if (gSelection == i4tSelec || gSelection == iWZSelec) {
-    if (wp == iTight || wp == iMedium || wp == iLoose){
-      if (dxy >= 0.05 || dz >= 0.1) return false;
+  if(type == 1){ //electrons
+    if(wp == iTight){
+      if(etaSC <= 1.479 && ((dxy >= 0.05) || (dz  >= 0.10))) return false;
+      if(etaSC >  1.479 && ((dxy >= 0.10) || (dz  >= 0.20))) return false;
     }
   }
-  else {
-    if(type == 1){ //electrons
-      if(wp == iTight){
-        if(etaSC <= 1.479 && ((dxy >= 0.05) || (dz  >= 0.10))) return false;
-        if(etaSC >  1.479 && ((dxy >= 0.10) || (dz  >= 0.20))) return false;
-      }
-    }
-    else{ // muons
-      if(wp == iMedium && (dxy > 0.2  || dz > 0.5)) return false;
-      if(wp == iTight  && (dxy > 0.05 || dz > 0.1)) return false;
-    }
+  else{ // muons
+    if(wp == iMedium && (dxy > 0.2  || dz > 0.5)) return false;
+    if(wp == iTight  && (dxy > 0.05 || dz > 0.1)) return false;
   }
   return true;
 }
@@ -207,28 +198,6 @@ Bool_t LeptonSelector::getElecCutBasedId(Int_t wp){
   return true;
 }
 
-Bool_t LeptonSelector::getMultiIso(Int_t wp){
-  // Needs ptratio and ptrel...
-/*  if(wp == iVeryTight) return (miniIso < 0.09 && (ptRatio > 0.84 || ptRel > 7.2));
-  if(wp == iTight    ){ 
-    DumpVar(evt, "miniIso", miniIso, miniIso < 0.12);
-    DumpVar(evt, "(ptRatio > 0.80 || ptRel > 7.2)", ptRatio, (ptRatio > 0.80 || ptRel > 7.2));
-    return (miniIso < 0.12 && (ptRatio > 0.80 || ptRel > 7.2));
-  }
-  if(wp == iMedium   ){ 
-    DumpVar(evt, "miniIso", miniIso, miniIso < 0.16);
-    DumpVar(evt, "(ptRatio > 0.76 || ptRel > 7.2)", ptRatio, (ptRatio > 0.76 || ptRel > 7.2));
-    return (miniIso < 0.16 && (ptRatio > 0.76 || ptRel > 7.2));
-  }
-  if(wp == iLoose    ) return miniIso < 0.40;
-  //if(wp == iLoose    ) return (miniIso < 0.20 && (ptRatio > 0.69 || ptRel > 6.0));
-  if(wp == iVeto     ){
-    if(type == 1)      return (miniIso < 0.40 && (ptRatio > 0.80 || ptRel > 7.2));
-    else               return (miniIso < 0.40 && (ptRatio > 0.76 || ptRel > 7.2));
-  }*/    
-  return true;
-}
-
 
 //################################################################
 //## Lepton definitions for each analysis
@@ -242,28 +211,18 @@ Bool_t LeptonSelector::getMultiIso(Int_t wp){
 //============================================================================================
 Bool_t LeptonSelector::isGoodLepton(Lepton lep){
   Bool_t passId; Bool_t passIso;
-  if(gSelection == iTopSelec || gSelection == iStopTopSelec || gSelection == iTWSelec || gSelection == itt5TeV){
-    if(lep.isMuon){
-      passId  = getMuonId(iTight);
-      passIso = getRelIso04POG(iTight);
-//       PAF_DEBUG("LeptonSelector", Form("This muon has passID %i and passIso %i", passId, passIso));
-    }
-    if(lep.isElec){
-      passId = getElecCutBasedId(iTight) && lostHits <= 1;
-      
-//       passIso = getRelIso03POG(iTight);
-      passIso = 1; // getRelIso03POG(iTight); // Isolation already included in CutBasedID!!
-//       PAF_DEBUG("LeptonSelector", Form("This electron has passID %i and passIso (it will always be 1) %i", passId, passIso));
-//       PAF_DEBUG("LeptonSelector", Form("This electron has passETA %i", (TMath::Abs(etaSC) > 1.4442 && TMath::Abs(etaSC) < 1.566)));
-      if(TMath::Abs(etaSC) > 1.4442 && TMath::Abs(etaSC) < 1.566) return false;
-    }
-//     PAF_DEBUG("LeptonSelector", Form("This muon or electron has passpT and exterior ETA %i", (lep.p.Pt() > 18 && TMath::Abs(lep.p.Eta()) < 2.4)));
-//     PAF_DEBUG("LeptonSelector", Form("This muon or electron has passVertex %i", ( (lep.isElec && getGoodVertex(iTight)) || (lep.isMuon && getGoodVertex(iMedium) ))));
-    if(lep.p.Pt() < 18 || TMath::Abs(lep.p.Eta()) > 2.4) return false;
-    if(passId && passIso && ( (lep.isElec && getGoodVertex(iTight)) || (lep.isMuon && getGoodVertex(iMedium) ))) return true;
-    else return false;
+  if(lep.isMuon){
+    passId  = getMuonId(iTight);
+    passIso = getRelIso04POG(iTight);
   }
-  return true;
+  if(lep.isElec){
+    passId = getElecCutBasedId(iTight) && lostHits <= 1;
+    passIso = 1; // getRelIso03POG(iTight); // Isolation already included in CutBasedID!!
+    if(TMath::Abs(etaSC) > 1.4442 && TMath::Abs(etaSC) < 1.566) return false;
+  }
+  if(lep.p.Pt() < 18 || TMath::Abs(lep.p.Eta()) > 2.4) return false;
+  if(passId && passIso && ( (lep.isElec && getGoodVertex(iTight)) || (lep.isMuon && getGoodVertex(iMedium) ))) return true;
+  return false;
 }
 
 //============================================================================================
@@ -271,10 +230,7 @@ Bool_t LeptonSelector::isGoodLepton(Lepton lep){
 //============================================================================================
 Bool_t LeptonSelector::isVetoLepton(Lepton lep){
   Bool_t passId; Bool_t passIso;
-  if(gSelection == iTopSelec || gSelection == iTWSelec || gSelection == iWWSelec || gSelection == itt5TeV){
-    return true;
-  }
-  return false;
+  return true;
 }
 
 //============================================================================================
@@ -282,22 +238,19 @@ Bool_t LeptonSelector::isVetoLepton(Lepton lep){
 //============================================================================================
 Bool_t LeptonSelector::isLooseLepton(Lepton lep){
   Bool_t passId; Bool_t passIso;
-  if(gSelection == iTopSelec || gSelection == iStopTopSelec || gSelection == iTWSelec || gSelection == itt5TeV){
-    // Same as good lepton but no looser cut on pT
-    if(lep.isMuon){
-      passId  = getMuonId(iTight);
-      passIso = getRelIso04POG(iTight);
-    }
-    if(lep.isElec){
-      passId = getElecCutBasedId(iTight) && lostHits <= 1;
-      passIso = 1; //getRelIso03POG(iTight); // Isolation already included in CutBasedID!!
-      if(TMath::Abs(etaSC) > 1.4442 && TMath::Abs(etaSC) < 1.566) return false;
-    }
-    if(lep.p.Pt() < 18 || TMath::Abs(lep.p.Eta()) > 2.4) return false;
-    if(passId && passIso && ( (lep.isElec && getGoodVertex(iTight)) || (lep.isMuon && getGoodVertex(iMedium) ))) return true;
-    else return false;
+  // Same as good lepton but no looser cut on pT
+  if(lep.isMuon){
+    passId  = getMuonId(iTight);
+    passIso = getRelIso04POG(iTight);
   }
-  return true;
+  if(lep.isElec){
+    passId = getElecCutBasedId(iTight) && lostHits <= 1;
+    passIso = 1; //getRelIso03POG(iTight); // Isolation already included in CutBasedID!!
+    if(TMath::Abs(etaSC) > 1.4442 && TMath::Abs(etaSC) < 1.566) return false;
+  }
+  if(lep.p.Pt() < 18 || TMath::Abs(lep.p.Eta()) > 2.4) return false;
+  if(passId && passIso && ( (lep.isElec && getGoodVertex(iTight)) || (lep.isMuon && getGoodVertex(iMedium) ))) return true;
+  return false;
 }
 
 
@@ -329,7 +282,7 @@ void LeptonSelector::InsideLoop(){
       GetGenLeptonVariables(i);
       tL = Lepton(tP, charge, type);
       
-      if (gSelection == iTWTTbarSelec) {
+      if (gSelection == itWtt) {
         if (tL.p.Pt() > 20 && TMath::Abs(tL.p.Eta()) < 2.4) {
           if (tL.isMuon) genLeptons.push_back(tL);
           else if (tL.isElec  && (TMath::Abs(tL.p.Eta()) < 1.4442 || TMath::Abs(tL.p.Eta()) > 1.566)) genLeptons.push_back(tL);
@@ -392,12 +345,7 @@ void LeptonSelector::InsideLoop(){
       vetoLeptons.push_back(tL);
     }
     if(isLooseLepton(tL)){ // A loose category... 
-      if(gSelection == iStopTopSelec){
-        tL.SetSF(   LepSF->GetLeptonSF(     pt, eta, tL.type) ); // Set SF and error
-        tL.SetSFerr(LepSF->GetLeptonSFerror(pt, eta, tL.type) );
-        looseLeptons.push_back(tL);
-      }
-      else looseLeptons.push_back(tL);
+      looseLeptons.push_back(tL);
     }
   }
 
@@ -409,48 +357,37 @@ void LeptonSelector::InsideLoop(){
   //=== Trigger SF
   TriggerSF = 1; TriggerSFerr = 0;
   if(!gIsData){
-    
-    if(gSelection == iTopSelec || gSelection == iStopTopSelec || gSelection == iTWSelec || gSelection == itt5TeV){
-      if(nSelLeptons >= 2){
-        if     (selLeptons.at(0).isMuon && selLeptons.at(1).isMuon){
-          if(gIs2017){
-            TriggerSF = LepSF->GetTrigDoubleMuSF(    selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
-            TriggerSFerr = LepSF->GetTrigDoubleMuSF_err(selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
-          }
-          else{
-            TriggerSF = LepSF->GetTrigDoubleMuSF(    selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
-            TriggerSFerr = LepSF->GetTrigDoubleMuSF_err(selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
-          }
-        }
-        else if(selLeptons.at(0).isElec && selLeptons.at(1).isElec){
-          if(gIs2017){
-            TriggerSF = LepSF->GetTrigDoubleElSF(    selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
-            TriggerSFerr = LepSF->GetTrigDoubleElSF_err(selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
-          }
-          else{
-            TriggerSF = LepSF->GetTrigDoubleElSF(    selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
-            TriggerSFerr = LepSF->GetTrigDoubleElSF_err(selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
-          }
+    if(nSelLeptons >= 2){
+      if     (selLeptons.at(0).isMuon && selLeptons.at(1).isMuon){
+        if(gIs2017){
+          TriggerSF = LepSF->GetTrigDoubleMuSF(    selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
+          TriggerSFerr = LepSF->GetTrigDoubleMuSF_err(selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
         }
         else{
-          if(gIs2017){
-            TriggerSF = LepSF->GetTrigElMuSF(    selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
-            TriggerSFerr = LepSF->GetTrigElMuSF_err(selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
-          }
-          else{
-            TriggerSF = LepSF->GetTrigElMuSF(        selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
-            TriggerSFerr = LepSF->GetTrigElMuSF_err(    selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
-          }
+          TriggerSF = LepSF->GetTrigDoubleMuSF(    selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
+          TriggerSFerr = LepSF->GetTrigDoubleMuSF_err(selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
         }
       }
-    }
-
-    //=== FullSim/FastSim SF
-    FSSF = 1; FSSFerr = 0; Float_t id;
-    if(gIsFastSim && nSelLeptons >= 1){
-      id = 11; if(selLeptons.at(0).isMuon) id = 13;
-      FSSF    = LepSF->GetFSSF(selLeptons.at(0).p.Pt(), selLeptons.at(0).p.Eta(), id);
-      FSSFerr = LepSF->GetFSSFerr(selLeptons.at(0).p.Pt(), selLeptons.at(0).p.Eta(), id);
+      else if(selLeptons.at(0).isElec && selLeptons.at(1).isElec){
+        if(gIs2017){
+          TriggerSF = LepSF->GetTrigDoubleElSF(    selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
+          TriggerSFerr = LepSF->GetTrigDoubleElSF_err(selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
+        }
+        else{
+          TriggerSF = LepSF->GetTrigDoubleElSF(    selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
+          TriggerSFerr = LepSF->GetTrigDoubleElSF_err(selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
+        }
+      }
+      else{
+        if(gIs2017){
+          TriggerSF = LepSF->GetTrigElMuSF(    selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
+          TriggerSFerr = LepSF->GetTrigElMuSF_err(selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
+        }
+        else{
+          TriggerSF = LepSF->GetTrigElMuSF(        selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
+          TriggerSFerr = LepSF->GetTrigElMuSF_err(    selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
+        }
+      }
     }
   }
 
