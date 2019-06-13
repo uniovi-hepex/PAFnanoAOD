@@ -1,8 +1,25 @@
 '''
   Example: 
   python run.py tt -p /pool/ciencias/userstorage/juanr/nanoAODv4/2017/ -s TTTo2L2Nu
+  python run.py 2017.cfg
 '''
-import os, sys
+
+# Check if ROOT and PAF is loaded...
+import imp, os, sys
+try:
+    imp.find_module('ROOT')
+    found = True
+except ImportError:
+  print 'Please, load ROOT... (typically by executing \'root6\')'
+  exit()
+
+try:
+  from ROOT import PAFProject
+except ImportError:
+  print 'Please, load PAF... (typically by executing \'source /opt/PAF/PAF_setup.sh\')'
+  exit()
+
+
 from fileReader import getDicFiles, GetAllInfoFromFile
 
 def loadxsecdic(fname):
@@ -68,7 +85,7 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
   
   stipe = 'MC' if not isData else 'DATA'
   if verbose: 
-    print '## Procesing a %i %s sample...'%(year, stipe)
+    print '## Processing a %i %s sample...'%(year, stipe)
     print '## Files found in %s'%path
     for f in samples: print ' >> %s'%f
     print '## Total events:      %i'%nEventsInTree
@@ -93,7 +110,7 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
   # Add the input data files
   v = vector(TString)()
   for s in samples: 
-    t = TString(s)
+    t = TString(path+s)
     v.push_back(t)
   myProject.AddDataFiles(v); 
   myProject.SetDefaultTreeName("Events");
@@ -118,11 +135,11 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
   myProject.SetInputParam("nEntries",          nEventsInTree);
   myProject.SetInputParam("xsec",              xsec);
   myProject.SetInputParam("_options",          options);
-  myProject.SetInputParam("Year",              year);
+  myProject.SetInputParam("year",              str(year));
   
   # Name of analysis class
   myProject.AddSelectorPackage("LeptonSelector");
-  #myProject.AddSelectorPackage("JetSelector");
+  myProject.AddSelectorPackage("JetSelector");
   #myProject.AddSelectorPackage("EventBuilder");
   
   # Analysis selector
@@ -184,22 +201,6 @@ outpath     = args.outpath
 nEvents     = args.nEvents
 nSlots      = args.nSlots
 FirstEvent  = args.firstEvent
-
-# Check if ROOT and PAF is loaded...
-import imp
-try:
-    imp.find_module('ROOT')
-    found = True
-except ImportError:
-  print 'Please, load ROOT... (typically by executing \'root6\')'
-  exit()
-
-try:
-  from ROOT import PAFProject
-except ImportError:
-  print 'Please, load PAF... (typically by executing \'source /opt/PAF/PAF_setup.sh\')'
-  exit()
-
 
 # Check if a cfg file is given as first argument
 fname = selection
