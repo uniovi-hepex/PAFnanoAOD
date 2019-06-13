@@ -256,9 +256,7 @@ Float_t BTagSFUtil::GetFastSimBtagSF(Int_t flav, Float_t eta, Float_t pt, Float_
   return FSSF;
 }
 
-
-
-void  LoadHistos(int year, const TString& tagger, const TString& wp){
+void  BTagSFUtil::LoadHistos(int year, const TString& tagger, const TString& wp){
   // Loose, Medium, Tight
   // 2016, 2017, 2018
   // CSVv2, DeepCSV, DeepFlav
@@ -275,20 +273,20 @@ void  LoadHistos(int year, const TString& tagger, const TString& wp){
   btagmceffL->SetDirectory(0);
 }
 
-float TagEfficiencyB(float JetPt, float JetEta){
+float BTagSFUtil::TagEfficiencyB(float JetPt, float JetEta){
   if(JetPt > ptMax) JetPt = ptMax-1;
-  int bin = btagmceff->FindBind(JetPt, JetEta);
+  int bin = btagmceff->FindBin(JetPt, JetEta);
   btagmceff->GetBinContent(bin);
 }
 
-float TagEfficiencyC(float JetPt, float JetEta){
+float BTagSFUtil::TagEfficiencyC(float JetPt, float JetEta){
   if(JetPt > ptMax) JetPt = ptMax-1;
-  int bin = btagmceffC->FindBind(JetPt, JetEta);
+  int bin = btagmceffC->FindBin(JetPt, JetEta);
   btagmceffC->GetBinContent(bin);
 }
 
-float TagEfficiencyLight(float JetPt, float JetEta){
+float BTagSFUtil::TagEfficiencyLight(float JetPt, float JetEta){
   if(JetPt > ptMax) JetPt = ptMax-1;
-  int bin = btagmceffL->FindBind(JetPt, JetEta);
+  int bin = btagmceffL->FindBin(JetPt, JetEta);
   btagmceffL->GetBinContent(bin);
 }

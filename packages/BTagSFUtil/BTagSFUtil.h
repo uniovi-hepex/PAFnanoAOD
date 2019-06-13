@@ -4,6 +4,8 @@
 #include "TRandom3.h"
 #include "TMath.h"
 #include "TF1.h"
+#include "TH2F.h"
+#include "TFile.h"
 
 using namespace std;
 
@@ -21,6 +23,7 @@ class BTagSFUtil{
   void IsFastSim(Bool_t is = 1){ gIsFastSim = is;}
   Float_t GetFastSimBtagSF(Int_t flav, Float_t eta, Float_t pt, Float_t csv, Float_t sys = 0);
   float JetTagEfficiency(int JetFlavor, float JetPt, float JetEta);
+  float ptMax = 140;
 
  private:
 
