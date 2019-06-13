@@ -103,18 +103,17 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
   if FirstEvent > 0 : myProject.SetFirstEvent(FirstEvent);
   
   # Set output file
-  myProject.SetOutputFile(outpath + "/" + outname + ".root");
-  
-  # outpath
   if outpath == '': outpath = "./"+selection+"_temp"
   gSystem.mkdir(outpath, 1);
+  myProject.SetOutputFile(outpath + "/" + outname + ".root");
+  print '## Output to: %s'%(outpath + "/" + outname + ".root")
   
   # Parameters for the analysis
   myProject.SetInputParam("sampleName",        outname);
   myProject.SetInputParam("IsData",            isData    );
   myProject.SetInputParam("weight",            xsec/nSumOfWeights);
   myProject.SetInputParam("IsMCatNLO",         isamcatnlo);
-  myProject.SetInputParam("iselection",        selection);
+  myProject.SetInputParam("selection",         selection);
   myProject.SetInputParam("WorkingDir",        os.getcwd());
   myProject.SetInputParam("nEntries",          nEventsInTree);
   myProject.SetInputParam("xsec",              xsec);
@@ -123,13 +122,15 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
   
   # Name of analysis class
   myProject.AddSelectorPackage("LeptonSelector");
-  myProject.AddSelectorPackage("JetSelector");
-  myProject.AddSelectorPackage("EventBuilder");
+  #myProject.AddSelectorPackage("JetSelector");
+  #myProject.AddSelectorPackage("EventBuilder");
   
   # Analysis selector
-  if      (selection == "tt"   or selection == "ttbar"):   myProject.AddSelectorPackage("TopAnalysis");
-  elif    (selection == "tWtt" or selection == "TWTT") :   myProject.AddSelectorPackage("TWTTbarAnalysis");
-  else:   print "UNKNOWN SELECTOR."
+  if(selection == 'ttbar' or selection == 'TT' or selection == 'ttxsec'): selection = 'tt'
+  if(selection == 'TWTT' or selection == 'WWbb' or selection == 'twtt'):  selection = 'tWtt'
+  #if    selection == "tt"  :  myProject.AddSelectorPackage("TopAnalysis");
+  #elif  selection == "tWtt":  myProject.AddSelectorPackage("TWTTbarAnalysis");
+  #else: print "UNKNOWN SELECTOR."
   
   # Additional packages
   myProject.AddPackage("Lepton");
@@ -183,6 +184,22 @@ outpath     = args.outpath
 nEvents     = args.nEvents
 nSlots      = args.nSlots
 FirstEvent  = args.firstEvent
+
+# Check if ROOT and PAF is loaded...
+import imp
+try:
+    imp.find_module('ROOT')
+    found = True
+except ImportError:
+  print 'Please, load ROOT... (typically by executing \'root6\')'
+  exit()
+
+try:
+  from ROOT import PAFProject
+except ImportError:
+  print 'Please, load PAF... (typically by executing \'source /opt/PAF/PAF_setup.sh\')'
+  exit()
+
 
 # Check if a cfg file is given as first argument
 fname = selection
