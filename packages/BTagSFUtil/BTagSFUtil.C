@@ -24,7 +24,7 @@ BTagSFUtil::BTagSFUtil(const string& MeasurementType,
   if     (OperatingPoint == "Loose")  tagS = "L";
   else if(OperatingPoint == "Medium") tagS = "M";
   else if(OperatingPoint == "Tight")  tagS = "T";
-  LoadHistos(BTagSFPath.Data(), year, BTagAlgorithm.c_str(), tagS);
+  LoadHistos(BTagSFPath, year, BTagAlgorithm, tagS);
   
   const BTagCalibration calib(BTagAlgorithm, (string) CSVFileName.Data());
   
@@ -226,7 +226,6 @@ bool BTagSFUtil::IsTagged(float JetDiscriminant, int JetFlavor, float JetPt, flo
   float coin = rand_->Uniform(1.);    
  
   if(Btag_SF > 1){  // use this if SF>1
-    cout << "BtagSF > 1 " << endl;
 
     if( !isBTagged ) {
 
@@ -262,20 +261,20 @@ Float_t BTagSFUtil::GetFastSimBtagSF(Int_t flav, Float_t eta, Float_t pt, Float_
   return FSSF;
 }
 
-void  BTagSFUtil::LoadHistos(TString path, int year, const TString& tagger, const TString& wp){
+void  BTagSFUtil::LoadHistos(const TString& path, int year, const TString& tagger, const TString& wp){
   // Loose, Medium, Tight
   // 2016, 2017, 2018
   // CSVv2, DeepCSV, DeepFlav
-  TString fname = "BtagMCSF.root";
-  cout << Form("[BTadSFUtil] Loading btag MC efficiencies from %s", path+fname) << endl;
-  TFile* f = TFile::Open(path+fname);
-  TString hnameB = Form("BtagSFB_%s%s_%i", tagger, wp, year);
-  TString hnameC = Form("BtagSFC_%s%s_%i", tagger, wp, year);
-  TString hnameL = Form("BtagSFL_%s%s_%i", tagger, wp, year);
-  cout << "[BTadSFUtil] Loading histograms: " << endl;
-  cout << Form("             >> %s ", hnameB) << endl;
-  cout << Form("             >> %s ", hnameC) << endl;
-  cout << Form("             >> %s ", hnameL) << endl;
+  TString fname = path + "/BtagMCSF.root";
+  cout << Form("INFO: [BTadSFUtil] Loading btag MC efficiencies from %s", fname.Data()) << endl;
+  TFile* f = TFile::Open(fname);
+  TString hnameB = Form("BtagSFB_%s%s_%i", tagger.Data(), wp.Data(), year);
+  TString hnameC = Form("BtagSFC_%s%s_%i", tagger.Data(), wp.Data(), year);
+  TString hnameL = Form("BtagSFL_%s%s_%i", tagger.Data(), wp.Data(), year);
+  cout << "INFO: [BTadSFUtil] Loading histograms: " << endl;
+  cout << Form("                   >> %s ", hnameB.Data()) << endl;
+  cout << Form("                   >> %s ", hnameC.Data()) << endl;
+  cout << Form("                   >> %s ", hnameL.Data()) << endl;
   
   btagmceff  = (TH2F*) f->Get(hnameB);
   btagmceffC = (TH2F*) f->Get(hnameC);

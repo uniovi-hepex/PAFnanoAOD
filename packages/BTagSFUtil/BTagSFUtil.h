@@ -37,7 +37,7 @@ class BTagSFUtil{
   float ScaleFactorLight(float JetPt, float JetEta, int SystematicFlag);
   float ScaleFactorJet(int JetFlavor, float JetPt, float JetEta, int SystematicFlag);
 
-  void  LoadHistos(TString path, int year, const TString& tagger, const TString& wp);
+  void  LoadHistos(const TString& path, int year, const TString& tagger, const TString& wp);
   float TagEfficiencyB(float JetPt, float JetEta);
   float TagEfficiencyC(float JetPt, float JetEta);
   float TagEfficiencyLight(float JetPt, float JetEta);

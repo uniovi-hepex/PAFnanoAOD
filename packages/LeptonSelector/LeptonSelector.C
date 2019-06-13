@@ -415,7 +415,6 @@ void LeptonSelector::InsideLoop(){
   SetParam("TriggerSFerr", TriggerSFerr);
   SetParam("FSSF",    FSSF);
   SetParam("FSSFerr", FSSFerr);
-  cout << "pasa!" << endl;
 }
 
 //################################################################
