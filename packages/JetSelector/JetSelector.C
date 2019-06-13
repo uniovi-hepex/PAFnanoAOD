@@ -40,22 +40,13 @@ JetSelector::~JetSelector() {
 void JetSelector::Summary(){}
 
 void JetSelector::Initialise(){
-  gIsData    = GetParam<Bool_t>("IsData");
-  selection = GetParam<Int_t>("iSelection");
-  gIsFastSim   = GetParam<Bool_t>("IsFastSim");
+  year        = GetParam<TString>("year").Atoi();
+  gIsData     = GetParam<Bool_t>("IsData");
+  selection   = GetParam<TString>("selection");
   gSampleName  = GetParam<TString>("sampleName");
-  gDoSys       = GetParam<Bool_t>("doSyst");
   gOptions     = GetParam<TString>("_options");
-  gSelection     = GetSelection(selection);
-
-  gIs2017 = false; gIs2016 = false; gIs2018 = false;
-  year = 0;
-  if(gOptions.Contains("2017")) gIs2017 = true;
-  if(gOptions.Contains("2018")) gIs2018 = true;
-  if(gOptions.Contains("2016")) gIs2016 = true;
-  if(gIs2018) year = 2018;
-  if(gIs2017) year = 2017;
-  if(gIs2016) year = 2016;
+  gDoSys       = gOptions.Contains("doSyst")? true : false;
+  gSelection   = GetSelection(selection);
 
   gIsFSRUp = false; gIsFSRDown = false;
   if     (gSampleName.Contains("TTbar_Powheg") && gSampleName.Contains("fsrUp"))   gIsFSRUp = true;
@@ -65,7 +56,7 @@ void JetSelector::Initialise(){
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
   if(gSelection == itt){
-    taggerName="DeepFlav";
+    taggerName="DeepCSV";//"DeepFlav";
     stringWP = "Medium";
     jet_MaxEta = 2.4;
     jet_MinPt  = 30;
@@ -80,7 +71,6 @@ void JetSelector::Initialise(){
   TString BTagSFPath = Form("%s/packages/BTagSFUtil", pwd.Data());
   
   TString FastSimDataset = "";
-  if(gIsFastSim) FastSimDataset = "1";
   fBTagSFnom = new BTagSFUtil(MeasType, BTagSFPath, taggerName.Data(), stringWP,  0, year);
   fBTagSFbUp = new BTagSFUtil(MeasType, BTagSFPath, taggerName.Data(), stringWP,  1, year);
   fBTagSFbDo = new BTagSFUtil(MeasType, BTagSFPath, taggerName.Data(), stringWP, -1, year);
@@ -125,14 +115,6 @@ void JetSelector::GetGenJetVariables(Int_t i){
   eta = Get<Float_t>("GenJet_eta",i);
   pt =  Get<Float_t>("GenJet_pt",i);
   flavmc = Get<Float_t>("GenJet_hadronFlavour", i);
-}
-
-void JetSelector::GetmcJetVariables(Int_t i){
-  tpJ.SetPxPyPzE(Get<Float_t>("Jet_mcPx",i), Get<Float_t>("Jet_mcPy",i), Get<Float_t>("Jet_mcPz", i), Get<Float_t>("Jet_mcEnergy",i));
-  eta = tpJ.Eta();
-  pt =  Get<Float_t>("Jet_mcPt",i);
-  flavmc = TMath::Abs(Get<Int_t>("Jet_mcFlavour",i));
-  csv         = Get<Float_t>("Jet_btagCSV", i);
 }
 
 void JetSelector::InsideLoop(){
@@ -186,8 +168,6 @@ void JetSelector::InsideLoop(){
 
       // MC info
       if(!gIsData){
-        //GetmcJetVariables(i);
-        //tJ.SetMCjet(tpJ);
         GetJetVariables(i);
       }
 
@@ -227,14 +207,6 @@ void JetSelector::InsideLoop(){
       }
       else genJets.push_back(tJ);
     }
-
-    /*nJet = Get<Int_t>("nJet");
-      for(Int_t i = 0; i < nJet; i++){
-      GetmcJetVariables(i);
-      tJ = Jet(tpJ, csv, 1, flavmc);
-      tJ.isBtag = (flavmc == 5);
-      mcJets.push_back(tJ);
-      }*/
   }
 
   selJets        = SortJetsByPt(selJets);
@@ -276,21 +248,14 @@ void JetSelector::InsideLoop(){
     MET_JESUp   = JEStoMET(selJets, met_pt, met_phi,  1);
     MET_JESDown = JEStoMET(selJets, met_pt, met_phi, -1);
   }
-  SetParam("MET_JERUp",   MET_JERUp);
-  SetParam("MET_JESUp",   MET_JESUp);
-  SetParam("MET_JESDown", MET_JESDown);
 }
 
 Bool_t JetSelector::IsBtag(Jet j){
   if(j.Pt() < 20) return false;
-  Bool_t isbtag;
+  Bool_t isbtag = false;
   // using "weights" as scale factors in the tW analysis :)
   if(gSelection == itWtt) isbtag = fBTagSFnom->IsTagged(j.csv, -999999, j.p.Pt(), j.p.Eta(), (UInt_t)j.p.Pt());
-
-  else                         isbtag = fBTagSFnom->IsTagged(j.csv,j.flavmc, j.p.Pt(), j.p.Eta(), (UInt_t)j.p.Pt());
-  if(gIsFastSim && BtagSFFS == 1. && isbtag){
-    BtagSFFS = fBTagSFnom->GetFastSimBtagSF(j.flavmc, j.p.Eta(), j.p.Pt(), j.csv);
-  }
+  else   isbtag = fBTagSFnom->IsTagged(j.csv,j.flavmc, j.p.Pt(), j.p.Eta(), (UInt_t)j.p.Pt());
   return isbtag;
 }
 

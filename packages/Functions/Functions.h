@@ -14,7 +14,7 @@ int GetSelection(TString sel);
 
 enum eChannel{iNoChannel, iElMu, iMuon, iElec, i2lss, iTriLep, iFourLep, iSS1tau, iOS1tau, i2lss_fake, iTriLep_fake, iElEl, iMuMu, i1Tau_emufakeOS ,i1Tau_emufakeSS, i2LOS, TotalDefinedChannels};
 enum sel{itt, itWtt, nSel};
-const TString LabSelection[] = {"top", "tWtt"};
+const TString LabSelection[] = {"tt", "tWtt"};
 
 enum sys{iNom, 
   iJesUp, iJesDown, iJERUp, iJERDown, 

@@ -272,6 +272,7 @@ class TopAnalysis : public PAFChainItemSelector{
 
   protected:
 
+    Int_t year;
     TString selection;
     Bool_t  gIsData;
     Bool_t  gDoSyst;

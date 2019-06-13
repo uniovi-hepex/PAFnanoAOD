@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-LeptonSF::LeptonSF(TString path, TString options):
+LeptonSF::LeptonSF(TString path, Int_t year, TString options):
   fMuonTrackerSF(0),  // Muon Reco
   fMuonIdSF(0), // Muon Id
   fMuonIdSF_BCDEF(0), // Muon Id
@@ -51,9 +51,9 @@ LeptonSF::LeptonSF(TString path, TString options):
   era = -1;
   path_to_SF_histos = path;
   gIs2016 = false; gIs2017 = false; gIs2018 = false;
-  if     (options.Contains("2016")) gIs2016 = true; 
-  else if(options.Contains("2017")) gIs2017 = true; 
-  else if(options.Contains("2018")) gIs2018 = true; 
+  if     (year == 2017) gIs2017 = true;
+  else if(year == 2018) gIs2018 = true;
+  else if(year == 2016) gIs2016 = true;
 
   if     (options.Contains("eraB")) era = runB;
   else if(options.Contains("eraC")) era = runC;
@@ -367,7 +367,7 @@ Float_t LeptonSF::GetLeptonSF(Float_t pt, Float_t ieta, Int_t type){
       if     (id == iMuonReco)    pr = GetTrackerMuonSF(eta); 
       else if(id == iMuonIdSUSY)  pr = fMuonIdSFSUSY      ->GetBinContent(fMuonIdSFSUSY     ->FindBin(pt,eta));
       else if(id == iMuonId){
-        if(gIs2017){
+        if(gIs2017 || gIs2018){
           pr = fMuonIdSF->GetBinContent(fMuonIdSF->FindBin(pt,eta));
         }
         else{ // 2016

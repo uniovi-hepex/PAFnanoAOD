@@ -97,7 +97,6 @@ class JetSelector : public PAFChainItemSelector{
 
     void GetJetVariables(Int_t i);
     void GetGenJetVariables(Int_t i);
-    void GetmcJetVariables(Int_t i);
     Bool_t IsBtag(Jet j); 
     void SetSystematics(Jet *j);
 //    Bool_t Cleaning(Jet j, vector<Lepton> vLep, Float_t minDR = 0.4);

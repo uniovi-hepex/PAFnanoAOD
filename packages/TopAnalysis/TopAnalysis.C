@@ -78,10 +78,11 @@ void TopAnalysis::Summary(){}
 
 void TopAnalysis::Initialise(){
   gIsData      = GetParam<Bool_t>("IsData");
-  selection   = GetParam<Int_t>("iSelection");
+  selection   = GetParam<TString>("selection");
   gSampleName  = GetParam<TString>("sampleName");
   gDoSyst      = GetParam<Bool_t>("doSyst");
   gOptions     = GetParam<TString>("_options");
+  year         = GetParam<TString>("year").Atoi();
   gIsTTbar     = false;
   gIsLHE       = false;
   if (gSampleName.Contains("TTbar") || gSampleName.Contains("TTJets")) gIsTTbar = true;

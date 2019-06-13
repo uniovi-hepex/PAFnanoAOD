@@ -17,27 +17,29 @@ LeptonSelector::LeptonSelector() : PAFChainItemSelector() {}
 void LeptonSelector::Summary(){}
 
 void LeptonSelector::Initialise(){
+  year    = GetParam<TString>("year").Atoi();
   fhDummy = CreateH1F("fhDummy","fhDummy", 1, 0, 2);
   gIsData        = GetParam<Bool_t>("IsData");
-  gIsFastSim     = GetParam<Bool_t>("IsFastSim");
-  selection      = GetParam<Int_t>("selection");
+  selection      = GetParam<TString>("selection");
   gOptions       = GetParam<TString>("_options");
   localPath      = GetParam<TString>("WorkingDir");
 
   gSelection     = GetSelection(selection);
 
   gIs2017 = false; gIs2016 = false; gIs2018 = false;
-  if(gOptions.Contains("2017")) gIs2017 = true;
-  if(gOptions.Contains("2018")) gIs2018 = true;
-  if(gOptions.Contains("2016")) gIs2016 = true;
+  if     (year == 2017) gIs2017 = true;
+  else if(year == 2018) gIs2018 = true;
+  else if(year == 2016) gIs2016 = true;
 
-  LepSF     = new LeptonSF(localPath + "/InputFiles/", gOptions);
+  LepSF     = new LeptonSF(localPath + "/InputFiles/", year);
   //ElecScale = new ElecScaleClass(localPath + "/InputFiles/ElecScale.dat");
 
   if(!gIsData){
-    LepSF->loadHisto(iTrigDoubleMuon);
-    LepSF->loadHisto(iTrigDoubleElec);
-    LepSF->loadHisto(iTrigElMu);
+    if(gIs2016){
+      LepSF->loadHisto(iTrigDoubleMuon);
+      LepSF->loadHisto(iTrigDoubleElec);
+      LepSF->loadHisto(iTrigElMu);
+    }
     LepSF->loadHisto(iElecReco);
     LepSF->loadHisto(iElecId,   iTight);
     LepSF->loadHisto(iMuonIsoTightId,   iTight);
@@ -355,6 +357,7 @@ void LeptonSelector::InsideLoop(){
   nGenLeptons    = genLeptons.size();
 
   //=== Trigger SF
+  if(gIs2016){
   TriggerSF = 1; TriggerSFerr = 0;
   if(!gIsData){
     if(nSelLeptons >= 2){
@@ -390,6 +393,7 @@ void LeptonSelector::InsideLoop(){
       }
     }
   }
+  }
 
   selLeptons   = SortLeptonsByPt(selLeptons);
   vetoLeptons  = SortLeptonsByPt(vetoLeptons);
@@ -411,6 +415,7 @@ void LeptonSelector::InsideLoop(){
   SetParam("TriggerSFerr", TriggerSFerr);
   SetParam("FSSF",    FSSF);
   SetParam("FSSFerr", FSSFerr);
+  cout << "pasa!" << endl;
 }
 
 //################################################################
@@ -459,7 +464,6 @@ void LeptonSelector::GetLeptonVariables(Int_t i, int LepType){ // Once per muon,
     MVAID          = 0; //= Get<Float_t>("Electron_mvaFall17Iso",i);  //Electron_mvaSpring16GP_WP80, Electron_mvaSpring16GP_WP90, Electron_mvaSpring16HZZ_WPL
     R9             = Get<Float_t>("Electron_r9",i);
   }
-
 }
 
 void LeptonSelector::GetGenLeptonVariables(Int_t i){

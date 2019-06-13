@@ -17,7 +17,6 @@ EventBuilder::EventBuilder() : PAFChainItemSelector(),
 			       METfilters(false),
 			       passTrigger(false),
 			       isSS(false),
-			       gIsFastSim(false),
 			       TriggerSF(0),
 			       TriggerSF_Up(0),
 			       TriggerSF_Down(0),
@@ -62,19 +61,17 @@ EventBuilder::~EventBuilder() {
 }
 
 void EventBuilder::Initialise(){
-  year    = GetParam<Int_t>("Year");
+  year    = GetParam<TString>("year").Atoi();
   gIsData = GetParam<Bool_t>("IsData");
-  selection = GetParam<Int_t>("iSelection");
+  selection = GetParam<TString>("iSelection");
   gSampleName  = GetParam<TString>("sampleName");
   gIsMCatNLO   = GetParam<Bool_t>("IsMCatNLO");
-  gIsFastSim   = GetParam<Bool_t>("IsFastSim");
   gXSec        = GetParam<Float_t>("xsec");
   gOptions     = GetParam<TString>("_options");
   gIsRunH = false;
   if(gSampleName.Contains("Run2016H")) gIsRunH = true;
   gChannel = -1;
   nProcessedEvents = 0; 
-  //if(gSelection == itt) gIsFastSim = true;
   
   gIs2017 = false; gIs2016 = false; gIs2018 = false;
   if(gOptions.Contains("2017")) gIs2017 = true;
@@ -232,7 +229,6 @@ void EventBuilder::Summary(){
 // Compute single and double lepton triggers for each year (and analysis)
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 Bool_t EventBuilder::PassesDoubleElecTrigger(){
-  if(gIsFastSim) return true; // no triger in FastSim samples
   int era = -1; if(gIsData) era = GetRunEra(Get<Int_t>("run"));
   Bool_t pass = false;
   gIsData = GetParam<Bool_t>("IsData");
@@ -258,7 +254,6 @@ Bool_t EventBuilder::PassesDoubleElecTrigger(){
 }
 
 Bool_t EventBuilder::PassesDoubleMuonTrigger(){
-  if(gIsFastSim) return true; // no triger in FastSim samples
   int era = -1; if(gIsData) era = GetRunEra(Get<Int_t>("run"));
   Bool_t pass = false;
   if (gIsData) run     = Get<UInt_t>("run");
@@ -296,7 +291,6 @@ Bool_t EventBuilder::PassesDoubleMuonTrigger(){
 }
 
 Bool_t EventBuilder::PassesElMuTrigger(){
-  if(gIsFastSim) return true; // no triger in FastSim samples
   int era = -1; if(gIsData) era = GetRunEra(Get<Int_t>("run"));
   Bool_t pass = false;
   if (gIsData) run     = Get<UInt_t>("run");
@@ -345,7 +339,6 @@ Bool_t EventBuilder::PassesElMuTrigger(){
 }
 
 Bool_t EventBuilder::PassesSingleElecTrigger(){
-  if(gIsFastSim) return true; // no triger in FastSim samples
   int era = -1; if(gIsData) era = GetRunEra(Get<Int_t>("run"));
   Bool_t pass = false;
   if     (year == 2016){
@@ -371,7 +364,6 @@ Bool_t EventBuilder::PassesSingleElecTrigger(){
 }
 
 Bool_t EventBuilder::PassesSingleMuonTrigger(){
-  if(gIsFastSim) return true; // no triger in FastSim samples
   int era = -1; if(gIsData) era = GetRunEra(Get<Int_t>("run"));
   Bool_t pass = false;
   if     (year == 2016){

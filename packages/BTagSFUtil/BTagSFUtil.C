@@ -14,12 +14,17 @@ BTagSFUtil::BTagSFUtil(const string& MeasurementType,
 		       const TString& OperatingPoint, int SystematicIndex, int year, TString FastSimDataset) {
   gIsFastSim = FastSimDataset == ""? false : true;
   //rand_ = new TRandom3(Seed);
-  TString CSVFileName = Form("%s/%s_%i.csv", BTagSFPath.Data(), BTagAlgorithm.c_str(), year);
-  if(year == 2016 && BTagAlgorithm.c_str() == "CSVv2") CSVFileName = Form("%s/CSVv2_2016_Moriond17.csv");
+  TString CSVFileName = Form("%s/csv/%s_%i.csv", BTagSFPath.Data(), BTagAlgorithm.c_str(), year);
+  //if(year == 2016 && BTagAlgorithm.c_str() == "CSVv2") CSVFileName = Form("%s/CSVv2_2016_Moriond17.csv");
 
   //if(gIsFastSim) CSVFileName = Form("%s/%s_FastSim.csv", BTagSFPath.Data(), BTagAlgorithm.c_str());
   //  string CSVFileName = (string) pathtocsv.Data() + BTagAlgorithm + ".csv";
   cout << "INFO: [BTagSFUtil] BTag SF will be read from " << CSVFileName << endl;
+  TString tagS = "";
+  if     (OperatingPoint == "Loose")  tagS = "L";
+  else if(OperatingPoint == "Medium") tagS = "M";
+  else if(OperatingPoint == "Tight")  tagS = "T";
+  LoadHistos(BTagSFPath.Data(), year, BTagAlgorithm.c_str(), tagS);
   
   const BTagCalibration calib(BTagAlgorithm, (string) CSVFileName.Data());
   
@@ -221,6 +226,7 @@ bool BTagSFUtil::IsTagged(float JetDiscriminant, int JetFlavor, float JetPt, flo
   float coin = rand_->Uniform(1.);    
  
   if(Btag_SF > 1){  // use this if SF>1
+    cout << "BtagSF > 1 " << endl;
 
     if( !isBTagged ) {
 
@@ -256,15 +262,21 @@ Float_t BTagSFUtil::GetFastSimBtagSF(Int_t flav, Float_t eta, Float_t pt, Float_
   return FSSF;
 }
 
-void  BTagSFUtil::LoadHistos(int year, const TString& tagger, const TString& wp){
+void  BTagSFUtil::LoadHistos(TString path, int year, const TString& tagger, const TString& wp){
   // Loose, Medium, Tight
   // 2016, 2017, 2018
   // CSVv2, DeepCSV, DeepFlav
-  TString path = "BtagMCSF.root";
-  TFile* f = TFile::Open(path);
+  TString fname = "BtagMCSF.root";
+  cout << Form("[BTadSFUtil] Loading btag MC efficiencies from %s", path+fname) << endl;
+  TFile* f = TFile::Open(path+fname);
   TString hnameB = Form("BtagSFB_%s%s_%i", tagger, wp, year);
   TString hnameC = Form("BtagSFC_%s%s_%i", tagger, wp, year);
   TString hnameL = Form("BtagSFL_%s%s_%i", tagger, wp, year);
+  cout << "[BTadSFUtil] Loading histograms: " << endl;
+  cout << Form("             >> %s ", hnameB) << endl;
+  cout << Form("             >> %s ", hnameC) << endl;
+  cout << Form("             >> %s ", hnameL) << endl;
+  
   btagmceff  = (TH2F*) f->Get(hnameB);
   btagmceffC = (TH2F*) f->Get(hnameC);
   btagmceffL = (TH2F*) f->Get(hnameL);

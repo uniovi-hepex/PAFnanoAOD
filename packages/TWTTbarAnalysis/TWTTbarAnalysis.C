@@ -18,7 +18,7 @@ TWTTbarAnalysis::TWTTbarAnalysis() : PAFChainItemSelector() {
 
 void TWTTbarAnalysis::Initialise() {
   gIsData     = GetParam<Bool_t>("IsData");
-  selection  = GetParam<Int_t>("iSelection");
+  selection  = GetParam<TString>("selection");
   gSampleName = GetParam<TString>("sampleName");
   gDoSyst     = GetParam<Bool_t>("doSyst");
   gPar        = GetParam<TString>("_options");
@@ -87,7 +87,7 @@ void TWTTbarAnalysis::InsideLoop() {
   passMETfilters    = GetParam<Bool_t>("METfilters");
   passTrigger       = GetParam<Bool_t>("passTrigger");
   isSS              = GetParam<Bool_t>("isSS");
-  year              = GetParam<Int_t>("Year");
+  year              = GetParam<TString>("year").Atoi();
   
   // Leptons and Jets
   GetLeptonVariables();
