@@ -20,7 +20,7 @@ except ImportError:
   exit()
 
 
-from fileReader import getDicFiles, GetAllInfoFromFile
+from fileReader import getDicFiles, GetAllInfoFromFile, IsVarInTree
 
 def loadxsecdic(fname):
   xsecdir = {}
@@ -48,7 +48,7 @@ def loadxsecdic(fname):
     xsecdir[key] = float(val)
   return xsecdir 
     
-def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, outname = '', outpath = '', nEvents = 0, FirstEvent = 0, prefix = 'Tree', verbose = True, pretend = False, dotest = False):
+def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, outname = '', outpath = '', options = '', nEvents = 0, FirstEvent = 0, prefix = 'Tree', verbose = True, pretend = False, dotest = False):
 
   if ',' in sample:
     sample.replace(' ', '')
@@ -93,6 +93,15 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
     if isamcatnlo:
       print '## Sum of weights:    %1.2f'%nSumOfWeights
       print '## This sample has gen weights!!'
+
+  # Check what is in the tree...
+  doPUweight  = 'PUweight,' if IsVarInTree(path+samples[0], 'puWeight') else ''
+  doJECunc    = 'JECunc,'   if IsVarInTree(path+samples[0], 'Jet_pt_jesTotalUp') else ''
+  useJetPtNom = 'JetPtNom,' if IsVarInTree(path+samples[0], 'Jet_pt_nom') else ''
+  useLepGood  = 'LepGood,'  if IsVarInTree(path+samples[0], 'nLepGood') else ''
+  options += doPUweight + doJECunc + useJetPtNom + useLepGood
+  if options.endswith(','): options = options[:-1]
+  print '## Runing with options: %s'%(options)
   
   if pretend: exit()
   
@@ -102,7 +111,7 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
   # PAF mode selection (based on number of slots)
   pafmode = PAFSequentialEnvironment();
   if   nSlots <=  1: pafmode = PAFSequentialEnvironment();
-  elif nSlots <= 64: pafmode = PAFPROOFLiteEnvironment(nSlots);
+  elif nSlots <= 84: pafmode = PAFPROOFLiteEnvironment(nSlots);
   else             : pafmode = PAFPoDEnvironment(nSlots);
   
   myProject = PAFProject(pafmode); 
@@ -140,14 +149,14 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
   # Name of analysis class
   myProject.AddSelectorPackage("LeptonSelector");
   myProject.AddSelectorPackage("JetSelector");
-  #myProject.AddSelectorPackage("EventBuilder");
+  myProject.AddSelectorPackage("EventBuilder");
   
   # Analysis selector
   if(selection == 'ttbar' or selection == 'TT' or selection == 'ttxsec'): selection = 'tt'
   if(selection == 'TWTT' or selection == 'WWbb' or selection == 'twtt'):  selection = 'tWtt'
-  #if    selection == "tt"  :  myProject.AddSelectorPackage("TopAnalysis");
-  #elif  selection == "tWtt":  myProject.AddSelectorPackage("TWTTbarAnalysis");
-  #else: print "UNKNOWN SELECTOR."
+  if    selection == "tt"  :  myProject.AddSelectorPackage("TopAnalysis");
+  elif  selection == "tWtt":  myProject.AddSelectorPackage("TWTTbarAnalysis");
+  else: print "WARNING: Unknown selector."
   
   # Additional packages
   myProject.AddPackage("Lepton");
@@ -253,8 +262,8 @@ if os.path.isfile(fname):
   for sname in spl:
     outname = sname
     sample  = samplefiles[sname]
-    RunSamplePAF(selection, path, sample, year, xsec, nSlots, outname, outpath, nEvents, FirstEvent, prefix, verbose, pretend, dotest)
+    RunSamplePAF(selection, path, sample, year, xsec, nSlots, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest)
 
 else: # no config file...
-  RunSamplePAF(selection, path, sample, year, xsec, nSlots, outname, outpath, nEvents, FirstEvent, prefix, verbose, pretend, dotest)
+  RunSamplePAF(selection, path, sample, year, xsec, nSlots, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest)
  
