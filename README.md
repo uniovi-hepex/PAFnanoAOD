@@ -9,9 +9,6 @@ Download all the code from github.
     cd PAFnanoAOD
 
 
-
-
-
 Set the enviroment
 ====
 
@@ -19,26 +16,18 @@ Set the enviroment
     source /opt/PAF/PAF_setup.sh
 
 
-Change the paths
+Create a configuration file
 ====
 
-Edit the file RunAnalyserPAF.C and modify:
-   - The tab in the spreadsheet with samples (SelectedTab) 
-   - The default year (2017 by default... it can be also be introduced as an input)
-   - The name of the datasets (SelectedDataset), only to run on data
+Follow the structure of 2017.cfg
 
 
 Run the analysis
 ====
 
-Execute RunAnalyserPAF(TString samplename, TString selector, int nSlots). Example: 
+Use the config file (example for 2017.cfg):
 
-    root -l -b -q 'RunAnalyserPAF.C("ZZ_ext", "Top", 1)'
+    python run.py 2017
 
-Or introduce a path to run on a sample not using the spreadsheet (and with a customized cross section for the sample). Examples:
-
-    root -b -q 'RunAnalyserPAF.C("/pool/ciencias/userstorage/juanr/nanoAODv4/feb22/Tree_DoubleMuon_Run2017*", "Top", 40, 0, 0, 1, "Data2017")'
-    root -l -q 'RunAnalyserPAF.C("LocalFile:/pool/ciencias/HeppyTreesSummer16/v2/eq1lepton_nanoAOD/jun20/tbarW_inclusiveDecays*", "TTbarSemilep", 40, 0, 0, 1, "xsec:35.85,2016")'
-
-
+Or just introduce all the parameters in the run command. You can get the usage by executing run.py with no arguments.
 

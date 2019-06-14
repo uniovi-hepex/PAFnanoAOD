@@ -67,6 +67,7 @@ class JetSelector : public PAFChainItemSelector{
     string MeasType;
     UInt_t evt;
 
+    TString selection;
     Bool_t gIsData;
     Bool_t gDoSys;
     Bool_t gIsFastSim;
@@ -95,10 +96,13 @@ class JetSelector : public PAFChainItemSelector{
     Float_t BtagSFFS;
 
     Float_t rho;
+    Bool_t gIs2016;
+    Bool_t gIs2017;
+    Bool_t gIs2018;
+    Int_t  year;
 
     void GetJetVariables(Int_t i);
     void GetGenJetVariables(Int_t i);
-    void GetmcJetVariables(Int_t i);
     Bool_t IsBtag(Jet j); 
     void SetSystematics(Jet *j);
 //    Bool_t Cleaning(Jet j, vector<Lepton> vLep, Float_t minDR = 0.4);

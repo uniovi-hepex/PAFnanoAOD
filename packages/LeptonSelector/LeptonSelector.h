@@ -29,10 +29,14 @@ class LeptonSelector : public PAFChainItemSelector{
     TH1F* fhDummy;
     LeptonSF *LepSF;
     //ElecScaleClass *ElecScale;
+    Int_t year;
+    TString selection;
     Bool_t gIsData;
     Bool_t gIsFastSim;
     Int_t  gSelection;
+    Bool_t gIs2016;
     Bool_t gIs2017;
+    Bool_t gIs2018;
     Int_t  gChannel;
     TString gOptions;
     TString localPath;

@@ -3,7 +3,7 @@
 #include "BTagSFUtil.h"
 #include "BTagCalibrationStandalone.cc"
 //#include "BTagEfficienciesTTbarSummer12.C" // Change this to your sample efficiency
-#include "BTagEfficienciesTTbarSummer17.C" // Change this to your sample efficiency
+//#include "BTagEfficienciesTTbarSummer17.C" // Change this to your sample efficiency
 #include "FastSimCorrectionFactorsSummer12.C" // Change this to your sample efficiency
 #include "TSystem.h"
 
@@ -11,13 +11,20 @@ using namespace std;
 
 BTagSFUtil::BTagSFUtil(const string& MeasurementType, 
 		       const TString& BTagSFPath, const string& BTagAlgorithm, 
-		       const TString& OperatingPoint, int SystematicIndex, TString FastSimDataset) {
+		       const TString& OperatingPoint, int SystematicIndex, int year, TString FastSimDataset) {
   gIsFastSim = FastSimDataset == ""? false : true;
   //rand_ = new TRandom3(Seed);
-  TString CSVFileName = Form("%s/%s.csv", BTagSFPath.Data(), BTagAlgorithm.c_str());
+  TString CSVFileName = Form("%s/csv/%s_%i.csv", BTagSFPath.Data(), BTagAlgorithm.c_str(), year);
+  //if(year == 2016 && BTagAlgorithm.c_str() == "CSVv2") CSVFileName = Form("%s/CSVv2_2016_Moriond17.csv");
+
   //if(gIsFastSim) CSVFileName = Form("%s/%s_FastSim.csv", BTagSFPath.Data(), BTagAlgorithm.c_str());
   //  string CSVFileName = (string) pathtocsv.Data() + BTagAlgorithm + ".csv";
   cout << "INFO: [BTagSFUtil] BTag SF will be read from " << CSVFileName << endl;
+  TString tagS = "";
+  if     (OperatingPoint == "Loose")  tagS = "L";
+  else if(OperatingPoint == "Medium") tagS = "M";
+  else if(OperatingPoint == "Tight")  tagS = "T";
+  LoadHistos(BTagSFPath, year, BTagAlgorithm, tagS);
   
   const BTagCalibration calib(BTagAlgorithm, (string) CSVFileName.Data());
   
@@ -38,27 +45,74 @@ BTagSFUtil::BTagSFUtil(const string& MeasurementType,
   TaggerOP = BTagAlgorithm;
 
   BTagEntry::OperatingPoint op; 
+  if(year == 2018){
+    // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation102X
+    if (OperatingPoint=="Loose")  {
+      TaggerOP += "L";
+      if (TaggerName=="DeepCSV")  TaggerCut = 0.1241;
+      if (TaggerName=="DeepFlav") TaggerCut = 0.0494;
+      op = BTagEntry::OP_LOOSE;
+    } else if (OperatingPoint=="Medium")  {
+      TaggerOP += "M";
+      if (TaggerName=="DeepCSV")  TaggerCut = 0.4184; 
+      if (TaggerName=="DeepFlav") TaggerCut = 0.2770;
+      op = BTagEntry::OP_MEDIUM;
+    } else if (OperatingPoint=="Tight")  {
+      TaggerOP += "T";
+      if (TaggerName=="DeepCSV")  TaggerCut = 0.7527; 
+      if (TaggerName=="DeepFlav") TaggerCut = 0.7264; 
+      op = BTagEntry::OP_TIGHT;
+    } 
+  }
+  if(year == 2017){
+    // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation94X
+    if (OperatingPoint=="Loose")  {
+      TaggerOP += "L";
+      if (TaggerName=="CSVv2")    TaggerCut = 0.5803;
+      if (TaggerName=="DeepCSV")  TaggerCut = 0.1522;
+      if (TaggerName=="DeepFlav") TaggerCut = 0.0521;
+      op = BTagEntry::OP_LOOSE;
+    } else if (OperatingPoint=="Medium")  {
+      TaggerOP += "M";
+      if (TaggerName=="CSVv2")    TaggerCut = 0.8838; 
+      if (TaggerName=="DeepCSV")  TaggerCut = 0.4941; 
+      if (TaggerName=="DeepFlav") TaggerCut = 0.3033;
+      op = BTagEntry::OP_MEDIUM;
+    } else if (OperatingPoint=="Tight")  {
+      TaggerOP += "T";
+      if (TaggerName=="CSVv2")    TaggerCut = 0.9693; 
+      if (TaggerName=="DeepCSV")  TaggerCut = 0.8001; 
+      if (TaggerName=="DeepFlav") TaggerCut = 0.7489; 
+      op = BTagEntry::OP_TIGHT;
+    }
+  }
+  if(year == 2016){
+    // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation2016Legacy
+    // For CSVv2: https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation80XReReco
+    if (OperatingPoint=="Loose")  {
+      TaggerOP += "L";
+      if (TaggerName=="CSVv2")    TaggerCut = 0.5426;
+      if (TaggerName=="DeepCSV")  TaggerCut = 0.2217;
+      if (TaggerName=="DeepFlav") TaggerCut = 0.0614;
+      op = BTagEntry::OP_LOOSE;
+    } else if (OperatingPoint=="Medium")  {
+      TaggerOP += "M";
+      if (TaggerName=="CSVv2")    TaggerCut = 0.8484; 
+      if (TaggerName=="DeepCSV")  TaggerCut = 0.6321; 
+      if (TaggerName=="DeepFlav") TaggerCut = 0.3093;
+      op = BTagEntry::OP_MEDIUM;
+    } else if (OperatingPoint=="Tight")  {
+      TaggerOP += "T";
+      if (TaggerName=="CSVv2")    TaggerCut = 0.9535; 
+      if (TaggerName=="DeepCSV")  TaggerCut = 0.8953;
+      if (TaggerName=="DeepFlav") TaggerCut = 0.7221;
+      op = BTagEntry::OP_TIGHT;
+    }
+  }
 
-  if (OperatingPoint=="Loose")  {
-    TaggerOP += "L";
-    if (TaggerName=="CSV") TaggerCut = 0.244;
-    if (TaggerName=="CSVv2") TaggerCut = 0.5426; // for Moriond17
-    if (TaggerName=="DeepCSV") TaggerCut = 0.2219; // post-Moriond (2017-06-08)
-    op = BTagEntry::OP_LOOSE;
-  } else if (OperatingPoint=="Medium")  {
-    TaggerOP += "M";
-    if (TaggerName=="CSV") TaggerCut = 0.679;
-    if (TaggerName=="CSVv2") TaggerCut = 0.8484; // for Moriond17
-    if (TaggerName=="DeepCSV") TaggerCut = 0.6324; // post-Moriond (2017-06-08)
-    op = BTagEntry::OP_MEDIUM;
-  } else if (OperatingPoint=="Tight")  {
-    TaggerOP += "T";
-    if (TaggerName=="CSV") TaggerCut = 0.898;
-    if (TaggerName=="TCHP") TaggerCut = 3.41;
-    if (TaggerName=="CSVv2") TaggerCut = 0.9535; // for Moriond17
-    if (TaggerName=="DeepCSV") TaggerCut = 0.8958; // post-Moriond (2017-06-08)
-    op = BTagEntry::OP_TIGHT;
-} 
+
+
+
   reader_b = new BTagCalibrationReader(op, "central", sysTypes);
   reader_c = new BTagCalibrationReader(op, "central", sysTypes);
   reader_l = new BTagCalibrationReader(op, "central", sysTypes);
@@ -133,9 +187,9 @@ float BTagSFUtil::FastSimCorrectionFactor(int JetFlavor, float JetPt, float JetE
 
 float BTagSFUtil::JetTagEfficiency(int JetFlavor, float JetPt, float JetEta) {
 
-  if (abs(JetFlavor)==5) return TagEfficiencyB(JetPt, JetEta);
+  if (abs(JetFlavor)==5)      return TagEfficiencyB(JetPt, JetEta);
   else if (abs(JetFlavor)==4) return TagEfficiencyC(JetPt, JetEta);
-  else return TagEfficiencyLight(JetPt, JetEta);
+  else                        return TagEfficiencyLight(JetPt, JetEta);
 
 }
 
@@ -205,4 +259,45 @@ Float_t BTagSFUtil::GetFastSimBtagSF(Int_t flav, Float_t eta, Float_t pt, Float_
   else if (flav == 4)  FSSF = FastSimReader_b->eval_auto_bounds(SystematicFlag.Data(), BTagEntry::FLAV_C, eta, pt, csv);
   else                 FSSF = FastSimReader_l->eval_auto_bounds(SystematicFlag.Data(), BTagEntry::FLAV_UDSG, eta, pt, csv);
   return FSSF;
+}
+
+void  BTagSFUtil::LoadHistos(const TString& path, int year, const TString& tagger, const TString& wp){
+  // Loose, Medium, Tight
+  // 2016, 2017, 2018
+  // CSVv2, DeepCSV, DeepFlav
+  TString fname = path + "/BtagMCSF.root";
+  cout << Form("INFO: [BTadSFUtil] Loading btag MC efficiencies from %s", fname.Data()) << endl;
+  TFile* f = TFile::Open(fname);
+  TString hnameB = Form("BtagSFB_%s%s_%i", tagger.Data(), wp.Data(), year);
+  TString hnameC = Form("BtagSFC_%s%s_%i", tagger.Data(), wp.Data(), year);
+  TString hnameL = Form("BtagSFL_%s%s_%i", tagger.Data(), wp.Data(), year);
+  cout << "INFO: [BTadSFUtil] Loading histograms: " << endl;
+  cout << Form("                   >> %s ", hnameB.Data()) << endl;
+  cout << Form("                   >> %s ", hnameC.Data()) << endl;
+  cout << Form("                   >> %s ", hnameL.Data()) << endl;
+  
+  btagmceff  = (TH2F*) f->Get(hnameB);
+  btagmceffC = (TH2F*) f->Get(hnameC);
+  btagmceffL = (TH2F*) f->Get(hnameL);
+  btagmceff ->SetDirectory(0);
+  btagmceffC->SetDirectory(0);
+  btagmceffL->SetDirectory(0);
+}
+
+float BTagSFUtil::TagEfficiencyB(float JetPt, float JetEta){
+  if(JetPt > ptMax) JetPt = ptMax-1;
+  int bin = btagmceff->FindBin(JetPt, JetEta);
+  btagmceff->GetBinContent(bin);
+}
+
+float BTagSFUtil::TagEfficiencyC(float JetPt, float JetEta){
+  if(JetPt > ptMax) JetPt = ptMax-1;
+  int bin = btagmceffC->FindBin(JetPt, JetEta);
+  btagmceffC->GetBinContent(bin);
+}
+
+float BTagSFUtil::TagEfficiencyLight(float JetPt, float JetEta){
+  if(JetPt > ptMax) JetPt = ptMax-1;
+  int bin = btagmceffL->FindBin(JetPt, JetEta);
+  btagmceffL->GetBinContent(bin);
 }

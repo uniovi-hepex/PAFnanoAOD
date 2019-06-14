@@ -4,11 +4,13 @@
 
 #include <iostream>
 
-LeptonSF::LeptonSF(TString path, TString options):
+LeptonSF::LeptonSF(TString path, Int_t year, TString options):
   fMuonTrackerSF(0),  // Muon Reco
+  fMuonIdSF(0), // Muon Id
   fMuonIdSF_BCDEF(0), // Muon Id
   fMuonIdSF_GH(0),    // Muon Id
   fMuonIdSFSUSY(0),   // Muon Id
+  fMuonIsoSF(0),// Muon Iso
   fMuonIsoSF_BCDEF(0),// Muon Iso
   fMuonIsoSF_GH(0),   // Muon Iso
   fMuonIsoSFSUSY(0),  // Muon Iso
@@ -46,16 +48,18 @@ LeptonSF::LeptonSF(TString path, TString options):
   fSingleElecTrigSF(0)
    {         
 
-  path_to_SF_histos = path;
-  if(options.Contains("2017")) gIs2017 = true; 
-  if(options.Contains("eraB")) era = runB;
-  if(options.Contains("eraC")) era = runC;
-  if(options.Contains("eraD")) era = runD;
-  if(options.Contains("eraE")) era = runE;
-  if(options.Contains("eraF")) era = runF;
-  else gIs2017 = false;
   era = -1;
-  gIs2017 = true;
+  path_to_SF_histos = path;
+  gIs2016 = false; gIs2017 = false; gIs2018 = false;
+  if     (year == 2017) gIs2017 = true;
+  else if(year == 2018) gIs2018 = true;
+  else if(year == 2016) gIs2016 = true;
+
+  if     (options.Contains("eraB")) era = runB;
+  else if(options.Contains("eraC")) era = runC;
+  else if(options.Contains("eraD")) era = runD;
+  else if(options.Contains("eraE")) era = runE;
+  else if(options.Contains("eraF")) era = runF;
 };
 
 
@@ -69,23 +73,24 @@ void LeptonSF::loadHisto(Int_t iHisto, Int_t wp){
     filename = "Tracking_EfficienciesAndSF_BCDEFGH"; histoname = "ratio_eff_eta3_dr030e030_corr";
     fMuonTrackerSF = LoadTrackerMuonSF(path_to_SF_histos + filename + ".root", histoname);
   }
-  else if(iHisto == iMuonIdSUSY){
-    if     (wp == iLoose){  filename = "SUS_MuonLooseIdM17"; histoname = "SF";}
-    else if(wp == iMedium){ filename = "SUS_MuonMediumIdM17"; histoname = "SF";}
-    else if(wp == iTight){  filename = ""; histoname = "";}
-    fMuonIdSFSUSY = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + filename + ".root", histoname, "fMuonIdSFSUSY"); 
-  }
   else if(iHisto == iMuonId){
+    if(gIs2018){
+      filename = "Run2018ABCD_SF_ID";
+      if     (wp == iLoose)   histoname = "NUM_LooseID_DEN_TrackerMuons_pt_abseta";
+      else if(wp == iMedium)  histoname = "NUM_MediumID_DEN_TrackerMuons_pt_abseta";
+      else if(wp == iTight)   histoname = "NUM_TightID_DEN_TrackerMuons_pt_abseta";
+      fMuonIdSF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + filename + ".root", histoname, "fMuonIdSF"); 
+    }
     if(gIs2017){
       filename = "RunBCDEF_SF_ID";
       if     (era==runB || era==runC) filename = "MuonSF_RunBC_ID";
       else if(era==runD || era==runE) filename = "MuonSF_RunDE_ID";
       else if(era==runF             ) filename = "MuonSF_RunF_ID";
-      if(wp == iLoose)        histoname = "NUM_LooseID_DEN_genTracks_pt_abseta";
+      if     (wp == iLoose)   histoname = "NUM_LooseID_DEN_genTracks_pt_abseta";
       else if(wp == iMedium)  histoname = "NUM_MediumID_DEN_genTracks_pt_abseta";
       else if(wp == iTight)   histoname = "NUM_TightID_DEN_genTracks_pt_abseta";
       if(era!=-1) histoname = "NUM_TightID_DEN_genTracks";
-      fMuonIdSF_BCDEF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + filename + ".root", histoname, "fMuonIdSF_BCDEF"); 
+      fMuonIdSF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + filename + ".root", histoname, "fMuonIdSF"); 
     }
     else{ // 2016
       if(wp == iLoose){
@@ -108,7 +113,12 @@ void LeptonSF::loadHisto(Int_t iHisto, Int_t wp){
       }
     }
   }
-  else if(iHisto == iMuonIsoTightId){
+  else if(iHisto == iMuonIsoTightId){ // Tight ISO over tight ID
+    if(gIs2018){
+      filename = "Run2018ABCD_SF_ISO";
+      histoname = "NUM_TightRelIso_DEN_TightIDandIPCut_pt_abseta";
+      fMuonIsoSF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + filename + ".root", histoname, "fMuonIsoSF"); 
+    }
     if(gIs2017){
       filename = "RunBCDEF_SF_ISO";
       if     (era==runB || era==runC) filename = "MuonSF_RunBC_ISO";
@@ -118,7 +128,7 @@ void LeptonSF::loadHisto(Int_t iHisto, Int_t wp){
         histoname = "NUM_TightRelIso_DEN_TightIDandIPCut_pt_abseta";
         if(era!=-1) histoname = "NUM_TightRelIso_DEN_TightIDandIPCut";
       }
-      fMuonIsoSF_BCDEF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + filename + ".root", histoname, "fMuonIsoSF_BCDEF"); 
+      fMuonIsoSF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + filename + ".root", histoname, "fMuonIsoSF"); 
     }
     else{ // 2016
       if(wp == iLoose){
@@ -202,39 +212,28 @@ void LeptonSF::loadHisto(Int_t iHisto, Int_t wp){
 
   // >>>>>>>>>>>>>>>>>>>>>>>>>>>>> Electrons
   else if(iHisto == iElecReco){
+    // https://twiki.cern.ch/twiki/pub/CMS/EgammaIDRecipesRun2/EGM2D_BtoH_GT20GeV_RecoSF_Legacy2016.root
+    // https://twiki.cern.ch/twiki/pub/CMS/Egamma2017DataRecommendations/egammaEffi.txt_EGM2D_runBCDEF_passingRECO.root
+    // https://twiki.cern.ch/twiki/pub/CMS/EgammaIDRecipesRun2/egammaEffi.txt_EGM2D_updatedAll.root
     histoname = "EGamma_SF2D";
-    if(gIs2017){
-      filename = "ElecReco_2017v2"; // BCDEF
-      if     (era==runB) filename = "runB_passingRECO";
-      else if(era==runC) filename = "runC_passingRECO";
-      else if(era==runD) filename = "runD_passingRECO";
-      else if(era==runE) filename = "runE_passingRECO";
-      else if(era==runF) filename = "runF_passingRECO";
-      fElecTrackerSFF = (TH2F*) GetHistogramFromFileF(path_to_SF_histos + filename + ".root", histoname, "fElecTrackerSFF"); 
-    }
-    else{
-      filename = "ElecRecoM17";
-      fElecTrackerSF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + filename + ".root", histoname, "fElecTrackerSF"); 
-    }
+    if     (gIs2018) filename = "2018_ElecRECO"; 
+    else if(gIs2017) filename = "2017_ElecRECO"; 
+    else if(gIs2016) filename = "2016ReReco_ElecRECO"; 
+    fElecTrackerSFF = (TH2F*) GetHistogramFromFileF(path_to_SF_histos + filename + ".root", histoname, "fElecTrackerSFF"); 
   }
   else if(iHisto == iElecId){
-    if     (gIs2017){
-      // https://soffi.web.cern.ch/soffi/EGM-ID/SF-17Nov2017-MCv2-IDv1-020618/Electrons/egammaEffi.txt_EGM2D_runBCDEF_passingTight94X.root
-      if(wp == iTight){  
-        filename = "ElecTightCutBased_2017v2";  
-        if     (era==runB) filename = "runB_passingTight94X";
-        else if(era==runC) filename = "runC_passingTight94X";
-        else if(era==runD) filename = "runD_passingTight94X";
-        else if(era==runE) filename = "runE_passingTight94X";
-        else if(era==runF) filename = "runF_passingTight94X";
-        histoname = "EGamma_SF2D";
-      } // ElecTightCBid94X
+    // https://twiki.cern.ch/twiki/bin/view/CMS/EgammaRunIIRecommendations
+    // cutBasedElectronID-Summer16-80X-V1-tight
+    // cutBasedElectronID-Fall17-94X-V1-tight
+    // cutBasedElectronID-Fall17-94X-V2-tight
+    histoname = "EGamma_SF2D";
+    if(wp == iTight){  
+      if     (gIs2018) filename = "2018_ElectronTight";
+      else if(gIs2017) filename = "2017_ElectronTight";
+      else if(gIs2016) filename = "2016LegacyReReco_ElectronTight";
     }
     else{
-      if     (wp == iVeto){   filename = "ElecVetoCBidM17";   histoname = "EGamma_SF2D";}
-      else if(wp == iLoose){  filename = "ElecLooseCBidM17";  histoname = "EGamma_SF2D";}
-      else if(wp == iMedium){ filename = "ElecMediumCBidM17"; histoname = "EGamma_SF2D";}
-      else if(wp == iTight){  filename = "ElecTightCBidM17";  histoname = "EGamma_SF2D";}
+      cout << "Elec ID wp not implemented!" << endl;
     }
     fElecIdSF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + filename + ".root", histoname, "fElecIdSF"); 
   }
@@ -347,10 +346,6 @@ void LeptonSF::loadHisto(Int_t iHisto, Int_t wp){
     fMuEGSF = (TH2F*) GetHistogramFromFileF(path_to_SF_histos + filename + ".root", histoname, "fMuEGSF"); 
   }
 
-  else if(iHisto == iTrigSingleMuon){
-    filename = "EfficienciesAndSF_RunBtoF"; histoname = "IsoMu24_OR_IsoTkMu24_PtEtaBins/abseta_pt_ratio";
-    fSingleMuonTrigSF = (TH2F*) GetHistogramFromFileF(path_to_SF_histos + filename + ".root", histoname, "fSingleMuonTrigSF");
-  }
   PAF_INFO("Lepton SF", Form("Loaded histogram %s from file %s%s.root", histoname.Data(), path_to_SF_histos.Data(), filename.Data()));
   loadedHistos.push_back(iHisto);
 }
@@ -372,20 +367,20 @@ Float_t LeptonSF::GetLeptonSF(Float_t pt, Float_t ieta, Int_t type){
       if     (id == iMuonReco)    pr = GetTrackerMuonSF(eta); 
       else if(id == iMuonIdSUSY)  pr = fMuonIdSFSUSY      ->GetBinContent(fMuonIdSFSUSY     ->FindBin(pt,eta));
       else if(id == iMuonId){
-        if(gIs2017){
-          pr = fMuonIdSF_BCDEF->GetBinContent(fMuonIdSF_BCDEF->FindBin(pt,eta));
+        if(gIs2017 || gIs2018){
+          pr = fMuonIdSF->GetBinContent(fMuonIdSF->FindBin(pt,eta));
         }
         else{ // 2016
-          pr = (fMuonIdSF_BCDEF->GetBinContent(fMuonIdSF_BCDEF->FindBin(pt,eta))*lumiBCDEF + fMuonIdSF_GH->GetBinContent(fMuonIdSF_GH->FindBin(pt,eta))*lumiGH)/(lumiBCDEF+lumiGH);
+          pr = (fMuonIdSF->GetBinContent(fMuonIdSF->FindBin(pt,eta))*lumiBCDEF + fMuonIdSF_GH->GetBinContent(fMuonIdSF_GH->FindBin(pt,eta))*lumiGH)/(lumiBCDEF+lumiGH);
         }
       }
       else if(id == iMuonIsoSUSY) pr = fMuonIsoSFSUSY     ->GetBinContent(fMuonIsoSFSUSY    ->FindBin(pt,eta));
       else if(id == iMuonIsoMediumId || id == iMuonIsoTightId){
-        if(gIs2017){
-          pr = fMuonIsoSF_BCDEF->GetBinContent(fMuonIsoSF_BCDEF->FindBin(pt,eta));
+        if(gIs2017 || gIs2018){
+          pr = fMuonIsoSF->GetBinContent(fMuonIsoSF->FindBin(pt,eta));
         }
         else{ // 2016
-          pr = (fMuonIsoSF_BCDEF->GetBinContent(fMuonIsoSF_BCDEF->FindBin(pt,eta))*lumiBCDEF + fMuonIsoSF_GH->GetBinContent(fMuonIsoSF_GH->FindBin(pt,eta))*lumiGH)/(lumiBCDEF+lumiGH);
+          pr = (fMuonIsoSF->GetBinContent(fMuonIsoSF->FindBin(pt,eta))*lumiBCDEF + fMuonIsoSF_GH->GetBinContent(fMuonIsoSF_GH->FindBin(pt,eta))*lumiGH)/(lumiBCDEF+lumiGH);
         }
       }
       else if(id == iMuonIP2D)    pr = fMuonIP2DSF    ->GetBinContent(fMuonIP2DSF   ->FindBin(pt,eta));
@@ -445,20 +440,20 @@ Float_t LeptonSF::GetLeptonSFerror(Float_t pt, Float_t ieta, Int_t type){
       else if(id == iMuonIdSUSY)  err += p2(fMuonIdSFSUSY      ->GetBinError(fMuonIdSFSUSY     ->FindBin(pt,eta)));
       else if(id == iMuonId){
         if(gIs2017){
-          err += p2( fMuonIdSF_BCDEF->GetBinError(fMuonIdSF_BCDEF->FindBin(pt,eta)));
+          err += p2( fMuonIdSF->GetBinError(fMuonIdSF->FindBin(pt,eta)));
         }
         else{ // 2016
-          err += p2( (fMuonIdSF_BCDEF->GetBinError(fMuonIdSF_BCDEF->FindBin(pt,eta))*lumiBCDEF + fMuonIdSF_GH->GetBinError(fMuonIdSF_GH->FindBin(pt,eta))*lumiGH)/(lumiBCDEF+lumiGH) );
+          err += p2( (fMuonIdSF->GetBinError(fMuonIdSF->FindBin(pt,eta))*lumiBCDEF + fMuonIdSF_GH->GetBinError(fMuonIdSF_GH->FindBin(pt,eta))*lumiGH)/(lumiBCDEF+lumiGH) );
         }
       }
       else if(id == iMuonIsoSUSY) err += p2(fMuonIsoSFSUSY ->GetBinError(fMuonIsoSFSUSY->FindBin(pt,eta)));
       else if(id == iMuonIsoMediumId || id == iMuonIsoTightId){
-        if(gIs2017){
-          err += p2(fMuonIsoSF_BCDEF->GetBinError(fMuonIsoSF_BCDEF->FindBin(pt,eta)));
+        if(gIs2017 || gIs2018){
+          err += p2(fMuonIsoSF->GetBinError(fMuonIsoSF->FindBin(pt,eta)));
 
         }
         else{ // 2016
-          err += p2( (fMuonIsoSF_BCDEF->GetBinError(fMuonIsoSF_BCDEF->FindBin(pt,eta))*lumiBCDEF + fMuonIsoSF_GH->GetBinError(fMuonIsoSF_GH->FindBin(pt,eta))*lumiGH)/(lumiBCDEF+lumiGH) );
+          err += p2( (fMuonIsoSF->GetBinError(fMuonIsoSF->FindBin(pt,eta))*lumiBCDEF + fMuonIsoSF_GH->GetBinError(fMuonIsoSF_GH->FindBin(pt,eta))*lumiGH)/(lumiBCDEF+lumiGH) );
         }
       }
       else if(id == iMuonIP2D)    err += p2(fMuonIP2DSF    ->GetBinError(fMuonIP2DSF   ->FindBin(pt,eta)));
@@ -472,16 +467,11 @@ Float_t LeptonSF::GetLeptonSFerror(Float_t pt, Float_t ieta, Int_t type){
       else if(id == iMuonTightIP2DttH)    err += p2(fMuonTightIP2DttH     ->GetBinError(fMuonTightIP2DttH   ->FindBin(pt,eta)));
     }
     else if(type == 1){ 
-      if(pt > 200) pt = 199;
+      if(pt > 500) pt = 499;
       if (((id == iEleclepMVA2lSSttH) || (id == iEleclepMVA3l4lttH)) && (pt >= 100)) pt = 99;
       if(id == iElecReco){
-        if(gIs2017){
-          eta = ieta;
-          err += p2(fElecTrackerSFF->GetBinError(fElecTrackerSFF->FindBin(eta,pt)));
-        }
-        else{
-          err += p2(fElecTrackerSF ->GetBinError(fElecTrackerSF->FindBin(eta,50)));
-        }
+        eta = ieta;
+        err += p2(fElecTrackerSFF->GetBinError(fElecTrackerSFF->FindBin(eta,pt)));
       }
       else if(id == iElecIdSUSY)      err += p2(fElecIdSF      ->GetBinError(fElecIdSF     ->FindBin(pt,eta)));
       else if(id == iElecIsoSUSY) err += p2(fElecIsoSF     ->GetBinError(fElecIsoSF    ->FindBin(pt,eta)));
@@ -633,3 +623,4 @@ Float_t LeptonSF::GetFSSFerr(Float_t pt, Float_t eta, Int_t id){
   else         SFerr = fElecFastSim ->GetBinError(fElecFastSim  ->FindBin(pt, eta));
   return SFerr;
 }
+

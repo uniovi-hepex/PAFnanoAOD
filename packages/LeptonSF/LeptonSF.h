@@ -17,7 +17,7 @@ const Float_t lumiGH    = 16.1454;
 
 class LeptonSF {
  public:
-  LeptonSF(TString path = "~/AnalyserPAF/InputFiles/", TString options = "");
+  LeptonSF(TString path = "~/AnalyserPAF/InputFiles/", Int_t year = 0, TString options = "");
   ~LeptonSF() {}
   void loadHisto(Int_t iHisto, Int_t wp = -1);
   Float_t GetTrackerMuonSF(Float_t eta);
@@ -53,8 +53,10 @@ class LeptonSF {
   // Muon SFs
   TGraphAsymmErrors*  fMuonTrackerSF;    
   TH2D*  fMuonIdSFSUSY;     
+  TH2D*  fMuonIdSF;     
   TH2D*  fMuonIdSF_BCDEF;     
   TH2D*  fMuonIdSF_GH;     
+  TH2D*  fMuonIsoSF;     
   TH2D*  fMuonIsoSF_BCDEF;     
   TH2D*  fMuonIsoSF_GH;     
   TH2D*  fMuonIsoSFSUSY;     
@@ -92,7 +94,9 @@ class LeptonSF {
   TH2F *fSingleMuonTrigSF;
   TH2F *fSingleElecTrigSF;
 
+  Bool_t gIs2016;
   Bool_t gIs2017;
+  Bool_t gIs2018;
   Int_t era;
 };
 #endif
