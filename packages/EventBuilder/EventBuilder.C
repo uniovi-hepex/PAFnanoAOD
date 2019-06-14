@@ -63,11 +63,13 @@ EventBuilder::~EventBuilder() {
 void EventBuilder::Initialise(){
   year    = GetParam<TString>("year").Atoi();
   gIsData = GetParam<Bool_t>("IsData");
-  selection = GetParam<TString>("iSelection");
+  selection   = GetParam<TString>("selection");
   gSampleName  = GetParam<TString>("sampleName");
   gIsMCatNLO   = GetParam<Bool_t>("IsMCatNLO");
   gXSec        = GetParam<Float_t>("xsec");
   gOptions     = GetParam<TString>("_options");
+  gSelection   = GetSelection(selection);
+  gPUWeigth    = gOptions.Contains("PUweight")? true : false;
   gIsRunH = false;
   if(gSampleName.Contains("Run2016H")) gIsRunH = true;
   gChannel = -1;

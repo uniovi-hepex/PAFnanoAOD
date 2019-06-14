@@ -25,6 +25,7 @@ void LeptonSelector::Initialise(){
   localPath      = GetParam<TString>("WorkingDir");
 
   gSelection     = GetSelection(selection);
+  gDoLepGood     = gOptions.Contains("LepGood")? true : false;
 
   gIs2017 = false; gIs2016 = false; gIs2018 = false;
   if     (year == 2017) gIs2017 = true;
@@ -272,8 +273,14 @@ void LeptonSelector::InsideLoop(){
   vGenBquarks.clear();
 
   // Loop over the leptons and select
-  nElec     = Get<Int_t>("nElectron");
-  nMuon     = Get<Int_t>("nMuon");
+  if(!gDoLepGood){
+    nElec     = Get<Int_t>("nElectron");
+    nMuon     = Get<Int_t>("nMuon");
+    nLep = nElec+nMuon;
+  }
+  else{
+    nMuon = 0; nElec = 0; nLep = Get<Int_t>("nLepGood");
+  }
   
 //   PAF_DEBUG("LeptonSelector", Form("For event %u there are %i muons and %i electrons", evt, nMuon,nElec));
   
@@ -296,14 +303,20 @@ void LeptonSelector::InsideLoop(){
 
   // Loop over reco leptons
   int index = 0; int i; int LepType = 11;
-  for(i = 0; i < nElec+nMuon; i++){
-    if(i < nElec){
-      LepType = 11; 
-      index = i;
+  for(i = 0; i < nLep; i++){
+    if(!gDoLepGood){
+      if(i < nElec){
+        LepType = 11; 
+        index = i;
+      }
+      else{
+        LepType = 13;
+        index = i- nElec;
+      }
     }
     else{
-      LepType = 13;
-      index = i- nElec;
+      LepType = 0;
+      index = i;
     }
     GetLeptonVariables(index, LepType);
     tL = Lepton(tP, charge, type);
@@ -422,12 +435,21 @@ void LeptonSelector::InsideLoop(){
 //################################################################
 void LeptonSelector::GetLeptonVariables(Int_t i, int LepType){ // Once per muon, get all the info
   TString LeptonName = abs(LepType) == 11? "Electron" : "Muon";
+  if(LepType == 0) LeptonName = "LepGood";
   tP.SetPtEtaPhiM(Get<Float_t>(LeptonName + "_pt", i), Get<Float_t>(LeptonName + "_eta", i), Get<Float_t>(LeptonName + "_phi", i), Get<Float_t>(LeptonName + "_mass", i));
+
+  // PDG id...
+  if(LepType != 0){
+    type          = TMath::Abs(LepType) == 11 ? 1 : 0;
+    pdgid         = LepType;
+  }
+  else{
+    pdgid = TMath::Abs(Get<Int_t>("LepGood_pdgId",i));
+    type  = pdgid == 11 ? 1 : 0;
+  }
 
   pt = tP.Pt(); eta = tP.Eta(); energy = tP.Energy();
   charge        = Get<Int_t>(LeptonName + "_charge", i);
-  type          = TMath::Abs(LepType) == 11 ? 1 : 0;
-  pdgid         = LepType;
   dxy           = TMath::Abs(Get<Float_t>(LeptonName + "_dxy", i));
   dz            = TMath::Abs(Get<Float_t>(LeptonName + "_dz", i));
   miniIso       = Get<Float_t>(LeptonName + "_miniPFRelIso_all",i);
@@ -446,22 +468,22 @@ void LeptonSelector::GetLeptonVariables(Int_t i, int LepType){ // Once per muon,
   RelIso04 = -1; mediumMuonId = -1; SegComp = -1; dEtaSC = -1; HoE = -1; eImpI = -1; 
   lostHits = -1; convVeto = -1; sigmaIEtaIEta = -1; MVAID = -1; R9 = -1;
   SF = 1;
-  if(LepType == 13){  // ONLY MUONS
-    RelIso04       = Get<Float_t>("Muon_pfRelIso04_all",i);
-    mediumMuonId   = Get<Bool_t>("Muon_mediumId",i);
-    SegComp        = Get<Float_t>("Muon_segmentComp", i);
-    tightVar      = Get<Bool_t>("Muon_tightId", i);
+  if(pdgid == 13){  // ONLY MUONS
+    RelIso04       = Get<Float_t>(LeptonName + "_pfRelIso04_all",i);
+    mediumMuonId   = Get<Bool_t>(LeptonName + "_mediumId",i);
+    SegComp        = Get<Float_t>(LeptonName + "_segmentComp", i);
+    tightVar      = Get<Bool_t>(LeptonName + "_tightId", i);
   }
   else{              // ONLY ELECTRON
-    tightVar      = Get<Int_t>("Electron_cutBased", i);
-    dEtaSC = Get<Float_t>("Electron_deltaEtaSC", i);
-    HoE            = Get<Float_t>("Electron_hoe", i);
-    eImpI          = Get<Float_t>("Electron_eInvMinusPInv", i);
-    lostHits       = Get<UChar_t>("Electron_lostHits", i);
-    convVeto       = Get<Bool_t>("Electron_convVeto", i);
-    sigmaIEtaIEta  = Get<Float_t>("Electron_sieie", i); // Es esta???
+    tightVar       = Get<Int_t>(LeptonName + "_cutBased", i);
+    dEtaSC         = Get<Float_t>(LeptonName + "_deltaEtaSC", i);
+    HoE            = Get<Float_t>(LeptonName + "_hoe", i);
+    eImpI          = Get<Float_t>(LeptonName + "_eInvMinusPInv", i);
+    lostHits       = Get<UChar_t>(LeptonName + "_lostHits", i);
+    convVeto       = Get<Bool_t>(LeptonName + "_convVeto", i);
+    sigmaIEtaIEta  = Get<Float_t>(LeptonName + "_sieie", i); // Es esta???
     MVAID          = 0; //= Get<Float_t>("Electron_mvaFall17Iso",i);  //Electron_mvaSpring16GP_WP80, Electron_mvaSpring16GP_WP90, Electron_mvaSpring16HZZ_WPL
-    R9             = Get<Float_t>("Electron_r9",i);
+    R9             = Get<Float_t>(LeptonName + "_r9",i);
   }
 }
 
