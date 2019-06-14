@@ -86,12 +86,12 @@ void JetSelector::Initialise(){
     vetoJet_maxEta = 2.4;
     minDR = 0.4;
   }
-  else if (gSelection == iTWSelec){
+  else if (gSelection == iTWSelec || gSelection == iTWTTbarSelec){
     taggerName="CSVv2";
     stringWP = "Medium";
     jet_MaxEta = 2.4;
     jet_MinPt  = 30;
-    vetoJet_minPt = 15.;
+    vetoJet_minPt = 20.;
     vetoJet_maxEta = 4.7;
     minDR = 0.4;
   }
@@ -199,8 +199,15 @@ void JetSelector::InsideLoop(){
   nBtagJetsJECDown = 0;
   Leptons.clear();
   VetoLeptons.clear();
-
-  Leptons = GetParam<vector<Lepton>>("selLeptons"); 
+  
+  BtagSFFS         = 1.;
+  BtagSF           = 1.;
+  BtagSFBtagUp     = 1.;
+  BtagSFBtagDown   = 1.;
+  BtagSFMistagUp   = 1.;
+  BtagSFMistagDown = 1.;
+  
+  Leptons = GetParam<vector<Lepton>>("selLeptons");
   VetoLeptons = GetParam<vector<Lepton>>("vetoLeptons");
   if (gSelection == i4tSelec){
     for(Int_t i = 0; i < (Int_t) VetoLeptons.size(); i++) Leptons.push_back(VetoLeptons.at(i));
@@ -216,15 +223,13 @@ void JetSelector::InsideLoop(){
   Float_t dataTag   = 1.;
   Float_t mcNoTag   = 1.;
   Float_t dataNoTag = 1.;
-  Float_t errHup  = 0.;
-  Float_t errHdn  = 0.;
-  Float_t errLup  = 0.;
-  Float_t errLdn  = 0.;
-
+  Float_t errHup    = 0.;
+  Float_t errHdn    = 0.;
+  Float_t errLup    = 0.;
+  Float_t errLdn    = 0.;
   
   // Loop over all the jets
-  for(Int_t i = 0; i < nJet; i++){
-
+  for (Int_t i = 0; i < nJet; i++) {
     // Get all jet variables
     GetJetVariables(i);
     tJ = Jet(tpJ, csv, jetId, flavmc);
@@ -246,26 +251,71 @@ void JetSelector::InsideLoop(){
       // Get systematics
       if(gDoSys) SetSystematics(&tJ);
 
-      // Fill the selected jets 
+      // Fill the selected jets
       tJ.isBtag = IsBtag(tJ);
       if (TMath::Abs(tJ.p.Eta()) < jet_MaxEta){
         if(tJ.p.Pt() > 15 || tJ.pTJESUp > 15 || tJ.pTJESDown > 15 || tJ.pTJERUp > 15 ) Jets15.push_back(tJ);
         if(tJ.p.Pt() > jet_MinPt){
           selJets.push_back(tJ);
-          if(tJ.isBtag) nBtagJets++; 
-        } 
+          if(tJ.isBtag) nBtagJets++;
+        }
       }
 
       // Fill the veto collections
       if (tJ.p.Pt() > vetoJet_minPt && TMath::Abs(tJ.p.Eta()) < vetoJet_maxEta){
-        if (gSelection == iTopSelec || gSelection == itt5TeV){
+        if      (gSelection == iTopSelec || gSelection == itt5TeV) {
           if(TMath::Abs(tJ.p.Eta()) > 2.4)  vetoJets.push_back(tJ);
+        }
+        else if (gSelection == iTWSelec || iTWTTbarSelec) {
+          vetoJets.push_back(tJ);
+          
+          if (!gIsData) {
+            if ( tJ.p.Pt() < 20.) continue;
+            Float_t eff   = fBTagSFnom->JetTagEfficiency(tJ.flavmc, tJ.p.Pt(), tJ.p.Eta());
+            Float_t sf    = fBTagSFnom->GetJetSF(tJ.csv, tJ.flavmc, tJ.p.Pt(), tJ.p.Eta());
+            Float_t sfHUp = fBTagSFbUp->GetJetSF(tJ.csv, tJ.flavmc, tJ.p.Pt(), tJ.p.Eta());
+            Float_t sfHDn = fBTagSFbDo->GetJetSF(tJ.csv, tJ.flavmc, tJ.p.Pt(), tJ.p.Eta());
+            Float_t sfLUp = fBTagSFlUp->GetJetSF(tJ.csv, tJ.flavmc, tJ.p.Pt(), tJ.p.Eta());
+            Float_t sfLDn = fBTagSFlDo->GetJetSF(tJ.csv, tJ.flavmc, tJ.p.Pt(), tJ.p.Eta());
+
+            if (tJ.isBtag) {
+              mcTag   *= eff;
+              dataTag *= eff * sf;
+
+              if (tJ.flavmc == 5 || tJ.flavmc == 4) {
+                errHup += (sfHUp - sf ) / sf;
+                errHdn += (sf - sfHDn ) / sf;
+              }
+              else {
+                errLup += (sfLUp - sf ) / sf;
+                errLdn += (sf - sfLDn ) / sf;
+              }
+            }
+            else {
+              mcNoTag   *= ( 1 - eff    );
+              dataNoTag *= ( 1 - eff*sf );
+              if (tJ.flavmc == 5 || tJ.flavmc == 4) {
+                errHup -= eff*(sfHUp - sf ) / (1 - eff*sf);
+                errHdn -= eff*(sf - sfHDn ) / (1 - eff*sf);
+              }
+              else {
+                errLup -= eff*(sfLUp - sf ) / (1 - eff*sf);
+                errLdn -= eff*(sf - sfLDn ) / (1 - eff*sf);
+              }
+            }
+          }
         }
         else  vetoJets.push_back(tJ);
       }
     }
   }
-
+  
+  BtagSF           *= (dataNoTag * dataTag) / (mcNoTag * mcTag);
+  BtagSFBtagUp     *= BtagSF * ( 1 + errHup );
+  BtagSFBtagDown   *= BtagSF * ( 1 - errHdn );
+  BtagSFMistagUp   *= BtagSF * ( 1 + errLup );
+  BtagSFMistagDown *= BtagSF * ( 1 - errLdn );
+  
   // Loop over Gen and MC jets...
   if (!gIsData) {
     ngenJet = Get<Int_t>("nGenJet");
@@ -303,19 +353,25 @@ void JetSelector::InsideLoop(){
   nGenJets  = genJets.size();
 
   // Set params...
-  SetParam("selJets",  selJets);
-  SetParam("selJetsJecUp", selJetsJecUp);
-  SetParam("selJetsJecDown", selJetsJecDown);
-  SetParam("selJetsJER" , selJetsJER);
-  SetParam("Jets15",   Jets15);
-  SetParam("vetoJets", vetoJets);
-  SetParam("genJets",  genJets);
-  SetParam("mcJets",  mcJets);
-  SetParam("nSelJets",  nSelJets);
-  SetParam("nJets15",  nJets15);
-  SetParam("nVetoJets",  nVetoJets);
-  SetParam("nGenJets",  nGenJets);
-  SetParam("nSelBJets",  nBtagJets);
+  SetParam("selJets",         selJets);
+  SetParam("selJetsJecUp",    selJetsJecUp);
+  SetParam("selJetsJecDown",  selJetsJecDown);
+  SetParam("selJetsJER" ,     selJetsJER);
+  SetParam("Jets15",          Jets15);
+  SetParam("vetoJets",        vetoJets);
+  SetParam("genJets",         genJets);
+  SetParam("mcJets",          mcJets);
+  SetParam("nSelJets",        nSelJets);
+  SetParam("nJets15",         nJets15);
+  SetParam("nVetoJets",       nVetoJets);
+  SetParam("nGenJets",        nGenJets);
+  SetParam("nSelBJets",       nBtagJets);
+  SetParam("BtagSF",          BtagSF);
+  SetParam("BtagSFBtagUp",    BtagSFBtagUp);
+  SetParam("BtagSFBtagDown",  BtagSFBtagDown);
+  SetParam("BtagSFMistagUp",  BtagSFMistagUp);
+  SetParam("BtagSFMistagDown",BtagSFMistagDown);
+  SetParam("BtagSFFS",        BtagSFFS);
 
   // Propagate JES to MET
   Float_t met_pt  = Get<Float_t>("MET_pt");
@@ -338,7 +394,7 @@ Bool_t JetSelector::IsBtag(Jet j){
   Bool_t isbtag;
   if(gIsData || gSelection == i4tSelec || gSelection == iWZSelec) isbtag = fBTagSFnom->IsTagged(j.csv, -999999, j.p.Pt(), j.p.Eta(), (UInt_t)j.p.Pt());
   // using "weights" as scale factors in the tW analysis :)
-  else if(gSelection == iTWSelec) isbtag = fBTagSFnom->IsTagged(j.csv, -999999, j.p.Pt(), j.p.Eta(), (UInt_t)j.p.Pt());
+  else if(gSelection == iTWSelec || gSelection == iTWTTbarSelec) isbtag = fBTagSFnom->IsTagged(j.csv, -999999, j.p.Pt(), j.p.Eta(), (UInt_t)j.p.Pt());
   //else if(stringWP == "Loose") isbtag = fBTagSFnom->IsTagged(j.csv, -999999, j.p.Pt(), j.p.Eta(), (UInt_t)j.p.Pt());
   else                         isbtag = fBTagSFnom->IsTagged(j.csv,j.flavmc, j.p.Pt(), j.p.Eta(), (UInt_t)j.p.Pt());
   if(gIsFastSim && BtagSFFS == 1. && isbtag){

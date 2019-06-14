@@ -66,6 +66,7 @@ void TWTTbarAnalysis::InsideLoop() {
   selJetsJecUp      = GetParam<vector<Jet>>("selJetsJecUp");
   selJetsJecDown    = GetParam<vector<Jet>>("selJetsJecDown");
   selJetsJER        = GetParam<vector<Jet>>("selJetsJER");
+  TNBJets           = (UInt_t)GetParam<Int_t>("nSelBJets");
   vetoJets          = GetParam<vector<Jet>>("vetoJets");
   genJets           = GetParam<vector<Jet>>("genJets");
   
@@ -473,10 +474,7 @@ void TWTTbarAnalysis::GetJetVariables() {
   TNJetsJESDown = selJetsJecDown.size();
   TNJetsJERUp   = selJetsJER.size();
   
-  for (Int_t i = 0; i < TNJets; i++) {
-    THT += selJets.at(i).Pt();
-    if (selJets.at(i).isBtag) TNBJets++;
-  }
+  for (Int_t i = 0; i < TNJets; i++) THT += selJets.at(i).Pt();
   
   if (TNJets > 0) {
     TJet1_Pt  = selJets.at(0).Pt();
@@ -490,14 +488,12 @@ void TWTTbarAnalysis::GetJetVariables() {
     }
   }
   
-  for (UInt_t j = 0; j < vetoJets.size(); ++j) { // LLEVAR PAL JET SELECTOR
-    if (vetoJets.at(j).p.Pt() > 20.) {
-      if (TMath::Abs(vetoJets.at(j).p.Eta()) < 2.4) {
-        LooseCentralJets.push_back(vetoJets.at(j));
-        if (vetoJets.at(j).isBtag) NBLooseCentral++;
-      }
-      else LooseFwdJets.push_back(vetoJets.at(j));
+  for (UInt_t j = 0; j < vetoJets.size(); ++j) {
+    if (TMath::Abs(vetoJets.at(j).p.Eta()) < 2.4) {
+      LooseCentralJets.push_back(vetoJets.at(j));
+      if (vetoJets.at(j).isBtag) NBLooseCentral++;
     }
+    else LooseFwdJets.push_back(vetoJets.at(j));
   }
   
   NLooseCentral = LooseCentralJets.size();
@@ -673,7 +669,7 @@ void TWTTbarAnalysis::ResetTWTTbarVariables() {
   TDressIsSS             = false;
   GenChannel             = -1;
   
-  TNBJets        = 0; TNBJetsJESUp        = 0; TNBJetsJESDown        = 0; TNBJetsJERUp        = 0;
+  TNBJetsJESUp        = 0; TNBJetsJESDown        = 0; TNBJetsJERUp        = 0;
   NBLooseCentral = 0; NBLooseCentralJESUp = 0; NBLooseCentralJESDown = 0; NBLooseCentralJERUp = 0;
   LooseCentralJets.clear(); LooseFwdJets.clear();
   LooseCentralJetsJESUp.clear(); LooseFwdJetsJESUp.clear();
