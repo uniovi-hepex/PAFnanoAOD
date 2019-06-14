@@ -14,42 +14,42 @@
 
 ClassImp(EventBuilder);
 EventBuilder::EventBuilder() : PAFChainItemSelector(),
-			       METfilters(false),
-			       passTrigger(false),
-			       isSS(false),
-			       TriggerSF(0),
-			       TriggerSF_Up(0),
-			       TriggerSF_Down(0),
-			       TriggerSF_err(0),
-			       PUSF(0),
-			       PUSF_Up(0),
-			       PUSF_Down(0),
-			       NormWeight(0),
-			       Weight(0),
-			       genWeight(0),
-			       nTrueInt(0),
-			       gChannel(0),
-			       //fPUWeight(0),
-			       //fPUWeightUp(0),
-			       //fPUWeightDown(0),
-			       gIsSingleMuon(false),
-			       gIsSingleElec(false),
-			       gIsDoubleMuon(false),
-			       gIsDoubleElec(false),
-			       gIsMuonEG(false),
-			       gIsMET(false),
-			       gIsData(false),
-			       run(-1),
-			       gSelection(-1),
-			       gSampleName(""),
-			       gPathToHeppyTrees(""),
-			       gXSec(0),
-			       gCount(0),
-			       gIsMCatNLO(false),
-			       gNEntries(0),
-			       xsec(0),
-			       nProcessedEvents(0),
-			       gOptions("")
+                               METfilters(false),
+                               passTrigger(false),
+                               isSS(false),
+                               TriggerSF(0),
+                               TriggerSF_Up(0),
+                               TriggerSF_Down(0),
+                               TriggerSF_err(0),
+                               PUSF(0),
+                               PUSF_Up(0),
+                               PUSF_Down(0),
+                               NormWeight(0),
+                               Weight(0),
+                               genWeight(0),
+                               nTrueInt(0),
+                               gChannel(0),
+                               //fPUWeight(0),
+                               //fPUWeightUp(0),
+                               //fPUWeightDown(0),
+                               gIsSingleMuon(false),
+                               gIsSingleElec(false),
+                               gIsDoubleMuon(false),
+                               gIsDoubleElec(false),
+                               gIsMuonEG(false),
+                               gIsMET(false),
+                               gIsData(false),
+                               run(-1),
+                               gSelection(-1),
+                               gSampleName(""),
+                               gPathToHeppyTrees(""),
+                               gXSec(0),
+                               gCount(0),
+                               gIsMCatNLO(false),
+                               gNEntries(0),
+                               xsec(0),
+                               nProcessedEvents(0),
+                               gOptions("")
 {}
 
 
@@ -71,7 +71,7 @@ void EventBuilder::Initialise(){
   gSelection   = GetSelection(selection);
   gPUWeigth    = gOptions.Contains("PUweight")? true : false;
   gChannel = -1;
-  nProcessedEvents = 0; 
+  nProcessedEvents = 0;
   
   gIs2017 = false; gIs2016 = false; gIs2018 = false;
   if(gOptions.Contains("2017")) gIs2017 = true;
@@ -131,8 +131,8 @@ void EventBuilder::Initialise(){
   PUSF_Down = 1;
   
   makeeffhistos = true;  // THIS IS PUT HERE SO WE DON'T DO THE TRIG EFF HISTOS BUT ALSO BECAUSE (at least for 2017's nanoAODv4) MET TRIGGERS ARE BADLY SET
-
 }
+
 
 void EventBuilder::InsideLoop(){
   nProcessedEvents++;
@@ -307,13 +307,13 @@ Bool_t EventBuilder::PassesElMuTrigger(){
   }
   else if(year == 2017){
     if(era == runB){
-      pass = 
+      pass =
         Get<Bool_t>("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ") ||
         Get<Bool_t>("HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ") ||
         Get<Bool_t>("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ");
     }
     else{
-      pass = 
+      pass =
         Get<Bool_t>("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ") ||
         Get<Bool_t>("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL") ||
         Get<Bool_t>("HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL") ||
@@ -323,7 +323,7 @@ Bool_t EventBuilder::PassesElMuTrigger(){
     }
   }
   else if(year == 2018){
-    pass = 
+    pass =
       Get<Bool_t>("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ") ||
       Get<Bool_t>("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL") ||
       Get<Bool_t>("HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL") ||
@@ -433,35 +433,87 @@ Bool_t EventBuilder::TrigElMu(){
 
 
 // ########################### MET FILTERS
-Bool_t EventBuilder::PassesMETfilters() {
-  if (gSelection == itt) { // Updated on 2019-02-11 for both data and MC
-    if (gIsData) {
-      if ((Get<Bool_t>("Flag_goodVertices")                      &&
+Bool_t EventBuilder::PassesMETfilters() { // Updated on 2019-06-14 for both data and MC
+  if (gIsData) {
+    if      (year == 2016) {
+      if (Get<Bool_t>("Flag_goodVertices")                       &&
           Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
           Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
           Get<Bool_t>("Flag_HBHENoiseIsoFilter")                 &&
           Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
           Get<Bool_t>("Flag_BadPFMuonFilter")                    &&
-          Get<Bool_t>("Flag_BadChargedCandidateFilter")          &&
-          Get<Bool_t>("Flag_eeBadScFilter")                      &&
-          Get<Bool_t>("Flag_ecalBadCalibFilter")                 //&& // WE ARE APPLYING THIS ONE INSTEAD OF THE NEXT ONE THAT DOES NOT EXIST EXACTLY
-          //Get<Bool_t>("ecalBadCalibReducedMINIAODFilter")           // WE DO NOT HAVE THIS ONE
-        )) return true;
+//           Get<Bool_t>("Flag_BadChargedCandidateFilter")          && // Currently NOT RECOMMENDED
+          Get<Bool_t>("Flag_eeBadScFilter")
+         ) return true;
       else return false;
     }
-    else { // ONLY FULLSIM
-      if ((Get<Bool_t>("Flag_goodVertices")                      &&
+    else if (year == 2017) {
+      if (Get<Bool_t>("Flag_goodVertices")                       &&
           Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
           Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
           Get<Bool_t>("Flag_HBHENoiseIsoFilter")                 &&
           Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
           Get<Bool_t>("Flag_BadPFMuonFilter")                    &&
-          Get<Bool_t>("Flag_BadChargedCandidateFilter")          &&
-          Get<Bool_t>("Flag_ecalBadCalibFilter")                 //&& // WE ARE APPLYING THIS ONE INSTEAD OF THE NEXT ONE THAT DOES NOT EXIST EXACTLY
-          //Get<Bool_t>("ecalBadCalibReducedMINIAODFilter")           // WE DO NOT HAVE THIS ONE
-        )) return true;
+//           Get<Bool_t>("Flag_BadChargedCandidateFilter")          && // Currently NOT RECOMMENDED
+          Get<Bool_t>("Flag_eeBadScFilter")                      &&
+          Get<Bool_t>("Flag_ecalBadCalibFilterV2")                 //&& // WE ARE APPLYING THIS ONE INSTEAD OF THE NEXT ONE THAT DOES NOT EXIST EXACTLY
+          //Get<Bool_t>("ecalBadCalibReducedMINIAODFilter")             // WE DO NOT HAVE THIS ONE
+        ) return true;
+      else return false;
+    }
+    else if (year == 2018) {
+      if (Get<Bool_t>("Flag_goodVertices")                       &&
+          Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
+          Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
+          Get<Bool_t>("Flag_HBHENoiseIsoFilter")                 &&
+          Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
+          Get<Bool_t>("Flag_BadPFMuonFilter")                    &&
+//           Get<Bool_t>("Flag_BadChargedCandidateFilter")          && // Currently NOT RECOMMENDED
+          Get<Bool_t>("Flag_eeBadScFilter")                      &&
+          Get<Bool_t>("Flag_ecalBadCalibFilterV2")                 //&& // WE ARE APPLYING THIS ONE INSTEAD OF THE NEXT ONE THAT DOES NOT EXIST EXACTLY
+          //Get<Bool_t>("ecalBadCalibReducedMINIAODFilter")             // WE DO NOT HAVE THIS ONE
+        ) return true;
       else return false;
     }
   }
-  else return false;
+  else { // ONLY FULLSIM
+    if      (year == 2016) {
+      if (Get<Bool_t>("Flag_goodVertices")                       &&
+          Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
+          Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
+          Get<Bool_t>("Flag_HBHENoiseIsoFilter")                 &&
+          Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
+          Get<Bool_t>("Flag_BadPFMuonFilter")
+//           Get<Bool_t>("Flag_BadChargedCandidateFilter") // Currently NOT RECOMMENDED
+         ) return true;
+      else return false;
+    }
+    else if (year == 2017) {
+      if (Get<Bool_t>("Flag_goodVertices")                       &&
+          Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
+          Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
+          Get<Bool_t>("Flag_HBHENoiseIsoFilter")                 &&
+          Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
+          Get<Bool_t>("Flag_BadPFMuonFilter")                    &&
+//           Get<Bool_t>("Flag_BadChargedCandidateFilter")          && // Currently NOT RECOMMENDED
+          Get<Bool_t>("Flag_ecalBadCalibFilterV2")                 //&& // WE ARE APPLYING THIS ONE INSTEAD OF THE NEXT ONE THAT DOES NOT EXIST EXACTLY
+          //Get<Bool_t>("ecalBadCalibReducedMINIAODFilter")             // WE DO NOT HAVE THIS ONE
+        ) return true;
+      else return false;
+    }
+    else if (year == 2018) {
+      if (Get<Bool_t>("Flag_goodVertices")                       &&
+          Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
+          Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
+          Get<Bool_t>("Flag_HBHENoiseIsoFilter")                 &&
+          Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
+          Get<Bool_t>("Flag_BadPFMuonFilter")                    &&
+//           Get<Bool_t>("Flag_BadChargedCandidateFilter")         && // Currently NOT RECOMMENDED
+          Get<Bool_t>("Flag_ecalBadCalibFilterV2")                 //&& // WE ARE APPLYING THIS ONE INSTEAD OF THE NEXT ONE THAT DOES NOT EXIST EXACTLY
+          //Get<Bool_t>("ecalBadCalibReducedMINIAODFilter")             // WE DO NOT HAVE THIS ONE
+        ) return true;
+      else return false;
+    }
+  }
+  return false;
 }
