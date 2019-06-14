@@ -93,23 +93,22 @@ void LeptonSF::loadHisto(Int_t iHisto, Int_t wp){
       fMuonIdSF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + filename + ".root", histoname, "fMuonIdSF"); 
     }
     else{ // 2016
+      TString fBCDEF = "2016LegacyReReco_RunBCDEF_SF_ID";
+      TString fGH    = "2016LegacyReReco_RunGH_SF_ID";
       if(wp == iLoose){
-        filename = "MuonSFId_BCDEF"; histoname = "MC_NUM_LooseID_DEN_genTracks_PAR_pt_eta/pt_abseta_ratio";
-        fMuonIdSF_BCDEF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + filename + ".root", histoname, "fMuonIdSF_BCDEF"); 
-        filename = "MuonSFId_GH"; histoname = "MC_NUM_LooseID_DEN_genTracks_PAR_pt_eta/pt_abseta_ratio";
-        fMuonIdSF_GH    = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + filename + ".root", histoname, "fMuonIdSF_GH"); 
+        histoname = "NUM_LooseID_DEN_genTracks_eta_pt";
+        fMuonIdSF_BCDEF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fBCDEF + ".root", histoname, "fMuonIdSF_BCDEF"); 
+        fMuonIdSF_GH    = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fGH    + ".root", histoname, "fMuonIdSF_GH"); 
       }
-      if(wp == iMedium){
-        filename = "MuonSFId_BCDEF"; histoname = "MC_NUM_MediumID_DEN_genTracks_PAR_pt_eta/pt_abseta_ratio";
-        fMuonIdSF_BCDEF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + filename + ".root", histoname, "fMuonIdSF_BCDEF"); 
-        filename = "MuonSFId_GH"; histoname = "MC_NUM_MediumID_DEN_genTracks_PAR_pt_eta/pt_abseta_ratio";
-        fMuonIdSF_GH    = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + filename + ".root", histoname, "fMuonIdSF_GH"); 
+      else if(wp == iMedium){
+        histoname = "NUM_MediumID_DEN_genTracks_eta_pt";
+        fMuonIdSF_BCDEF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fBCDEF + ".root", histoname, "fMuonIdSF_BCDEF"); 
+        fMuonIdSF_GH    = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fGH    + ".root", histoname, "fMuonIdSF_GH"); 
       }
-      if(wp == iTight){
-        filename = "MuonSFId_BCDEF"; histoname = "MC_NUM_TightID_DEN_genTracks_PAR_pt_eta/pt_abseta_ratio";
-        fMuonIdSF_BCDEF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + filename + ".root", histoname, "fMuonIdSF_BCDEF"); 
-        filename = "MuonSFId_GH"; histoname = "MC_NUM_TightID_DEN_genTracks_PAR_pt_eta/pt_abseta_ratio";
-        fMuonIdSF_GH    = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + filename + ".root", histoname, "fMuonIdSF_GH"); 
+      else if(wp == iTight){
+        histoname = "NUM_TightID_DEN_genTracks_eta_pt";
+        fMuonIdSF_BCDEF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fBCDEF + ".root", histoname, "fMuonIdSF_BCDEF"); 
+        fMuonIdSF_GH    = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fGH    + ".root", histoname, "fMuonIdSF_GH"); 
       }
     }
   }
@@ -130,18 +129,23 @@ void LeptonSF::loadHisto(Int_t iHisto, Int_t wp){
       }
       fMuonIsoSF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + filename + ".root", histoname, "fMuonIsoSF"); 
     }
-    else{ // 2016
+    else{
+      TString fBCDEF = "2016LegacyReReco_RunBCDEF_SF_ISO";
+      TString fGH    = "2016LegacyReReco_RunGH_SF_ISO";
       if(wp == iLoose){
-        filename = "MuonSFIso_BCDEF"; histoname = "LooseISO_TightID_pt_eta/pt_abseta_ratio";
-        fMuonIsoSF_BCDEF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + filename + ".root", histoname, "fMuonIsoSF_BCDEF"); 
-        filename = "MuonSFIso_GH"; histoname = "LooseISO_TightID_pt_eta/pt_abseta_ratio";
-        fMuonIsoSF_GH    = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + filename + ".root", histoname, "fMuonIsoSF_GH"); 
+        histoname = "NUM_LooseRelIso_DEN_TightIDandIPCut_eta_pt";
+        fMuonIdSF_BCDEF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fBCDEF + ".root", histoname, "fMuonIsoSF_BCDEF");
+        fMuonIdSF_GH    = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fGH    + ".root", histoname, "fMuonIsoSF_GH");
       }
-      if(wp == iTight){
-        filename = "MuonSFIso_BCDEF"; histoname = "TightISO_TightID_pt_eta/pt_abseta_ratio";
-        fMuonIsoSF_BCDEF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + filename + ".root", histoname, "fMuonIsoSF_BCDEF"); 
-        filename = "MuonSFIso_GH"; histoname = "TightISO_TightID_pt_eta/pt_abseta_ratio";
-        fMuonIsoSF_GH    = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + filename + ".root", histoname, "fMuonIsoSF_GH"); 
+      else if(wp == iMedium){
+        histoname = "NUM_TightRelIso_DEN_TightIDandIPCut_eta_pt";
+        fMuonIdSF_BCDEF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fBCDEF + ".root", histoname, "fMuonIsoSF_BCDEF");
+        fMuonIdSF_GH    = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fGH    + ".root", histoname, "fMuonIsoSF_GH");
+      }
+      else if(wp == iTight){
+        histoname = "NUM_TightID_DEN_genTracks_eta_pt";
+        fMuonIdSF_BCDEF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fBCDEF + ".root", histoname, "fMuonIdSF_BCDEF");
+        fMuonIdSF_GH    = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fGH    + ".root", histoname, "fMuonIdSF_GH");
       }
     }
   }
