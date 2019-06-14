@@ -52,6 +52,7 @@ def GetNGenEvents(fname):
   elif isinstance(fname, str):
     f = TFile.Open(fname)
     h = f.Get('Count')
+
     return h.GetBinContent(1)
   else: print '[ERROR] [GetNGenEvents]: wrong input' 
 
@@ -198,6 +199,14 @@ def GetProcessInfo(path, process=''):
     print ' Generated events:   ' + str(nGenEvents)
     print ' Sum of gen weights: ' + str(nSumOfWeights)
   print '##################################################################\n'
+
+def IsVarInTree(fname, var, treeName = 'Events'):
+  if not os.path.isfile(fname):
+    print 'ERROR: %s does not exists!'
+    return False
+  f = TFile.Open(fname)
+  t = f.Get(treeName)
+  return hasattr(t, var)
 
 ##################################
 # Extra functions to work check .root files from terminal

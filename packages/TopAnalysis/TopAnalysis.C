@@ -80,13 +80,11 @@ void TopAnalysis::Initialise(){
   gIsData      = GetParam<Bool_t>("IsData");
   selection   = GetParam<TString>("selection");
   gSampleName  = GetParam<TString>("sampleName");
-  gDoSyst      = GetParam<Bool_t>("doSyst");
   gOptions     = GetParam<TString>("_options");
+  gDoSyst      = gOptions.Contains("doSyst")? true : false;
   year         = GetParam<TString>("year").Atoi();
   gIsTTbar     = false;
   gIsLHE       = false;
-  if (gSampleName.Contains("TTbar") || gSampleName.Contains("TTJets")) gIsTTbar = true;
-  if (gSampleName == "TTbar_Powheg") gIsLHE = true;
   gSelection     = GetSelection(selection);
 
   makeTree   = false;
@@ -880,25 +878,6 @@ void TopAnalysis::SetVariables(int sys){
       m  = Get<Float_t>("Jet_mass_jerDown", i);
     }
 
-    // Btagging, mistag
-    if     (sys == kBtagUp)      isbtag = fBTagSFbUp->IsTagged(csv, flav, pt, eta);
-    else if(sys == kBtagDown)    isbtag = fBTagSFbDo->IsTagged(csv, flav, pt, eta);
-    else if(sys == kMistagUp)    isbtag = fBTagSFlUp->IsTagged(csv, flav, pt, eta);
-    else if(sys == kMistagDown)  isbtag = fBTagSFlDo->IsTagged(csv, flav, pt, eta);
-    else                         isbtag = fBTagSFnom->IsTagged(csv, flav, pt, eta);
-
-    if(pt > 30 && TMath::Abs(eta) <= 2.4 && jetid > 1){ // pt > 30, |eta| < 2.4, id > 1 (2, 6)
-      t.SetPtEtaPhiM(pt, eta, phi, m);
-      jet = Jet(t, csv);
-      jet.isBtag = isbtag;
-      jet.SetDeepCSVB(deepcsv);
-
-      if(Cleaning(jet, selLeptons, 0.4)){
-        njets++;
-        if(jet.isBtag) nbtags++; 
-        jets.push_back(jet);
-      }
-    }
   }
 
   if     (sys == kMuonEffUp  ) weight = TWeight_MuonEffUp;

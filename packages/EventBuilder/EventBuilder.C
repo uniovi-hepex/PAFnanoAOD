@@ -61,15 +61,15 @@ EventBuilder::~EventBuilder() {
 }
 
 void EventBuilder::Initialise(){
-  year    = GetParam<TString>("year").Atoi();
-  gIsData = GetParam<Bool_t>("IsData");
-  selection = GetParam<TString>("iSelection");
+  year         = GetParam<TString>("year").Atoi();
+  gIsData      = GetParam<Bool_t>("IsData");
+  selection    = GetParam<TString>("selection");
   gSampleName  = GetParam<TString>("sampleName");
   gIsMCatNLO   = GetParam<Bool_t>("IsMCatNLO");
   gXSec        = GetParam<Float_t>("xsec");
   gOptions     = GetParam<TString>("_options");
-  gIsRunH = false;
-  if(gSampleName.Contains("Run2016H")) gIsRunH = true;
+  gSelection   = GetSelection(selection);
+  gPUWeigth    = gOptions.Contains("PUweight")? true : false;
   gChannel = -1;
   nProcessedEvents = 0;
   
@@ -229,7 +229,7 @@ void EventBuilder::Summary(){
 // Compute single and double lepton triggers for each year (and analysis)
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 Bool_t EventBuilder::PassesDoubleElecTrigger(){
-  int era = -1; if(gIsData) era = GetRunEra(Get<Int_t>("run"));
+  int era = -1; if(gIsData) era = GetRunEra(Get<Int_t>("run"), year);
   Bool_t pass = false;
   gIsData = GetParam<Bool_t>("IsData");
   if(gIsData) run = Get<UInt_t>("run");
@@ -254,7 +254,7 @@ Bool_t EventBuilder::PassesDoubleElecTrigger(){
 }
 
 Bool_t EventBuilder::PassesDoubleMuonTrigger(){
-  int era = -1; if(gIsData) era = GetRunEra(Get<Int_t>("run"));
+  int era = -1; if(gIsData) era = GetRunEra(Get<Int_t>("run"), year);
   Bool_t pass = false;
   if (gIsData) run     = Get<UInt_t>("run");
 
@@ -291,7 +291,7 @@ Bool_t EventBuilder::PassesDoubleMuonTrigger(){
 }
 
 Bool_t EventBuilder::PassesElMuTrigger(){
-  int era = -1; if(gIsData) era = GetRunEra(Get<Int_t>("run"));
+  int era = -1; if(gIsData) era = GetRunEra(Get<Int_t>("run"), year);
   Bool_t pass = false;
   if (gIsData) run     = Get<UInt_t>("run");
 
@@ -339,10 +339,10 @@ Bool_t EventBuilder::PassesElMuTrigger(){
 }
 
 Bool_t EventBuilder::PassesSingleElecTrigger(){
-  int era = -1; if(gIsData) era = GetRunEra(Get<Int_t>("run"));
+  int era = -1; if(gIsData) era = GetRunEra(Get<Int_t>("run"), year);
   Bool_t pass = false;
   if     (year == 2016){
-    if(gIsRunH) pass =  Get<Bool_t>("HLT_Ele27_WPTight_Gsf");
+    if(era == runH) pass =  Get<Bool_t>("HLT_Ele27_WPTight_Gsf");
     else pass =  Get<Bool_t>("HLT_Ele27_WPTight_Gsf") || Get<Bool_t>("HLT_Ele23_WPLoose_Gsf");
   }
   else if(year == 2017){
@@ -364,7 +364,7 @@ Bool_t EventBuilder::PassesSingleElecTrigger(){
 }
 
 Bool_t EventBuilder::PassesSingleMuonTrigger(){
-  int era = -1; if(gIsData) era = GetRunEra(Get<Int_t>("run"));
+  int era = -1; if(gIsData) era = GetRunEra(Get<Int_t>("run"), year);
   Bool_t pass = false;
   if     (year == 2016){
     pass = Get<Bool_t>("HLT_IsoTkMu24") || Get<Bool_t>("HLT_IsoMu24") 
@@ -381,7 +381,7 @@ Bool_t EventBuilder::PassesSingleMuonTrigger(){
 
 Bool_t EventBuilder::PassesMETtrigger(){ // THIS IS WROOOOOOOOOOOOOOONG (at least for 2017's nanoAODv4)
   Bool_t pass = false;
-  int era = -1; if(gIsData) era = GetRunEra(Get<Int_t>("run"));
+  int era = -1; if(gIsData) era = GetRunEra(Get<Int_t>("run"), year);
   if(gIsData){
     if(era == runB) pass = Get<Bool_t>("HLT_PFMET120_PFMHT120_IDTight");
     else pass = Get<Bool_t>("HLT_PFMET120_PFMHT120_IDTight") || Get<Bool_t>("HLT_PFMET120_PFMHT120_IDTight_PFHT60");

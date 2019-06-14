@@ -956,15 +956,36 @@ Int_t NBtagNJets(Int_t nJets, Int_t nBtags){
 }
 
 
-Int_t GetRunEra(Int_t run){
+Int_t GetRunEra(Int_t run, Int_t year){
   int era = runA;
-    if     (run <= 297019)                 era = runA;
-    else if(run <= 299329 && run > 297019) era = runB;
-    else if(run <= 302029 && run > 299336) era = runC;
-    else if(run <= 303434 && run > 302029) era = runD;
-    else if(run <= 304826 && run > 303434) era = runE;
-    else if(run <= 306462 && run > 304910) era = runF;
-return era;
+  if     (year == 2016){
+    if     (run <= 271658) era = runA;
+    else if(run <= 275376) era = runB;
+    else if(run <= 276283) era = runC;
+    else if(run <= 276811) era = runD;
+    else if(run <= 277420) era = runE;
+    else if(run <= 278808) era = runF;
+    else if(run <= 280385) era = runG;
+    else if(run <= 284044) era = runH;
+    else cout << "Wierd event run number..." << endl;
+  }
+  else if(year == 2017){
+    if     (run <= 297019) era = runA;
+    else if(run <= 299329) era = runB;
+    else if(run <= 302029) era = runC;
+    else if(run <= 303434) era = runD;
+    else if(run <= 304826) era = runE;
+    else if(run <= 306462) era = runF;
+    else cout << "Wierd event run number..." << endl;
+  }
+  else if(year == 2018){
+    if     (run <= 316995) era = runA;
+    else if(run <= 319312) era = runB;
+    else if(run <= 320393) era = runC;
+    else if(run <= 325273) era = runD;
+    else cout << "Wierd event run number..." << endl;
+  }
+  return era;
 }
 
 
