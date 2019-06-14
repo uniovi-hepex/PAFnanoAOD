@@ -2,8 +2,6 @@
 
 ClassImp(TopAnalysis);
 
-bool GreaterThan(float i, float j){ return (i > j);}
-
 TopAnalysis::TopAnalysis() : PAFChainItemSelector() {
   fTree           = 0;
   fHWeightsFidu   = 0;
@@ -17,7 +15,7 @@ TopAnalysis::TopAnalysis() : PAFChainItemSelector() {
   
   for(Int_t ch = 0; ch < nChannels; ch++){
     for(Int_t cut = 0; cut < nLevels; cut++){
-      for(Int_t sys = 0; sys < nSysts; sys++){
+      for(Int_t sys = 0; sys < nSyst; sys++){
         if(gIsData && sys!=0) break;
         fHLHEweights[ch][cut][sys]  = 0;
         fHMET[ch][cut][sys]         = 0;
@@ -78,14 +76,17 @@ void TopAnalysis::Summary(){}
 
 void TopAnalysis::Initialise(){
   gIsData      = GetParam<Bool_t>("IsData");
-  selection   = GetParam<TString>("selection");
+  selection    = GetParam<TString>("selection");
   gSampleName  = GetParam<TString>("sampleName");
   gOptions     = GetParam<TString>("_options");
   gDoSyst      = gOptions.Contains("doSyst")? true : false;
   year         = GetParam<TString>("year").Atoi();
   gIsTTbar     = false;
   gIsLHE       = false;
-  gSelection     = GetSelection(selection);
+  gSelection   = GetSelection(selection);
+  gDoJECunc    = gOptions.Contains("JECunc")? true : false;
+  gPUWeigth    = gOptions.Contains("PUweight")? true : false;
+  JetPt        = gOptions.Contains("JetPtNom")? "Jet_pt_nom" : "Jet_pt";
 
   makeTree   = false;
   makeHistos = true;
@@ -96,31 +97,39 @@ void TopAnalysis::Initialise(){
     SetEventVariables();
   }
   if (makeHistos) InitHistos();
-  era = -1;
-  if(gOptions.Contains("eraB")) era = runB;
-  if(gOptions.Contains("eraC")) era = runC;
-  if(gOptions.Contains("eraD")) era = runD;
-  if(gOptions.Contains("eraE")) era = runE;
-  if(gOptions.Contains("eraF")) era = runF;
 
-  // B tagging
-  TString pwd  = GetParam<TString>("WorkingDir");
-  TString BTagSFPath = Form("%s/packages/BTagSFUtil", pwd.Data());
-  TString taggerName="CSVv2";
-  TString MeasType = "mujets";
-  TString stringWP = "Medium";
-  fBTagSFnom = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP,  0);
-  fBTagSFbUp = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP,  1);
-  fBTagSFbDo = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP, -1);
-  fBTagSFlUp = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP,  3);
-  fBTagSFlDo = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP, -3);
+  // Uncertainties
+  useSyst.push_back(kNorm);
+  if(gDoSyst){
+    useSyst.push_back(kMuonEffUp);
+    useSyst.push_back(kMuonEffDown);
+    useSyst.push_back(kElecEffUp);
+    useSyst.push_back(kElecEffDown);
+    useSyst.push_back(kBtagUp);
+    useSyst.push_back(kBtagDown);
+    useSyst.push_back(kMistagUp);
+    useSyst.push_back(kMistagDown);
+
+    if(gDoJECunc){
+      useSyst.push_back(kJESUp);
+      useSyst.push_back(kJESDown);
+      useSyst.push_back(kJERUp);
+      useSyst.push_back(kJERDown);
+    }
+    if(gPUWeigth){
+      useSyst.push_back(kPUUp);
+      useSyst.push_back(kPUDown);
+    }
+  }
+  nSyst = useSyst.size();
+
+  metvar = year == 2017? "METFixEE2017" : "MET";
 }
 
 void TopAnalysis::InsideLoop(){
   event     = Get<ULong64_t>("event");
-//   if (event != 711898884 && event != 542316965 && event != 430402000 && event != 1086078276 && event != 124930767) return;
-  
   lumiblock = Get<UInt_t>("luminosityBlock");
+
   // Vectors with the objects
   genLeptons     = GetParam<vector<Lepton>>("genLeptons");
   selLeptons     = GetParam<vector<Lepton>>("selLeptons");
@@ -138,7 +147,7 @@ void TopAnalysis::InsideLoop(){
   TrigSF         = GetParam<Float_t>("TriggerSF");
   TrigSFerr      = GetParam<Float_t>("TriggerSFerr");
   TrigSF = 1; TrigSFerr = 0;
-  if(!gIsData){
+  if(!gIsData && gPUWeigth){
     PUSF         = Get<Float_t>("puWeight");
     PUSF_Up      = Get<Float_t>("puWeightUp");
     PUSF_Down    = Get<Float_t>("puWeightDown");
@@ -161,6 +170,7 @@ void TopAnalysis::InsideLoop(){
   if(gIsTTbar) FillCorrHistos();
 
   // Number of events in fiducial region
+  cout << "Entering Fid..." << endl;
   if(!gIsData && makeHistos) {
     if(genLeptons.size() >= 2){ // MIND THE POSSIBLE SKIM (on reco leptons) IN THE SAMPLE!!
       Int_t GenChannel = -1;
@@ -192,6 +202,7 @@ void TopAnalysis::InsideLoop(){
       }
     }
   }
+  cout << "Passing Fid. Entering make dummy Histos..." << endl;
 
   if (makeHistos) {
   // Fill hDummy histos...
@@ -228,11 +239,13 @@ void TopAnalysis::InsideLoop(){
       }
     }
   }
+  cout << "Entering event selection..." << endl;
+  cout << "Number of syst: " << nSyst << endl;
  
   // Event Selection
   // ===================================================================================================================
   if (TNSelLeps >= 2 && TPassTrigger && TPassMETFilters) {
-    for(Int_t sys = 0; sys < nSysts; sys++){
+    for(Int_t sys = 0; sys < nSyst; sys++){
       if(!gDoSyst && sys > 0) break;
       if(gIsData  && sys > 0) break;
      
@@ -276,37 +289,6 @@ void TopAnalysis::InsideLoop(){
       }
     }
   }
-  
-//   if (event == 711898884 || event == 542316965 || event == 430402000 || event == 1086078276 || event == 124930767) {
-//     PAF_DEBUG("TopAnalysis", Form("============================== EVENTO %ul =============================================", event));
-//     PAF_DEBUG("TopAnalysis", Form("TChannel: $i", TChannel));
-//     PAF_DEBUG("TopAnalysis", Form("sel leptons: %i", TNSelLeps));
-//     
-//     if (TNSelLeps > 0) {
-//       PAF_DEBUG("TopAnalysis", Form("lepton[0] is muon: %i", selLeptons.at(0).isMuon));
-//       PAF_DEBUG("TopAnalysis", Form("lepton[0] is elec: %i", selLeptons.at(0).isElec));
-//       PAF_DEBUG("TopAnalysis", Form("lepton[0] pt: %f", selLeptons.at(0).Pt()));
-//       PAF_DEBUG("TopAnalysis", Form("lepton[0] eta: %f", selLeptons.at(0).Eta()));
-//       if (TNSelLeps > 1) {
-//       PAF_DEBUG("TopAnalysis", Form("lepton[1] is muon: %i", selLeptons.at(1).isMuon));
-//       PAF_DEBUG("TopAnalysis", Form("lepton[1] is elec: %i", selLeptons.at(1).isElec));
-//       PAF_DEBUG("TopAnalysis", Form("lepton[1] pt: %f", selLeptons.at(1).Pt()));
-//       PAF_DEBUG("TopAnalysis", Form("lepton[1] eta: %f", selLeptons.at(1).Eta()));
-//       }
-//     }
-//     PAF_DEBUG("TopAnalysis", Form("njets: %i", TNJets));
-//     PAF_DEBUG("TopAnalysis", Form("nbjets: %i", TNBtags));
-//     if (TNJets > 0) {
-//       PAF_DEBUG("TopAnalysis", Form("jet[0] pt: %f", selJets.at(0).Pt()));
-//       PAF_DEBUG("TopAnalysis", Form("jet[0] eta: %f", selJets.at(0).Eta()));
-//       PAF_DEBUG("TopAnalysis", Form("jet[0] isbtag: %i", selJets.at(0).isBtag));
-//       if (TNJets > 1) {
-//         PAF_DEBUG("TopAnalysis", Form("jet[1] pt: %f", selJets.at(1).Pt()));
-//         PAF_DEBUG("TopAnalysis", Form("jet[1] eta: %f", selJets.at(1).Eta()));
-//         PAF_DEBUG("TopAnalysis", Form("jet[1] isbtag: %i", selJets.at(1).isBtag));
-//       }
-//     }
-//   }
 }
 
 
@@ -434,8 +416,8 @@ void TopAnalysis::GetGenJetVariables(std::vector<Jet> genJets, std::vector<Jet> 
 
 void TopAnalysis::GetMET(){
     TRun        = gIsData ? Get<UInt_t>("run") : 1;
-    TMET        = Get<Float_t>("METFixEE2017_pt"); // MET_pt
-    TMET_Phi    = Get<Float_t>("METFixEE2017_phi");  // MET phi
+    TMET        = Get<Float_t>(metvar+"_pt"); // MET_pt
+    TMET_Phi    = Get<Float_t>(metvar+"_phi");  // MET phi
     if((Int_t) selLeptons.size() >= 2) TMT2        = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMET, TMET_Phi);
     TMETJESUp = 0; TMETJESDown = 0; TGenMET = 0; TgenTop1Pt = 0; TgenTop2Pt = 0;
     if(gIsData) TNVert = Get<Int_t>("PV_npvs");
@@ -522,10 +504,11 @@ void TopAnalysis::InitHistos(){
     fhDummy_njets[ch] = CreateH1F("fhDummy_njets"+gChanLabel[ch],"fhDummy_njets"+gChanLabel[ch], 1, 0, 2);
     fhDummy_nbtags[ch] = CreateH1F("fhDummy_nbtags"+gChanLabel[ch],"fhDummy_nbtags"+gChanLabel[ch], 1, 0, 2);
 
-    TString suf;
-    for(Int_t sys = 0; sys < nSysts; sys++){
+    TString suf; Int_t indexSyst;
+    for(Int_t sys = 0; sys < nSyst; sys++){
       suf = gChanLabel[ch];
-      if(sys > 0) suf += "_" + gSyst[sys];
+      indexSyst = useSyst.at(sys);
+      if(sys > 0) suf += "_" + gSyst[indexSyst];
       fHyields[ch][sys]     = CreateH1F("H_Yields_"+suf,"", nLevels, -0.5, nLevels-0.5);
       fHFiduYields[ch][sys]     = CreateH1F("H_FiduYields_"+suf,"", nLevels, -0.5, nLevels-0.5);
       fHSSyields[ch][sys]   = CreateH1F("H_SSYields_"+suf,"", nLevels, -0.5, nLevels-0.5);
@@ -544,7 +527,7 @@ void TopAnalysis::InitHistos(){
   TString suffix;
   for(Int_t ch = 0; ch < nChannels; ch++){
     for(Int_t cut = 0; cut < nLevels; cut++){
-      for(Int_t sys = 0; sys < nSysts; sys++){
+      for(Int_t sys = 0; sys < nSyst; sys++){
         if(gIsData && sys > 0) break;
         suffix = GetSuffix(ch, cut, sys);
         fHLHEweights[ch][cut][sys]  = CreateH1F("H_LHEweights"  +suffix, "LHEweights", nWeights, -0.5, nWeights - 0.5);
@@ -715,12 +698,8 @@ void TopAnalysis::FillCorrHistos(){
   Float_t bin0; Float_t bin1;
   for(Int_t i = 0; i < TNJets; i++){
     pTreco = selJets.at(i).Pt(); pTgen = mcJets.at(i).Pt();
-    //dR = selJets.at(i).p.DeltaR(mcJets.at(i).p); 
     dPtoPt = fabs(pTreco - pTgen)/pTreco;
     isBtag = selJets.at(i).isBtag; isBJet =  mcJets.at(i).isBtag;
-
-  // selJets = std::vector<Jet>();
-  // mcJets  = std::vector<Jet>();
 
     hJetPtReco ->Fill(pTreco);
     hJetPtGen  ->Fill(pTgen);
@@ -829,7 +808,8 @@ void TopAnalysis::SetEventVariables(){
 }
 
 TString TopAnalysis::GetSuffix(int iCh, int iCut, int iSyst){
-   TString t = iSyst > 0 ? gChanLabel[iCh]+"_"+sCut[iCut]+"_"+gSyst[iSyst] : gChanLabel[iCh]+"_"+sCut[iCut];
+   Int_t indexSyst = useSyst.at(iSyst);
+   TString t = iSyst > 0 ? gChanLabel[iCh]+"_"+sCut[iCut]+"_"+gSyst[indexSyst] : gChanLabel[iCh]+"_"+sCut[iCut];
    return t;
 }
 
@@ -855,7 +835,7 @@ void TopAnalysis::SetVariables(int sys){
   Int_t nJets = Get<Int_t>("nJet");
   Int_t jetid, flav;
   for(int i = 0; i < nJets; i++){
-    pt = Get<Float_t>("Jet_pt",i); eta = Get<Float_t>("Jet_eta",i); phi = Get<Float_t>("Jet_phi", i); m = Get<Float_t>("Jet_mass",i);
+    pt = Get<Float_t>(JetPt,i); eta = Get<Float_t>("Jet_eta",i); phi = Get<Float_t>("Jet_phi", i); m = Get<Float_t>("Jet_mass",i);
     csv = Get<Float_t>("Jet_btagCSVV2", i); deepcsv = Get<Float_t>("Jet_btagDeepB", i); jetid = Get<Int_t>("Jet_jetId",i);
     flav = -999999; if(!gIsData) flav = Get<Int_t>("Jet_hadronFlavour", i);
 

@@ -17,27 +17,25 @@ class Lepton : public TObject{
       Mid = 0;
     };
     //Lepton(const Lepton &l): p(l.p), charge(l.charge), type(l.type), index(l.index){ };
- Lepton(TLorentzVector vec, 
+    Lepton(TLorentzVector vec,
         Int_t ch = 0,
         Int_t ty = -1,
         Int_t tdecayMode   = -1,
-        Int_t tidDecayMode = -1, 
-        Int_t tidMVA       = -1, 
-        Int_t tidAntiE     = -1, 
+        Int_t tidDecayMode = -1,
+        Int_t tidMVA       = -1,
+        Int_t tidAntiE     = -1,
         Int_t tidAntiMu    = -1 ):
       charge(ch),
       type(ty),
       decayMode   (tdecayMode  ),
-      idDecayMode (tidDecayMode), 
-      idMVA       (tidMVA      ), 
-      idAntiE     (tidAntiE    ), 
-      idAntiMu    (tidAntiMu   ) 
-      {
-        p = vec;
-        
-        
-        if(ty == 0){ isMuon = 1; isElec = 0; isTau = 0;}
-        if(ty == 1){ isMuon = 0; isElec = 1; isTau = 0;}
+      idDecayMode (tidDecayMode),
+      idMVA       (tidMVA      ),
+      idAntiE     (tidAntiE    ),
+      idAntiMu    (tidAntiMu   ) {
+      p = vec;
+
+      if(ty == 0){ isMuon = 1; isElec = 0; isTau = 0;}
+      if(ty == 1){ isMuon = 0; isElec = 1; isTau = 0;}
       if(ty == 2){ isMuon = 0; isElec = 0; isTau = 1;}
     }
     ~Lepton(){};
@@ -68,7 +66,7 @@ class Lepton : public TObject{
     Float_t Eta(){return p.Eta();}
     Float_t Phi(){return p.Phi();}
     Float_t E(){return p.E();}
-    Float_t GetIso(){ return Iso;} 
+    Float_t GetIso(){ return Iso;}
     Float_t GetR9(){return R9;}
     Float_t GetEnergyUnc(){return EnergyUnc;}
     Int_t   GetGenMatch(){return genMatch;}
