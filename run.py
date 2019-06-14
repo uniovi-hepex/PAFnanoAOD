@@ -140,14 +140,15 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
   # Name of analysis class
   myProject.AddSelectorPackage("LeptonSelector");
   myProject.AddSelectorPackage("JetSelector");
-  #myProject.AddSelectorPackage("EventBuilder");
+  myProject.AddSelectorPackage("EventBuilder");
   
   # Analysis selector
   if(selection == 'ttbar' or selection == 'TT' or selection == 'ttxsec'): selection = 'tt'
   if(selection == 'TWTT' or selection == 'WWbb' or selection == 'twtt'):  selection = 'tWtt'
-  #if    selection == "tt"  :  myProject.AddSelectorPackage("TopAnalysis");
-  #elif  selection == "tWtt":  myProject.AddSelectorPackage("TWTTbarAnalysis");
-  #else: print "UNKNOWN SELECTOR."
+  
+  if    selection == "tt"  :  myProject.AddSelectorPackage("TopAnalysis");
+  elif  selection == "tWtt":  myProject.AddSelectorPackage("TWTTbarAnalysis");
+  else: print "UNKNOWN SELECTOR."
   
   # Additional packages
   myProject.AddPackage("Lepton");

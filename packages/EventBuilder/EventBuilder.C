@@ -433,87 +433,87 @@ Bool_t EventBuilder::TrigElMu(){
 
 
 // ########################### MET FILTERS
-Bool_t EventBuilder::PassesMETfilters() { // Updated on 2019-02-11 for both data and MC
+Bool_t EventBuilder::PassesMETfilters() { // Updated on 2019-06-14 for both data and MC
   if (gIsData) {
     if      (year == 2016) {
-      if ((Get<Bool_t>("Flag_goodVertices")                       &&
-           Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
-           Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
-           Get<Bool_t>("Flag_HBHENoiseIsoFilter")                 &&
-           Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
-           Get<Bool_t>("Flag_BadPFMuonFilter")                    &&
-//            Get<Bool_t>("Flag_BadChargedCandidateFilter")          && // Currently NOT RECOMMENDED
-           Get<Bool_t>("Flag_eeBadScFilter")
-         )) return true;
+      if (Get<Bool_t>("Flag_goodVertices")                       &&
+          Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
+          Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
+          Get<Bool_t>("Flag_HBHENoiseIsoFilter")                 &&
+          Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
+          Get<Bool_t>("Flag_BadPFMuonFilter")                    &&
+//           Get<Bool_t>("Flag_BadChargedCandidateFilter")          && // Currently NOT RECOMMENDED
+          Get<Bool_t>("Flag_eeBadScFilter")
+         ) return true;
       else return false;
     }
     else if (year == 2017) {
-      if ((Get<Bool_t>("Flag_goodVertices")                       &&
-           Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
-           Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
-           Get<Bool_t>("Flag_HBHENoiseIsoFilter")                 &&
-           Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
-           Get<Bool_t>("Flag_BadPFMuonFilter")                    &&
-//            Get<Bool_t>("Flag_BadChargedCandidateFilter")          && // Currently NOT RECOMMENDED
-           Get<Bool_t>("Flag_eeBadScFilter")                      &&
-           Get<Bool_t>("Flag_ecalBadCalibFilterV2")                 //&& // WE ARE APPLYING THIS ONE INSTEAD OF THE NEXT ONE THAT DOES NOT EXIST EXACTLY
-           //Get<Bool_t>("ecalBadCalibReducedMINIAODFilter")             // WE DO NOT HAVE THIS ONE
-        )) return true;
+      if (Get<Bool_t>("Flag_goodVertices")                       &&
+          Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
+          Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
+          Get<Bool_t>("Flag_HBHENoiseIsoFilter")                 &&
+          Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
+          Get<Bool_t>("Flag_BadPFMuonFilter")                    &&
+//           Get<Bool_t>("Flag_BadChargedCandidateFilter")          && // Currently NOT RECOMMENDED
+          Get<Bool_t>("Flag_eeBadScFilter")                      &&
+          Get<Bool_t>("Flag_ecalBadCalibFilterV2")                 //&& // WE ARE APPLYING THIS ONE INSTEAD OF THE NEXT ONE THAT DOES NOT EXIST EXACTLY
+          //Get<Bool_t>("ecalBadCalibReducedMINIAODFilter")             // WE DO NOT HAVE THIS ONE
+        ) return true;
       else return false;
     }
     else if (year == 2018) {
-      if ((Get<Bool_t>("Flag_goodVertices")                       &&
-           Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
-           Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
-           Get<Bool_t>("Flag_HBHENoiseIsoFilter")                 &&
-           Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
-           Get<Bool_t>("Flag_BadPFMuonFilter")                    &&
-//            Get<Bool_t>("Flag_BadChargedCandidateFilter")          && // Currently NOT RECOMMENDED
-           Get<Bool_t>("Flag_eeBadScFilter")                      &&
-           Get<Bool_t>("Flag_ecalBadCalibFilterV2")                 //&& // WE ARE APPLYING THIS ONE INSTEAD OF THE NEXT ONE THAT DOES NOT EXIST EXACTLY
-           //Get<Bool_t>("ecalBadCalibReducedMINIAODFilter")             // WE DO NOT HAVE THIS ONE
-        )) return true;
+      if (Get<Bool_t>("Flag_goodVertices")                       &&
+          Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
+          Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
+          Get<Bool_t>("Flag_HBHENoiseIsoFilter")                 &&
+          Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
+          Get<Bool_t>("Flag_BadPFMuonFilter")                    &&
+//           Get<Bool_t>("Flag_BadChargedCandidateFilter")          && // Currently NOT RECOMMENDED
+          Get<Bool_t>("Flag_eeBadScFilter")                      &&
+          Get<Bool_t>("Flag_ecalBadCalibFilterV2")                 //&& // WE ARE APPLYING THIS ONE INSTEAD OF THE NEXT ONE THAT DOES NOT EXIST EXACTLY
+          //Get<Bool_t>("ecalBadCalibReducedMINIAODFilter")             // WE DO NOT HAVE THIS ONE
+        ) return true;
       else return false;
     }
   }
   else { // ONLY FULLSIM
     if      (year == 2016) {
-      if ((Get<Bool_t>("Flag_goodVertices")                       &&
-           Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
-           Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
-           Get<Bool_t>("Flag_HBHENoiseIsoFilter")                 &&
-           Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
-           Get<Bool_t>("Flag_BadPFMuonFilter")                    &&
-//            Get<Bool_t>("Flag_BadChargedCandidateFilter") // Currently NOT RECOMMENDED
-         )) return true;
+      if (Get<Bool_t>("Flag_goodVertices")                       &&
+          Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
+          Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
+          Get<Bool_t>("Flag_HBHENoiseIsoFilter")                 &&
+          Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
+          Get<Bool_t>("Flag_BadPFMuonFilter")
+//           Get<Bool_t>("Flag_BadChargedCandidateFilter") // Currently NOT RECOMMENDED
+         ) return true;
       else return false;
     }
     else if (year == 2017) {
-      if ((Get<Bool_t>("Flag_goodVertices")                       &&
-           Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
-           Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
-           Get<Bool_t>("Flag_HBHENoiseIsoFilter")                 &&
-           Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
-           Get<Bool_t>("Flag_BadPFMuonFilter")                    &&
-//            Get<Bool_t>("Flag_BadChargedCandidateFilter")          && // Currently NOT RECOMMENDED
-           Get<Bool_t>("Flag_ecalBadCalibFilterV2")                 //&& // WE ARE APPLYING THIS ONE INSTEAD OF THE NEXT ONE THAT DOES NOT EXIST EXACTLY
-           //Get<Bool_t>("ecalBadCalibReducedMINIAODFilter")             // WE DO NOT HAVE THIS ONE
-        )) return true;
+      if (Get<Bool_t>("Flag_goodVertices")                       &&
+          Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
+          Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
+          Get<Bool_t>("Flag_HBHENoiseIsoFilter")                 &&
+          Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
+          Get<Bool_t>("Flag_BadPFMuonFilter")                    &&
+//           Get<Bool_t>("Flag_BadChargedCandidateFilter")          && // Currently NOT RECOMMENDED
+          Get<Bool_t>("Flag_ecalBadCalibFilterV2")                 //&& // WE ARE APPLYING THIS ONE INSTEAD OF THE NEXT ONE THAT DOES NOT EXIST EXACTLY
+          //Get<Bool_t>("ecalBadCalibReducedMINIAODFilter")             // WE DO NOT HAVE THIS ONE
+        ) return true;
       else return false;
     }
     else if (year == 2018) {
-      if ((Get<Bool_t>("Flag_goodVertices")                       &&
-           Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
-           Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
-           Get<Bool_t>("Flag_HBHENoiseIsoFilter")                 &&
-           Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
-           Get<Bool_t>("Flag_BadPFMuonFilter")                    &&
-//            Get<Bool_t>("Flag_BadChargedCandidateFilter")         && // Currently NOT RECOMMENDED
-           Get<Bool_t>("Flag_ecalBadCalibFilterV2")                 //&& // WE ARE APPLYING THIS ONE INSTEAD OF THE NEXT ONE THAT DOES NOT EXIST EXACTLY
-           //Get<Bool_t>("ecalBadCalibReducedMINIAODFilter")             // WE DO NOT HAVE THIS ONE
-        )) return true;
+      if (Get<Bool_t>("Flag_goodVertices")                       &&
+          Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
+          Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
+          Get<Bool_t>("Flag_HBHENoiseIsoFilter")                 &&
+          Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
+          Get<Bool_t>("Flag_BadPFMuonFilter")                    &&
+//           Get<Bool_t>("Flag_BadChargedCandidateFilter")         && // Currently NOT RECOMMENDED
+          Get<Bool_t>("Flag_ecalBadCalibFilterV2")                 //&& // WE ARE APPLYING THIS ONE INSTEAD OF THE NEXT ONE THAT DOES NOT EXIST EXACTLY
+          //Get<Bool_t>("ecalBadCalibReducedMINIAODFilter")             // WE DO NOT HAVE THIS ONE
+        ) return true;
       else return false;
     }
   }
-  else return false;
+  return false;
 }

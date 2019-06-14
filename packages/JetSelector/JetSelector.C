@@ -203,7 +203,7 @@ void JetSelector::InsideLoop(){
         if (gSelection == itt) {
           if(TMath::Abs(tJ.p.Eta()) > 2.4)  vetoJets.push_back(tJ);
         }
-        else if (gSelection == itWtttt) {
+        else if (gSelection == itWtt) {
           vetoJets.push_back(tJ);
           
           if (!gIsData) {
