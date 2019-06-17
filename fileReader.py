@@ -202,7 +202,7 @@ def GetProcessInfo(path, process=''):
 
 def IsVarInTree(fname, var, treeName = 'Events'):
   if not os.path.isfile(fname):
-    print 'ERROR: %s does not exists!'
+    print 'ERROR: %s does not exists!'%fname
     return False
   f = TFile.Open(fname)
   t = f.Get(treeName)

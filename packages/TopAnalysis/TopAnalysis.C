@@ -90,13 +90,13 @@ void TopAnalysis::Initialise(){
 
   makeTree   = false;
   makeHistos = true;
+
   if(makeTree){
     fTree   = CreateTree("MiniTree","Created with PAF");
     SetLeptonVariables();
     SetJetVariables();
     SetEventVariables();
   }
-  if (makeHistos) InitHistos();
 
   // Uncertainties
   useSyst.push_back(kNorm);
@@ -122,7 +122,7 @@ void TopAnalysis::Initialise(){
     }
   }
   nSyst = useSyst.size();
-
+  InitHistos();
   metvar = year == 2017? "METFixEE2017" : "MET";
 }
 
@@ -170,7 +170,6 @@ void TopAnalysis::InsideLoop(){
   if(gIsTTbar) FillCorrHistos();
 
   // Number of events in fiducial region
-  cout << "Entering Fid..." << endl;
   if(!gIsData && makeHistos) {
     if(genLeptons.size() >= 2){ // MIND THE POSSIBLE SKIM (on reco leptons) IN THE SAMPLE!!
       Int_t GenChannel = -1;
@@ -202,7 +201,6 @@ void TopAnalysis::InsideLoop(){
       }
     }
   }
-  cout << "Passing Fid. Entering make dummy Histos..." << endl;
 
   if (makeHistos) {
   // Fill hDummy histos...
@@ -239,8 +237,6 @@ void TopAnalysis::InsideLoop(){
       }
     }
   }
-  cout << "Entering event selection..." << endl;
-  cout << "Number of syst: " << nSyst << endl;
  
   // Event Selection
   // ===================================================================================================================
@@ -857,7 +853,6 @@ void TopAnalysis::SetVariables(int sys){
       pt = Get<Float_t>("Jet_pt_jerDown", i);
       m  = Get<Float_t>("Jet_mass_jerDown", i);
     }
-
   }
 
   if     (sys == kMuonEffUp  ) weight = TWeight_MuonEffUp;
