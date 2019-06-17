@@ -98,7 +98,7 @@ def GetTStringVectorSamples(path, samples):
     v.push_back(t)
   return v
   v = GetTStringVector(samples)
-    
+
 def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, outname = '', outpath = '', options = '', nEvents = 0, FirstEvent = 0, prefix = 'Tree', verbose = True, pretend = False, dotest = False):
   if ',' in sample:
     sample.replace(' ', '')
@@ -137,8 +137,8 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
   if SampString.endswith(','): SampString = SampString[:-1]
 
   ex = '\'run.C(\"%s\", \"%s\", %f, %f, %i, \"%s\", %i, \"%s\", \"%s\", %i, %i, %i, %i)\''%(SampString, selection, xsec, nSumOfWeights, year, outname, nSlots, outpath, options, isamcatnlo, isData, nEvents, FirstEvent)
-  ex = 'root -l -b -1 ' + ex
-  if runC: 
+  ex = 'root -l -b -q ' + ex
+  if runC:
     print 'Executing command: \n', ex
 
   if pretend:
