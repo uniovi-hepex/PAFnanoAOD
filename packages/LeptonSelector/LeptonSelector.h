@@ -26,7 +26,6 @@ class LeptonSelector : public PAFChainItemSelector{
 
   protected:
 
-    TH1F* fhDummy;
     LeptonSF *LepSF;
     //ElecScaleClass *ElecScale;
     Int_t year;

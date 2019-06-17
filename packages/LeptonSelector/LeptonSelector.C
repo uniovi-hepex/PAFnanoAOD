@@ -18,7 +18,6 @@ void LeptonSelector::Summary(){}
 
 void LeptonSelector::Initialise(){
   year    = GetParam<TString>("year").Atoi();
-  fhDummy = CreateH1F("fhDummy","fhDummy", 1, 0, 2);
   gIsData        = GetParam<Bool_t>("IsData");
   selection      = GetParam<TString>("selection");
   gOptions       = GetParam<TString>("_options");
@@ -262,7 +261,6 @@ Bool_t LeptonSelector::isLooseLepton(Lepton lep){
 ///////////////////////////////////////////////////////////////////////////
 
 void LeptonSelector::InsideLoop(){
-  fhDummy->Fill(1);
   evt = Get<ULong64_t>("event");
 
   // Clear vectors...
