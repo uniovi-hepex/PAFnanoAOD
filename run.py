@@ -4,6 +4,8 @@
   python run.py 2017.cfg
 '''
 
+runC = True
+
 # Check if ROOT and PAF is loaded...
 import imp, os, sys
 try:
@@ -47,9 +49,54 @@ def loadxsecdic(fname):
     if val == '': val = 1
     xsecdir[key] = float(val)
   return xsecdir 
+
+def GetXsec(xsec, s):
+  if isinstance(xsec, int): xsec = float(xsec)
+  if isinstance(xsec, str):
+    xsecdic = loadxsecdic(xsec)
+    if not s in xsecdic.keys():
+      print 'ERROR: not found xsec value for sample %s'%s
+      xsec = 1
+    else: xsec = xsecdic[s]
+  return xsec
+
+def GetSampleList(path, sample):
+  dic = getDicFiles(path)
+  nfileInPath = len(dic)
+  if verbose: print 'Found %i files in path %s'%(nfileInPath, path)
+
+  samples = []
+  for s in sample:
+    dk = dic.keys()
+    if not s in dk: s = prefix+'_'+s
+    if not s in dk:
+      print 'WARNING: file %s not in path %s'%(s, path)
+    else:
+      samples += dic[s]
+  return samples
+
+def GetOptions(path, sample, options = ""):
+  if not path.endswith('/'): path += '/'
+  if not sample.endswith(".root"): sample += '.root'
+  doPUweight  = 'PUweight,' if IsVarInTree(path+sample, 'puWeight') else ''
+  doJECunc    = 'JECunc,'   if IsVarInTree(path+sample, 'Jet_pt_jesTotalUp') else ''
+  useJetPtNom = 'JetPtNom,' if IsVarInTree(path+sample, 'Jet_pt_nom') else ''
+  useLepGood  = 'LepGood,'  if IsVarInTree(path+sample, 'nLepGood') else ''
+  options += doPUweight + doJECunc + useJetPtNom + useLepGood + options
+  if options.endswith(','): options = options[:-1]
+  return options
+
+def GetTStringVectorSamples(path, samples):
+  from ROOT import vector, TString, gSystem
+  # Add the input data files
+  v = vector(TString)()
+  for s in samples: 
+    t = TString(path+s)
+    v.push_back(t)
+  return v
+  v = GetTStringVector(samples)
     
 def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, outname = '', outpath = '', options = '', nEvents = 0, FirstEvent = 0, prefix = 'Tree', verbose = True, pretend = False, dotest = False):
-
   if ',' in sample:
     sample.replace(' ', '')
     sample = sample.split(',')
@@ -57,32 +104,13 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
   
   if not path.endswith('/'): path += '/'
   
-  if isinstance(xsec, int): xsec = float(xsec)
-  if isinstance(xsec, str): 
-    xsecdic = loadxsecdic(xsec)
-    s = sample[0]
-    if not s in xsecdic.keys():
-      print 'ERROR: not found xsec value for sample %s'%s
-      xsec = 1
-    else: xsec = xsecdic[s]
+  xsec = GetXsec(xsec, sample[0])
   
   # Get dictionary with all files in the path directory
-  dic = getDicFiles(path)
-  nfileInPath = len(dic)
-  if verbose: print 'Found %i files in path %s'%(nfileInPath, path)
-  
-  samples = []
-  for s in sample: 
-    dk = dic.keys()
-    if not s in dk: s = prefix+'_'+s
-    if not s in dk:
-      print 'WARNING: file %s not in path %s'%(s, path)
-    else:
-      samples += dic[s]
+  samples = GetSampleList(path, sample)
   
   nEventsInTree, nGenEvents, nSumOfWeights, isData = GetAllInfoFromFile([path + x for x in samples])
   isamcatnlo = True if nGenEvents != nSumOfWeights else False
-  
   stipe = 'MC' if not isData else 'DATA'
   if verbose: 
     print '## Processing a %i %s sample...'%(year, stipe)
@@ -95,16 +123,31 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
       print '## This sample has gen weights!!'
 
   # Check what is in the tree...
-  doPUweight  = 'PUweight,' if IsVarInTree(path+samples[0], 'puWeight') else ''
-  doJECunc    = 'JECunc,'   if IsVarInTree(path+samples[0], 'Jet_pt_jesTotalUp') else ''
-  useJetPtNom = 'JetPtNom,' if IsVarInTree(path+samples[0], 'Jet_pt_nom') else ''
-  useLepGood  = 'LepGood,'  if IsVarInTree(path+samples[0], 'nLepGood') else ''
-  options += doPUweight + doJECunc + useJetPtNom + useLepGood
-  if options.endswith(','): options = options[:-1]
+  options = GetOptions(path, samples[0])
   print '## Runing with options: %s'%(options)
-  
-  if pretend: exit()
-  
+  print '## Output to: %s'%(outpath + "/" + outname)
+
+  SamplesVector = GetTStringVectorSamples(path,samples)
+  SampString    = ''
+  print samples
+  for s in samples: SampString += '%s/%s,'%(path,s)
+  if SampString.endswith(','): SampString = SampString[:-1]
+
+  ex = '\'run.C(\"%s\", \"%s\", %f, %f, %i, \"%s\", %i, \"%s\", \"%s\", %i, %i, %i, %i)\''%(SampString, selection, xsec, nSumOfWeights, year, outname, nSlots, outpath, options, isamcatnlo, isData, nEvents, FirstEvent)
+  ex = 'root -l -b -1 ' + ex
+  if runC: 
+    print 'Executing command: \n', ex
+
+  if pretend:
+    return
+  elif runC:
+    os.system(ex)
+  else:
+    RunPAF(SamplesVector, selection, xsec, nSumOfWeights, year, outname, nSlots, outpath, options, isamcatnlo, isData, nEvents, FirstEvent)
+
+
+def RunPAF(samples, selection, xsec, nSumOfWeights, year, outname, nSlots = 1, outpath = '', options = '', isamcatnlo = False, isData = False, nEvents = 0, FirstEvent = 0):
+
   from ROOT import PAFProject, PAFIExecutionEnvironment ,PAFSequentialEnvironment, PAFPROOFLiteEnvironment, PAFPoDEnvironment
   from ROOT import vector, TString, gSystem
   
@@ -116,12 +159,7 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
   
   myProject = PAFProject(pafmode); 
   
-  # Add the input data files
-  v = vector(TString)()
-  for s in samples: 
-    t = TString(path+s)
-    v.push_back(t)
-  myProject.AddDataFiles(v); 
+  myProject.AddDataFiles(samples); 
   myProject.SetDefaultTreeName("Events");
   
   # Deal with first and last event
@@ -141,7 +179,6 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
   myProject.SetInputParam("IsMCatNLO",         isamcatnlo);
   myProject.SetInputParam("selection",         selection);
   myProject.SetInputParam("WorkingDir",        os.getcwd());
-  myProject.SetInputParam("nEntries",          nEventsInTree);
   myProject.SetInputParam("xsec",              xsec);
   myProject.SetInputParam("_options",          options);
   myProject.SetInputParam("year",              str(year));
@@ -152,11 +189,7 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
   myProject.AddSelectorPackage("EventBuilder");
   
   # Analysis selector
-  if(selection == 'ttbar' or selection == 'TT' or selection == 'ttxsec'): selection = 'tt'
-  if(selection == 'TWTT' or selection == 'WWbb' or selection == 'twtt'):  selection = 'tWtt'
-  if    selection == "tt"  :  myProject.AddSelectorPackage("TopAnalysis");
-  elif  selection == "tWtt":  myProject.AddSelectorPackage("TWTTbarAnalysis");
-  else: print "WARNING: Unknown selector."
+  if selection != "": myProject.AddSelectorPackage(selection)
   
   # Additional packages
   myProject.AddPackage("Lepton");
@@ -165,7 +198,6 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
   myProject.AddPackage("Functions");
   myProject.AddPackage("LeptonSF");
   myProject.AddPackage("BTagSFUtil");
-  #myProject.AddPackage("PUWeight");
   
   myProject.Run();
 
@@ -266,4 +298,3 @@ if os.path.isfile(fname):
 
 else: # no config file...
   RunSamplePAF(selection, path, sample, year, xsec, nSlots, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest)
- 
