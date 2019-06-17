@@ -177,12 +177,11 @@ class TWTTbarAnalysis : public PAFChainItemSelector{
   protected:
     // Parameters
     Bool_t   gIsData;
-    Int_t    gSelection;
     TString  gSampleName;
     Bool_t   gIsTTbar;
     Bool_t   gIsLHE;
     Int_t    gChannel;
-    TString  gPar;
+    TString  gOptions;
     Bool_t   passMETfilters;
     Bool_t   passTrigger;
     Bool_t   isSS;

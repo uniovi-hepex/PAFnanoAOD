@@ -18,10 +18,9 @@ TWTTbarAnalysis::TWTTbarAnalysis() : PAFChainItemSelector() {
 
 void TWTTbarAnalysis::Initialise() {
   gIsData     = GetParam<Bool_t>("IsData");
-  gSelection  = GetParam<Int_t>("iSelection");
   gSampleName = GetParam<TString>("sampleName");
-  gPar        = GetParam<TString>("_options");
-  if (gPar.Contains("Semi")) {
+  gOptions    = GetParam<TString>("_options");
+  if (gOptions.Contains("Semi")) {
     cout << "> Running the semileptonic ttbar sample" << endl;
   }
   gIsTTbar    = false;
@@ -57,6 +56,7 @@ void TWTTbarAnalysis::Initialise() {
 
 
 void TWTTbarAnalysis::InsideLoop() {
+  cout << "InsideLoop 1" << endl;
   ResetTWTTbarVariables();
   // Vectors with the objects
   DressLeptons      = GetParam<vector<Lepton>>("genLeptons");
@@ -68,6 +68,7 @@ void TWTTbarAnalysis::InsideLoop() {
   TNBJets           = (UInt_t)GetParam<Int_t>("nSelBJets");
   vetoJets          = GetParam<vector<Jet>>("vetoJets");
   genJets           = GetParam<vector<Jet>>("genJets");
+  cout << "InsideLoop 2" << endl;
   
   // Weights and SFs
   NormWeight        = GetParam<Double_t>("NormWeight");
@@ -80,24 +81,28 @@ void TWTTbarAnalysis::InsideLoop() {
   BtagSFBtagUp      = GetParam<Double_t>("BtagSFBtagUp");
   BtagSFBtagDown    = GetParam<Double_t>("BtagSFBtagDown");
   BtagSFMistagUp    = GetParam<Double_t>("BtagSFMistagUp");
-  BtagSFMistagDown  = GetParam<Double_t>("BtagSFMistagDown");
+  BtagSFMistagDown  = GetParam<Double_t>("BtagSFMistagDown");;
+  cout << "InsideLoop 3" << endl;
 
   // Event variables
   passMETfilters    = GetParam<Bool_t>("METfilters");
   passTrigger       = GetParam<Bool_t>("passTrigger");
   isSS              = GetParam<Bool_t>("isSS");
   year              = (UShort_t)GetParam<Int_t>("Year");
+  cout << "InsideLoop 4" << endl;
   
   // Leptons and Jets
   GetLeptonVariables();
   GetGenLepVariables();
   
-  if (gPar.Contains("Semi")) {
+  cout << "InsideLoop 5" << endl;
+  if (gOptions.Contains("Semi")) {
     if (gIsTTbar && DressNLeps > 1 ) return;
   } else {
     if (gIsTTbar && DressNLeps < 2 ) return; // Dilepton selection for ttbar!
   }
   
+  cout << "InsideLoop 6" << endl;
   GetJetVariables();
   GetGenJetVariables();
   GetMETandGenMET();
@@ -105,6 +110,7 @@ void TWTTbarAnalysis::InsideLoop() {
   TWeight_normal = NormWeight;
   fhDummy->Fill(1);
   
+  cout << "InsideLoop 7" << endl;
   
   // Particle level selection
   if ((DressNLeps >= 2) && (DressNJets == 2) && (DressNBJets == 2) && ((DressLeptons.at(0).p + DressLeptons.at(1).p).M() > 20) &&
@@ -114,6 +120,7 @@ void TWTTbarAnalysis::InsideLoop() {
     DoesItReallyPassDress();
   }
   
+  cout << "InsideLoop 8" << endl;
   
   // Detector level selection
   if ((TNSelLeps >= 2) && passTrigger && passMETfilters && ((selLeptons.at(0).p + selLeptons.at(1).p).M() > 20) &&
@@ -124,6 +131,7 @@ void TWTTbarAnalysis::InsideLoop() {
     DoesItReallyPassReco();
   }
   
+  cout << "InsideLoop 9" << endl;
   
   // Filling choice
   if (TPassPart || TPassDress || TPassReco || TPassRecoJESUp || TPassRecoJESDown || TPassRecoJERUp) { // If needed, filling.
