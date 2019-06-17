@@ -13,6 +13,9 @@ except ImportError:
   print 'Please, load ROOT... (typically by executing \'root6\')'
   exit()
 
+from ROOT import gROOT
+gROOT.SetBatch(1)
+
 try:
   from ROOT import PAFProject
 except ImportError:
