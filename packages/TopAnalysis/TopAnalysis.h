@@ -56,6 +56,8 @@ class TopAnalysis : public PAFChainItemSelector{
 
     Bool_t makeHistos = false;
     Bool_t makeTree   = false;
+    vector<int> useSyst = vector<int>();
+    Int_t nSyst;
 
     void GetLeptonVariables(std::vector<Lepton> selLeptons, std::vector<Lepton> VetoLeptons);
     void GetJetVariables(std::vector<Jet> selJets, std::vector<Jet> cleanedJets15, Float_t ptCut = 30);
@@ -195,6 +197,11 @@ class TopAnalysis : public PAFChainItemSelector{
     Int_t   nleps, njets, nbtags;
     Float_t lep0pt, lep1pt, lep0eta, lep1eta, lep0iso, lep1iso;
     Float_t dileppt, deltaphi, deltaeta;
+
+    TString metvar;
+    TString JetPt;
+    Bool_t gPUWeigth;
+    Bool_t gDoJECunc;
 
 // Histograms
 //=====================================================0
