@@ -55,6 +55,13 @@ void JetSelector::Initialise(){
   //---- Select your wp for b-tagging and pt, eta for the jets
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
+  taggerName="DeepCSV";//"DeepFlav";
+  stringWP = "Medium";
+  jet_MaxEta = 2.4;
+  jet_MinPt  = 30;
+  vetoJet_minPt = 30;
+  vetoJet_maxEta = 5.0;
+  minDR = 0.4;
   if(gSelection == itt) {
     taggerName="DeepCSV";//"DeepFlav";
     stringWP = "Medium";
@@ -75,18 +82,21 @@ void JetSelector::Initialise(){
   }
 
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
+  cout << "PASO 1" << endl;
   MeasType = "mujets";
   TString pwd  = GetParam<TString>("WorkingDir");
   TString BTagSFPath = Form("%s/packages/BTagSFUtil", pwd.Data());
   
+  cout << "PASO 2" << endl;
   TString FastSimDataset = "";
   fBTagSFnom = new BTagSFUtil(MeasType, BTagSFPath, taggerName.Data(), stringWP,  0, year);
+  cout << "PASO 2.5" << endl;
   fBTagSFbUp = new BTagSFUtil(MeasType, BTagSFPath, taggerName.Data(), stringWP,  1, year);
   fBTagSFbDo = new BTagSFUtil(MeasType, BTagSFPath, taggerName.Data(), stringWP, -1, year);
   fBTagSFlUp = new BTagSFUtil(MeasType, BTagSFPath, taggerName.Data(), stringWP,  3, year);
   fBTagSFlDo = new BTagSFUtil(MeasType, BTagSFPath, taggerName.Data(), stringWP, -3, year);
 
+  cout << "PASO 3" << endl;
   Leptons  = std::vector<Lepton>();
   selJets  = std::vector<Jet>();
   mcJets   = std::vector<Jet>();
