@@ -23,6 +23,7 @@ void TWTTbarAnalysis::Initialise() {
   if (gOptions.Contains("Semi")) {
     cout << "> Running the semileptonic ttbar sample" << endl;
   }
+  gPUWeight   = gOptions.Contains("PUweight")? true : false;
   gIsTTbar    = false;
   gIsLHE      = false;
 
@@ -56,7 +57,6 @@ void TWTTbarAnalysis::Initialise() {
 
 
 void TWTTbarAnalysis::InsideLoop() {
-  cout << "InsideLoop 1" << endl;
   ResetTWTTbarVariables();
   // Vectors with the objects
   DressLeptons      = GetParam<vector<Lepton>>("genLeptons");
@@ -68,49 +68,47 @@ void TWTTbarAnalysis::InsideLoop() {
   TNBJets           = (UInt_t)GetParam<Int_t>("nSelBJets");
   vetoJets          = GetParam<vector<Jet>>("vetoJets");
   genJets           = GetParam<vector<Jet>>("genJets");
-  cout << "InsideLoop 2" << endl;
   
   // Weights and SFs
-  NormWeight        = GetParam<Double_t>("NormWeight");
-  TrigSF            = GetParam<Double_t>("TriggerSF");
-  TrigSFerr         = GetParam<Double_t>("TriggerSFerr");
-  PUSF              = GetParam<Double_t>("PUSF");
-  PUSF_Up           = GetParam<Double_t>("PUSF_Up");
-  PUSF_Down         = GetParam<Double_t>("PUSF_Down");
-  BtagSF            = GetParam<Double_t>("BtagSF");
-  BtagSFBtagUp      = GetParam<Double_t>("BtagSFBtagUp");
-  BtagSFBtagDown    = GetParam<Double_t>("BtagSFBtagDown");
-  BtagSFMistagUp    = GetParam<Double_t>("BtagSFMistagUp");
-  BtagSFMistagDown  = GetParam<Double_t>("BtagSFMistagDown");;
-  cout << "InsideLoop 3" << endl;
+  NormWeight        = GetParam<Float_t>("NormWeight");
+  TrigSF            = GetParam<Float_t>("TriggerSF");
+  TrigSFerr         = GetParam<Float_t>("TriggerSFerr");
+
+  if (!gIsData && gPUWeight) {
+    PUSF         = Get<Float_t>("puWeight");
+    PUSF_Up      = Get<Float_t>("puWeightUp");
+    PUSF_Down    = Get<Float_t>("puWeightDown");
+  }
+  else {PUSF = 1; PUSF_Up = 1; PUSF_Down = 1;}
+
+  BtagSF            = GetParam<Float_t>("BtagSF");
+  BtagSFBtagUp      = GetParam<Float_t>("BtagSFBtagUp");
+  BtagSFBtagDown    = GetParam<Float_t>("BtagSFBtagDown");
+  BtagSFMistagUp    = GetParam<Float_t>("BtagSFMistagUp");
+  BtagSFMistagDown  = GetParam<Float_t>("BtagSFMistagDown");;
 
   // Event variables
   passMETfilters    = GetParam<Bool_t>("METfilters");
   passTrigger       = GetParam<Bool_t>("passTrigger");
   isSS              = GetParam<Bool_t>("isSS");
-  year              = (UShort_t)GetParam<Int_t>("Year");
-  cout << "InsideLoop 4" << endl;
+  year              = (UShort_t)GetParam<Int_t>("year");
   
   // Leptons and Jets
   GetLeptonVariables();
   GetGenLepVariables();
   
-  cout << "InsideLoop 5" << endl;
   if (gOptions.Contains("Semi")) {
     if (gIsTTbar && DressNLeps > 1 ) return;
   } else {
     if (gIsTTbar && DressNLeps < 2 ) return; // Dilepton selection for ttbar!
   }
   
-  cout << "InsideLoop 6" << endl;
   GetJetVariables();
   GetGenJetVariables();
   GetMETandGenMET();
   
   TWeight_normal = NormWeight;
   fhDummy->Fill(1);
-  
-  cout << "InsideLoop 7" << endl;
   
   // Particle level selection
   if ((DressNLeps >= 2) && (DressNJets == 2) && (DressNBJets == 2) && ((DressLeptons.at(0).p + DressLeptons.at(1).p).M() > 20) &&
@@ -120,8 +118,6 @@ void TWTTbarAnalysis::InsideLoop() {
     DoesItReallyPassDress();
   }
   
-  cout << "InsideLoop 8" << endl;
-  
   // Detector level selection
   if ((TNSelLeps >= 2) && passTrigger && passMETfilters && ((selLeptons.at(0).p + selLeptons.at(1).p).M() > 20) &&
       (selLeptons.at(0).p.Pt() > 25) && (TChannel == iElMu || TChannel == iElec || TChannel == iMuon) && (!isSS)) {
@@ -130,8 +126,6 @@ void TWTTbarAnalysis::InsideLoop() {
     CalculateTWTTbarVariables();
     DoesItReallyPassReco();
   }
-  
-  cout << "InsideLoop 9" << endl;
   
   // Filling choice
   if (TPassPart || TPassDress || TPassReco || TPassRecoJESUp || TPassRecoJESDown || TPassRecoJERUp) { // If needed, filling.
@@ -348,7 +342,7 @@ void TWTTbarAnalysis::SetTWTTbarVariables() {
   // Particle level variables
   fMiniTree->Branch("TPassDress",            &TPassDress,            "TPassDress/B");
   fMiniTree->Branch("TDressIsSS",            &TDressIsSS,            "TDressIsSS/B");
-  fMiniTree->Branch("DressNJets",           &DressNJets,            "DressNJets/I");
+  fMiniTree->Branch("TDressNJets",           &DressNJets,            "TDressNJets/I");
   fMiniTree->Branch("TDressNBJets",          &DressNBJets,           "TDressNBJets/I");
   fMiniTree->Branch("TDressNLooseCentral",   &DressNLooseCentral,    "TDressNLooseCentral/I");
   fMiniTree->Branch("TDressNBLooseCentral",  &DressNBLooseCentral,   "TDressNBLooseCentral/I");
@@ -608,21 +602,21 @@ void TWTTbarAnalysis::GetGenJetVariables() {  // TERMINAR DE REHACER DESDE JET S
 
 void TWTTbarAnalysis::GetMETandGenMET() {
   if      (year == 2017) {
-    TMET        = Get<Double_t>("METFixEE2017_pt");
-    TMET_Phi    = Get<Double_t>("METFixEE2017_phi");
+    TMET        = Get<Float_t>("METFixEE2017_pt");
+    TMET_Phi    = Get<Float_t>("METFixEE2017_phi");
   }
   else if (year == 2018) { // CAMBIAR PA QUE SEA LISTO Y DETECTE EL NOM CUANDO LO HAYA
-    TMET        = Get<Double_t>("MET_pt_nom");
-    TMET_Phi    = Get<Double_t>("MET_phi_nom");
+    TMET        = Get<Float_t>("MET_pt_nom");
+    TMET_Phi    = Get<Float_t>("MET_phi_nom");
   }
   
   if (gIsData) return;
-//   TMETJESUp   = Get<Double_t>("met_jecUp_pt"  );
-//   TMETJESDown = Get<Double_t>("met_jecDown_pt");
-//   TMET_PhiJESUp   = Get<Double_t>("met_jecUp_phi"  );
-//   TMET_PhiJESDown = Get<Double_t>("met_jecDown_phi");
-//   Double_t  diff_MET_JER_phi = GetParam<Double_t>("diff_MET_JER_phi");
-//   Double_t  diff_MET_JER_pt  = GetParam<Double_t>("diff_MET_JER_pt");
+//   TMETJESUp   = Get<Float_t>("met_jecUp_pt"  );
+//   TMETJESDown = Get<Float_t>("met_jecDown_pt");
+//   TMET_PhiJESUp   = Get<Float_t>("met_jecUp_phi"  );
+//   TMET_PhiJESDown = Get<Float_t>("met_jecDown_phi");
+//   Float_t  diff_MET_JER_phi = GetParam<Float_t>("diff_MET_JER_phi");
+//   Float_t  diff_MET_JER_pt  = GetParam<Float_t>("diff_MET_JER_pt");
 // 
 //   TLorentzVector diff_MET_JER; diff_MET_JER.SetPtEtaPhiM(diff_MET_JER_pt, 0.,diff_MET_JER_phi, 0.);
 //   TLorentzVector vMET; vMET.SetPtEtaPhiM(TMET, 0., TMET_Phi, 0);
@@ -630,11 +624,11 @@ void TWTTbarAnalysis::GetMETandGenMET() {
 //   TMET_PhiJERUp     = (vMET + diff_MET_JER).Phi();
 //   TMETJERUp         = (vMET + diff_MET_JER).Pt();
 
-  TPartMET      = Get<Double_t>("GenMET_pt");
-  TPartMET_Phi  = Get<Double_t>("GenMET_phi");
-  TDressMET     = Get<Double_t>("MET_fiducialGenPt");
-  TDressMET_Phi = Get<Double_t>("MET_fiducialGenPhi");
-  if (gIsLHE)  for(Int_t i = 0; i < Get<Int_t>("nLHEweight"); i++)   TLHEWeight[i] = Get<Double_t>("LHEweight_wgt", i);
+  TPartMET      = Get<Float_t>("GenMET_pt");
+  TPartMET_Phi  = Get<Float_t>("GenMET_phi");
+  TDressMET     = Get<Float_t>("MET_fiducialGenPt");
+  TDressMET_Phi = Get<Float_t>("MET_fiducialGenPhi");
+  if (gIsLHE)  for(Int_t i = 0; i < Get<Int_t>("nLHEweight"); i++)   TLHEWeight[i] = Get<Float_t>("LHEweight_wgt", i);
 }
 
 
@@ -959,7 +953,7 @@ void TWTTbarAnalysis::CalculateDressTWTTbarVariables() {  // VERY IMPORTAAAAAAAA
 }
 
 
-Double_t TWTTbarAnalysis::getMiniMax(Double_t ml1j1, Double_t ml1j2, Double_t ml2j1, Double_t ml2j2) {
+Float_t TWTTbarAnalysis::getMiniMax(Float_t ml1j1, Float_t ml1j2, Float_t ml2j1, Float_t ml2j2) {
   return min(max(ml1j1, ml2j2), max(ml1j2, ml2j1));
 }
 
