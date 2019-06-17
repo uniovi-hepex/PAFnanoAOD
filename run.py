@@ -7,7 +7,7 @@
 runC = True
 
 # Check if ROOT and PAF is loaded...
-import imp, os, sys
+import imp, os, sys, time
 try:
     imp.find_module('ROOT')
     found = True
@@ -21,8 +21,15 @@ except ImportError:
   print 'Please, load PAF... (typically by executing \'source /opt/PAF/PAF_setup.sh\')'
   exit()
 
-
 from fileReader import getDicFiles, GetAllInfoFromFile, IsVarInTree
+
+def ex(command, verbose = False, pretend = False):
+  if verbose:
+    print 'Executing command: ', command
+  if pretend: 
+    print 'Pretending...'
+    return
+  os.system(command)
 
 def loadxsecdic(fname):
   xsecdir = {}
@@ -96,7 +103,7 @@ def GetTStringVectorSamples(path, samples):
   return v
   v = GetTStringVector(samples)
     
-def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, outname = '', outpath = '', options = '', nEvents = 0, FirstEvent = 0, prefix = 'Tree', verbose = True, pretend = False, dotest = False):
+def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, outname = '', outpath = '', options = '', nEvents = 0, FirstEvent = 0, prefix = 'Tree', verbose = True, pretend = False, dotest = False, sendJobs = False):
   if ',' in sample:
     sample.replace(' ', '')
     sample = sample.split(',')
@@ -124,29 +131,48 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
 
   # Check what is in the tree...
   options = GetOptions(path, samples[0], options)
+  workingdir = os.getcwd()
+  outpath = workingdir + '/' + outpath
   print '## Runing with options: %s'%(options)
   print '## Output to: %s'%(outpath + "/" + outname)
 
   SamplesVector = GetTStringVectorSamples(path,samples)
   SampString    = ''
-  print samples
   for s in samples: SampString += '%s/%s,'%(path,s)
   if SampString.endswith(','): SampString = SampString[:-1]
 
-  ex = '\'run.C(\"%s\", \"%s\", %f, %f, %i, \"%s\", %i, \"%s\", \"%s\", %i, %i, %i, %i)\''%(SampString, selection, xsec, nSumOfWeights, year, outname, nSlots, outpath, options, isamcatnlo, isData, nEvents, FirstEvent)
-  ex = 'root -l -b -q ' + ex
-  if runC: 
-    print 'Executing command: \n', ex
+  command = '\'run.C(\"%s\", \"%s\", %f, %f, %i, \"%s\", %i, \"%s\", \"%s\", %i, %i, %i, %i, \"%s\")\''%(SampString, selection, xsec, nSumOfWeights, year, outname, nSlots, outpath, options, isamcatnlo, isData, nEvents, FirstEvent, workingdir)
+  command = 'root -l -b -q ' + command
 
-  if pretend:
-    return
+  if sendJobs:
+    tag = "%i"%(int(time.time()*1e6)%1e12)
+    if verbose: print 'Creating job with tag: %s'%tag
+    jobname = 'job_%s'%tag
+    path = os.getcwd()+'/jobs/'
+    if not os.path.isdir(path): os.mkdir(path)
+    pathjob = path + jobname + '/'
+    jobfile = "%s%s.sh"%(pathjob,jobname)
+    os.mkdir(pathjob)
+    ex('cp -r packages %s'%pathjob, verbose)
+    ex('cp xsec.cfg %s'   %pathjob, verbose)
+    ex('cp run.C %s'      %pathjob, verbose)
+    ex('cp run.py %s'     %pathjob, verbose)
+    f = open(jobfile,'w')
+    f.write('cd %s\n'%pathjob)
+    f.write(command)
+    srunCommand = "srun -c %i --pty bash %s"%(nSlots, jobfile)
+    ex(srunCommand, verbose, pretend)
+
   elif runC:
-    os.system(ex)
+    ex(command, verbose, pretend)
   else:
-    RunPAF(SamplesVector, selection, xsec, nSumOfWeights, year, outname, nSlots, outpath, options, isamcatnlo, isData, nEvents, FirstEvent)
+    if pretend: 
+      print 'Pretending...'
+      return
+    RunPAF(SamplesVector, selection, xsec, nSumOfWeights, year, outname, nSlots, outpath, options, isamcatnlo, isData, nEvents, FirstEvent, workingdir)
 
 
-def RunPAF(samples, selection, xsec, nSumOfWeights, year, outname, nSlots = 1, outpath = '', options = '', isamcatnlo = False, isData = False, nEvents = 0, FirstEvent = 0):
+def RunPAF(samples, selection, xsec, nSumOfWeights, year, outname, nSlots = 1, outpath = '', options = '', isamcatnlo = False, isData = False, nEvents = 0, FirstEvent = 0, workingdir = ''):
 
   from ROOT import PAFProject, PAFIExecutionEnvironment ,PAFSequentialEnvironment, PAFPROOFLiteEnvironment, PAFPoDEnvironment
   from ROOT import vector, TString, gSystem
@@ -165,9 +191,10 @@ def RunPAF(samples, selection, xsec, nSumOfWeights, year, outname, nSlots = 1, o
   # Deal with first and last event
   if nEvents > 0    : myProject.SetNEvents(nEvents);
   if FirstEvent > 0 : myProject.SetFirstEvent(FirstEvent);
+  if workingdir == "": workingdir = os.getcwd()
   
   # Set output file
-  if outpath == '': outpath = "./"+selection+"_temp"
+  if outpath == '': outpath = workingdir + "/" + selection + "_temp"
   gSystem.mkdir(outpath, 1);
   myProject.SetOutputFile(outpath + "/" + outname + ".root");
   print '## Output to: %s'%(outpath + "/" + outname + ".root")
@@ -178,7 +205,7 @@ def RunPAF(samples, selection, xsec, nSumOfWeights, year, outname, nSlots = 1, o
   myProject.SetInputParam("weight",            xsec/nSumOfWeights);
   myProject.SetInputParam("IsMCatNLO",         isamcatnlo);
   myProject.SetInputParam("selection",         selection);
-  myProject.SetInputParam("WorkingDir",        os.getcwd());
+  myProject.SetInputParam("WorkingDir",        workingdir);
   myProject.SetInputParam("xsec",              xsec);
   myProject.SetInputParam("_options",          options);
   myProject.SetInputParam("year",              str(year));
@@ -208,10 +235,11 @@ def RunPAF(samples, selection, xsec, nSumOfWeights, year, outname, nSlots = 1, o
 import argparse
 parser = argparse.ArgumentParser(description='Run with PAF')
 parser.add_argument('--verbose','-v'    , action='store_true'  , help = 'Activate the verbosing')
-parser.add_argument('--pretend'         , action='store_true'  , help = 'Create the files but not send the jobs')
+parser.add_argument('--pretend','-p'    , action='store_true'  , help = 'Create the files but not send the jobs')
 parser.add_argument('--test','-t'       , action='store_true'  , help = 'Sends only one or two jobs, as a test')
+parser.add_argument('--sendJobs','-j'   , action='store_true'  , help = 'Send jobs!')
 parser.add_argument('selection'                                , help = 'Name of the selector')
-parser.add_argument('--path','-p'       , default=''           , help = 'Path to look for nanoAOD')
+parser.add_argument('--path'            , default=''           , help = 'Path to look for nanoAOD')
 parser.add_argument('--sample','-s'     , default=''           , help = 'Sample(s) to process')
 parser.add_argument('--xsec','-x'       , default='xsec'       , help = 'Cross section')
 parser.add_argument('--year','-y'       , default=-1           , help = 'Year')
@@ -241,6 +269,7 @@ outpath     = args.outpath
 nEvents     = args.nEvents
 nSlots      = args.nSlots
 FirstEvent  = args.firstEvent
+sendJobs    = args.sendJobs
 
 # Check if a cfg file is given as first argument
 fname = selection
@@ -294,6 +323,7 @@ if os.path.isfile(fname):
   if '--verbose' in aarg or '-v' in aarg : verbose     = args.verbose
   if '--pretend' in aarg or '-p' in aarg : pretend     = args.pretend
   if '--test'    in aarg or '-t' in aarg : dotest      = args.test
+  if '--sendJobs'in aarg or '-j' in aarg : sendJobs    = args.sendJobs
   if args.sample     != ''     : sample      = args.sample
   if args.path       != ''     : path        = args.path
   if args.options    != ''     : options     = args.options
@@ -309,7 +339,7 @@ if os.path.isfile(fname):
   for sname in spl:
     outname = sname
     sample  = samplefiles[sname]
-    RunSamplePAF(selection, path, sample, year, xsec, nSlots, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest)
+    RunSamplePAF(selection, path, sample, year, xsec, nSlots, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs)
 
 else: # no config file...
-  RunSamplePAF(selection, path, sample, year, xsec, nSlots, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest)
+  RunSamplePAF(selection, path, sample, year, xsec, nSlots, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs)
