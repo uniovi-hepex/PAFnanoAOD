@@ -31,7 +31,7 @@ def ex(command, verbose = False, pretend = False):
     return
   os.system(command)
 
-def loadxsecdic(fname):
+def loadxsecdic(fname, verbose):
   xsecdir = {}
   if not os.path.isfile('./'+fname):
     l = filter(lambda x: x[0] == fname, [x.split('.') for x in os.listdir('.')])
@@ -40,7 +40,7 @@ def loadxsecdic(fname):
       return
     else: l = l[0]
     fname = l[0] + '.' + l[1]
-  print ' >> Reading cross section from %s...'%fname
+  if verbose: print ' >> Reading cross section from %s...'%fname
   f = open(fname)
   lines = f.readlines()
   for l in lines:
@@ -57,10 +57,10 @@ def loadxsecdic(fname):
     xsecdir[key] = float(val)
   return xsecdir 
 
-def GetXsec(xsec, s):
+def GetXsec(xsec, s, verbose):
   if isinstance(xsec, int): xsec = float(xsec)
   if isinstance(xsec, str):
-    xsecdic = loadxsecdic(xsec)
+    xsecdic = loadxsecdic(xsec, verbose)
     if not s in xsecdic.keys():
       print 'ERROR: not found xsec value for sample %s'%s
       xsec = 1
@@ -103,7 +103,7 @@ def GetTStringVectorSamples(path, samples):
   return v
   v = GetTStringVector(samples)
     
-def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, outname = '', outpath = '', options = '', nEvents = 0, FirstEvent = 0, prefix = 'Tree', verbose = True, pretend = False, dotest = False, sendJobs = False):
+def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, outname = '', outpath = '', options = '', nEvents = 0, FirstEvent = 0, prefix = 'Tree', verbose = False, pretend = False, dotest = False, sendJobs = False):
   if ',' in sample:
     sample.replace(' ', '')
     sample = sample.split(',')
@@ -111,7 +111,7 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
   
   if not path.endswith('/'): path += '/'
   
-  xsec = GetXsec(xsec, sample[0])
+  xsec = GetXsec(xsec, outname, verbose)
   
   # Get dictionary with all files in the path directory
   samples = GetSampleList(path, sample)
@@ -133,8 +133,9 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
   options = GetOptions(path, samples[0], options)
   workingdir = os.getcwd()
   outpath = workingdir + '/' + outpath
-  print '## Runing with options: %s'%(options)
-  print '## Output to: %s'%(outpath + "/" + outname)
+  if verbose:
+    print '## Runing with options: %s'%(options)
+    print '## Output to: %s'%(outpath + "/" + outname)
 
   SamplesVector = GetTStringVectorSamples(path,samples)
   SampString    = ''
@@ -158,10 +159,15 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
     ex('cp run.C %s'      %pathjob, verbose)
     ex('cp run.py %s'     %pathjob, verbose)
     f = open(jobfile,'w')
-    f.write('cd %s\n'%pathjob)
+    f.write('#!/bin/sh\n\n')
+    f.write('cd %s\n\n'%pathjob)
     f.write(command)
-    srunCommand = "srun -c %i --pty bash %s"%(nSlots, jobfile)
-    ex(srunCommand, verbose, pretend)
+    f.close()
+    jname = 'PAF%s'%(tag)
+    errname = '%sERR%s.out'%(pathjob,tag)
+    outname = '%sOUT%s.out'%(pathjob,tag)
+    runCommand = "sbatch -N %i -J %s -e %s -o %s %s"%(nSlots, jname, errname, outname, jobfile)
+    ex(runCommand, verbose, pretend)
 
   elif runC:
     ex(command, verbose, pretend)
@@ -197,7 +203,7 @@ def RunPAF(samples, selection, xsec, nSumOfWeights, year, outname, nSlots = 1, o
   if outpath == '': outpath = workingdir + "/" + selection + "_temp"
   gSystem.mkdir(outpath, 1);
   myProject.SetOutputFile(outpath + "/" + outname + ".root");
-  print '## Output to: %s'%(outpath + "/" + outname + ".root")
+  if verbose: print '## Output to: %s'%(outpath + "/" + outname + ".root")
   
   # Parameters for the analysis
   myProject.SetInputParam("sampleName",        outname);
@@ -270,6 +276,7 @@ nEvents     = args.nEvents
 nSlots      = args.nSlots
 FirstEvent  = args.firstEvent
 sendJobs    = args.sendJobs
+ncores = nSlots
 
 # Check if a cfg file is given as first argument
 fname = selection
@@ -279,9 +286,10 @@ if not os.path.isfile('./'+fname):
     l = l[0]
     fname = l[0] + '.' + l[1]
 if os.path.isfile(fname):
-  print ' >> Using config file \'%s\'...'%fname
+  if verbose: print ' >> Using config file \'%s\'...'%fname
   spl = []
   samplefiles = {}
+  nslots = {}
   f = open(fname)
   lines = f.readlines()
   for l in lines:
@@ -297,10 +305,11 @@ if os.path.isfile(fname):
       else:
         spl.append(l)
         samplefiles[l]=l
+        nslots[l]=nSlots
     else:
       lst = l.split(':')
       key = lst[0]
-      val = lst[1]
+      val = lst[1] if lst[1] != '' else lst[0]
       if   key == 'pretend'   : pretend   = 1
       elif key == 'verbose'   : verbose   = 1
       elif key == 'test'      : dotest    = 1
@@ -316,8 +325,10 @@ if os.path.isfile(fname):
       elif key == 'nEvents'   : nEvents   = int(val)
       elif key == 'firstEvent': FirstEvent= int(val)
       else:
+        ncor = nSlots if len(lst) < 3 else int(lst[2])
         spl.append(key)
         samplefiles[key] = val
+        nslots[key] = ncor
 
   # Re-assign arguments...
   if '--verbose' in aarg or '-v' in aarg : verbose     = args.verbose
@@ -339,7 +350,8 @@ if os.path.isfile(fname):
   for sname in spl:
     outname = sname
     sample  = samplefiles[sname]
-    RunSamplePAF(selection, path, sample, year, xsec, nSlots, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs)
+    ncores  = nslots[sname]
+    RunSamplePAF(selection, path, sample, year, xsec, ncores, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs)
 
 else: # no config file...
   RunSamplePAF(selection, path, sample, year, xsec, nSlots, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs)
