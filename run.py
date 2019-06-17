@@ -123,7 +123,7 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
       print '## This sample has gen weights!!'
 
   # Check what is in the tree...
-  options = GetOptions(path, samples[0])
+  options = GetOptions(path, samples[0], options)
   print '## Runing with options: %s'%(options)
   print '## Output to: %s'%(outpath + "/" + outname)
 
@@ -134,7 +134,7 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
   if SampString.endswith(','): SampString = SampString[:-1]
 
   ex = '\'run.C(\"%s\", \"%s\", %f, %f, %i, \"%s\", %i, \"%s\", \"%s\", %i, %i, %i, %i)\''%(SampString, selection, xsec, nSumOfWeights, year, outname, nSlots, outpath, options, isamcatnlo, isData, nEvents, FirstEvent)
-  ex = 'root -l -b -1 ' + ex
+  ex = 'root -l -b -q ' + ex
   if runC: 
     print 'Executing command: \n', ex
 
@@ -214,10 +214,9 @@ parser.add_argument('selection'                                , help = 'Name of
 parser.add_argument('--path','-p'       , default=''           , help = 'Path to look for nanoAOD')
 parser.add_argument('--sample','-s'     , default=''           , help = 'Sample(s) to process')
 parser.add_argument('--xsec','-x'       , default='xsec'       , help = 'Cross section')
-parser.add_argument('--year','-y'       , default=2018         , help = 'Year')
+parser.add_argument('--year','-y'       , default=-1           , help = 'Year')
 parser.add_argument('--conf','-c'       , default=''           , help = 'Config file (not yet implemented')
 parser.add_argument('--options','-o'    , default=''           , help = 'Options to pass to your analysis')
-parser.add_argument('--analysis','-a'   , default='Top'        , help = 'Analysis name')
 parser.add_argument('--prefix'          , default='Tree'       , help = 'Prefix of the name...')
 parser.add_argument('--outname'         , default=''           , help = 'Name of the output file')
 parser.add_argument('--outpath'         , default=''           , help = 'Output path')
@@ -226,7 +225,8 @@ parser.add_argument('--nEvents'         , default=0            , help = 'Number 
 parser.add_argument('--nSlots','-n'     , default=1            , help = 'Number of slots')
 
 args = parser.parse_args()
-
+aarg = sys.argv
+selection   = args.selection
 verbose     = args.verbose
 pretend     = args.pretend
 dotest      = args.test
@@ -235,7 +235,6 @@ path        = args.path
 options     = args.options
 xsec        = args.xsec
 year        = args.year
-selection   = args.selection
 prefix      = args.prefix
 outname     = args.outname
 outpath     = args.outpath
@@ -290,6 +289,22 @@ if os.path.isfile(fname):
       else:
         spl.append(key)
         samplefiles[key] = val
+
+  # Re-assign arguments...
+  if '--verbose' in aarg or '-v' in aarg : verbose     = args.verbose
+  if '--pretend' in aarg or '-p' in aarg : pretend     = args.pretend
+  if '--test'    in aarg or '-t' in aarg : dotest      = args.test
+  if args.sample     != ''     : sample      = args.sample
+  if args.path       != ''     : path        = args.path
+  if args.options    != ''     : options     = args.options
+  if args.xsec       != 'xsec' : xsec        = args.xsec
+  if args.year       != -1     : year        = args.year
+  if args.prefix     != 'Tree' : prefix      = args.prefix
+  if args.outname    != ''     : outname     = args.outname
+  if args.outpath    != ''     : outpath     = args.outpath
+  if args.nEvents    != 0      : nEvents     = args.nEvents
+  if args.nSlots     != 1      : nSlots      = args.nSlots
+  if args.firstEvent != 0      : FirstEvent  = args.firstEvent
 
   for sname in spl:
     outname = sname
