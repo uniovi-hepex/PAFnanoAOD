@@ -83,6 +83,8 @@ void EventBuilder::Initialise(){
   Float_t binsEta[] = {0, 1, 2.1, 2.4};     Int_t nbinsEta = 3;
   Float_t binsPt[]  = {20, 30, 40, 50, 60}; Int_t nbinsPt  = 4;
   
+  makeeffhistos = true;  // THIS IS PUT HERE SO WE DON'T DO THE TRIG EFF HISTOS BUT ALSO BECAUSE (at least for 2017's nanoAODv4) MET TRIGGERS ARE BADLY SET
+
   if (makeeffhistos) {
     ElecTrigEffNum = CreateH2F("ElecTrigEffNum","", nbinsEta, binsEta, nbinsPt, binsPt);
     ElecTrigEffDen = CreateH2F("ElecTrigEffDen","", nbinsEta, binsEta, nbinsPt, binsPt);
@@ -129,8 +131,6 @@ void EventBuilder::Initialise(){
   PUSF = 1;
   PUSF_Up = 1;
   PUSF_Down = 1;
-  
-  makeeffhistos = true;  // THIS IS PUT HERE SO WE DON'T DO THE TRIG EFF HISTOS BUT ALSO BECAUSE (at least for 2017's nanoAODv4) MET TRIGGERS ARE BADLY SET
 }
 
 
