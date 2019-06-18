@@ -18,7 +18,6 @@ void LeptonSelector::Summary(){}
 
 void LeptonSelector::Initialise(){
   year    = GetParam<TString>("year").Atoi();
-  fhDummy = CreateH1F("fhDummy","fhDummy", 1, 0, 2);
   gIsData        = GetParam<Bool_t>("IsData");
   selection      = GetParam<TString>("selection");
   gOptions       = GetParam<TString>("_options");
@@ -214,17 +213,17 @@ Bool_t LeptonSelector::getElecCutBasedId(Int_t wp){
 //============================================================================================
 Bool_t LeptonSelector::isGoodLepton(Lepton lep){
   Bool_t passId; Bool_t passIso;
-  if(lep.isMuon){
+  if (lep.isMuon) {
     passId  = getMuonId(iTight);
     passIso = getRelIso04POG(iTight);
   }
-  if(lep.isElec){
+  if (lep.isElec) {
     passId = getElecCutBasedId(iTight) && lostHits <= 1;
     passIso = 1; // getRelIso03POG(iTight); // Isolation already included in CutBasedID!!
-    if(TMath::Abs(etaSC) > 1.4442 && TMath::Abs(etaSC) < 1.566) return false;
+    if (TMath::Abs(etaSC) > 1.4442 && TMath::Abs(etaSC) < 1.566) return false;
   }
-  if(lep.p.Pt() < 18 || TMath::Abs(lep.p.Eta()) > 2.4) return false;
-  if(passId && passIso && ( (lep.isElec && getGoodVertex(iTight)) || (lep.isMuon && getGoodVertex(iMedium) ))) return true;
+  if (lep.p.Pt() < 18 || TMath::Abs(lep.p.Eta()) > 2.4) return false;
+  if (passId && passIso && ( (lep.isElec && getGoodVertex(iTight)) || (lep.isMuon && getGoodVertex(iMedium) ))) return true;
   return false;
 }
 
@@ -262,7 +261,6 @@ Bool_t LeptonSelector::isLooseLepton(Lepton lep){
 ///////////////////////////////////////////////////////////////////////////
 
 void LeptonSelector::InsideLoop(){
-  fhDummy->Fill(1);
   evt = Get<ULong64_t>("event");
 
   // Clear vectors...
@@ -359,15 +357,15 @@ void LeptonSelector::InsideLoop(){
     if(isVetoLepton(tL)){ // If you need to veto extra leptons...
       vetoLeptons.push_back(tL);
     }
-    if(isLooseLepton(tL)){ // A loose category... 
+    if(isLooseLepton(tL)){ // A loose category...
       looseLeptons.push_back(tL);
     }
   }
 
   nSelLeptons   = selLeptons.size();
-  nVetoLeptons   = vetoLeptons.size();
+  nVetoLeptons  = vetoLeptons.size();
   nLooseLeptons = looseLeptons.size();
-  nGenLeptons    = genLeptons.size();
+  nGenLeptons   = genLeptons.size();
 
   //=== Trigger SF
   if(gIs2016){
