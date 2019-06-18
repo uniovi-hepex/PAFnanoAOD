@@ -15,6 +15,9 @@ except ImportError:
   print 'Please, load ROOT... (typically by executing \'root6\')'
   exit()
 
+from ROOT import gROOT
+gROOT.SetBatch(1)
+
 try:
   from ROOT import PAFProject
 except ImportError:
@@ -102,7 +105,8 @@ def GetTStringVectorSamples(path, samples):
     v.push_back(t)
   return v
   v = GetTStringVector(samples)
-    
+
+
 def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, outname = '', outpath = '', options = '', nEvents = 0, FirstEvent = 0, prefix = 'Tree', verbose = False, pretend = False, dotest = False, sendJobs = False):
   if ',' in sample:
     sample.replace(' ', '')
@@ -141,6 +145,7 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
   SampString    = ''
   for s in samples: SampString += '%s/%s,'%(path,s)
   if SampString.endswith(','): SampString = SampString[:-1]
+
 
   command = '\'run.C(\"%s\", \"%s\", %f, %f, %i, \"%s\", %i, \"%s\", \"%s\", %i, %i, %i, %i, \"%s\")\''%(SampString, selection, xsec, nSumOfWeights, year, outname, nSlots, outpath, options, isamcatnlo, isData, nEvents, FirstEvent, workingdir)
   command = 'root -l -b -q ' + command

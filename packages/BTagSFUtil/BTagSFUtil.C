@@ -9,9 +9,9 @@
 
 using namespace std;
 
-BTagSFUtil::BTagSFUtil(const string& MeasurementType, 
-		       const TString& BTagSFPath, const string& BTagAlgorithm, 
-		       const TString& OperatingPoint, int SystematicIndex, int year, TString FastSimDataset) {
+BTagSFUtil::BTagSFUtil(const string& MeasurementType,
+                       const TString& BTagSFPath, const string& BTagAlgorithm,
+                       const TString& OperatingPoint, int SystematicIndex, int year, TString FastSimDataset) {
   gIsFastSim = FastSimDataset == ""? false : true;
   //rand_ = new TRandom3(Seed);
   TString CSVFileName = Form("%s/csv/%s_%i.csv", BTagSFPath.Data(), BTagAlgorithm.c_str(), year);
@@ -54,15 +54,15 @@ BTagSFUtil::BTagSFUtil(const string& MeasurementType,
       op = BTagEntry::OP_LOOSE;
     } else if (OperatingPoint=="Medium")  {
       TaggerOP += "M";
-      if (TaggerName=="DeepCSV")  TaggerCut = 0.4184; 
+      if (TaggerName=="DeepCSV")  TaggerCut = 0.4184;
       if (TaggerName=="DeepFlav") TaggerCut = 0.2770;
       op = BTagEntry::OP_MEDIUM;
     } else if (OperatingPoint=="Tight")  {
       TaggerOP += "T";
-      if (TaggerName=="DeepCSV")  TaggerCut = 0.7527; 
-      if (TaggerName=="DeepFlav") TaggerCut = 0.7264; 
+      if (TaggerName=="DeepCSV")  TaggerCut = 0.7527;
+      if (TaggerName=="DeepFlav") TaggerCut = 0.7264;
       op = BTagEntry::OP_TIGHT;
-    } 
+    }
   }
   if(year == 2017){
     // https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation94X
@@ -266,12 +266,12 @@ void  BTagSFUtil::LoadHistos(const TString& path, int year, const TString& tagge
   // 2016, 2017, 2018
   // CSVv2, DeepCSV, DeepFlav
   TString fname = path + "/BtagMCSF.root";
-  cout << Form("INFO: [BTadSFUtil] Loading btag MC efficiencies from %s", fname.Data()) << endl;
+  cout << Form("INFO: [BTagSFUtil] Loading btag MC efficiencies from %s", fname.Data()) << endl;
   TFile* f = TFile::Open(fname);
   TString hnameB = Form("BtagSFB_%s%s_%i", tagger.Data(), wp.Data(), year);
   TString hnameC = Form("BtagSFC_%s%s_%i", tagger.Data(), wp.Data(), year);
   TString hnameL = Form("BtagSFL_%s%s_%i", tagger.Data(), wp.Data(), year);
-  cout << "INFO: [BTadSFUtil] Loading histograms: " << endl;
+  cout << "INFO: [BTagSFUtil] Loading histograms: " << endl;
   cout << Form("                   >> %s ", hnameB.Data()) << endl;
   cout << Form("                   >> %s ", hnameC.Data()) << endl;
   cout << Form("                   >> %s ", hnameL.Data()) << endl;

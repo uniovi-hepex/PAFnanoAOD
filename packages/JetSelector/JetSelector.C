@@ -21,19 +21,19 @@ JetSelector::JetSelector() : PAFChainItemSelector() {
   fBTagSFbDo = 0;
   fBTagSFlUp = 0;
   fBTagSFlDo = 0;
-  MeasType = "comb";
-  minDR = 0;
+  MeasType   = "comb";
+  minDR      = 0;
   jet_MaxEta = 0;
-  jet_MinPt = 0;
+  jet_MinPt  = 0;
   vetoJet_minPt = 0;
-  BtagSFFS = 1;
+  BtagSFFS   = 1;
 }
 
 JetSelector::~JetSelector() {
-  delete fBTagSFnom; 
-  delete fBTagSFbUp; 
+  delete fBTagSFnom;
+  delete fBTagSFbUp;
   delete fBTagSFbDo;
-  delete fBTagSFlUp; 
+  delete fBTagSFlUp;
   delete fBTagSFlDo;
 }
 
@@ -72,7 +72,8 @@ void JetSelector::Initialise(){
     minDR = 0.4;
   }
   else if (gSelection == itWtt) {
-    taggerName="CSVv2";
+    if (year != 2018) taggerName = "CSVv2";
+    else              taggerName = "DeepCSV";
     stringWP = "Medium";
     jet_MaxEta = 2.4;
     jet_MinPt  = 30;

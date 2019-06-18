@@ -15,7 +15,7 @@ Datasets/
 
 # Others
 .DS_Store
-*_temp/
+*temp/
 inputdata.root
 plotter/TW/Differential/temp/*
 plotter/TW/Differential/results/*
