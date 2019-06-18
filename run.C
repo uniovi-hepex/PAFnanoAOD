@@ -24,9 +24,7 @@ void run(TString samp, TString selection, Float_t xsec, Float_t sumofweights, In
   // PAF mode selection (based on number of slots)
   PAFIExecutionEnvironment* pafmode = 0;
   if      (nSlots <=1 )  pafmode = new PAFSequentialEnvironment();
-  else if (nSlots <=64 ) pafmode = new PAFPROOFLiteEnvironment(nSlots);
-  else                   pafmode = new PAFPoDEnvironment(nSlots);
-
+  else                   pafmode = new PAFPROOFLiteEnvironment(nSlots);
   
   myProject = new PAFProject(pafmode);
   myProject->AddDataFiles(samples); 

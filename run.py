@@ -186,8 +186,7 @@ def RunPAF(samples, selection, xsec, nSumOfWeights, year, outname, nSlots = 1, o
   # PAF mode selection (based on number of slots)
   pafmode = PAFSequentialEnvironment();
   if   nSlots <=  1: pafmode = PAFSequentialEnvironment();
-  elif nSlots <= 84: pafmode = PAFPROOFLiteEnvironment(nSlots);
-  else             : pafmode = PAFPoDEnvironment(nSlots);
+  else             : pafmode = PAFPROOFLiteEnvironment(nSlots);
   
   myProject = PAFProject(pafmode); 
   
@@ -298,10 +297,12 @@ if os.path.isfile(fname):
     if l.startswith('#'): continue
     if '#' in l: l = l.split('#')[0]
     if l == '': continue
+    if l.endswith(':'): l = l[:-1]
     if not ':' in l: 
       if   l == 'verbose': verbose = 1
       elif l == 'pretend': pretend = 1
       elif l == 'test'   : dotest  = 1
+      elif l in ['path', 'sample', 'options', 'selection', 'xsec', 'prefix', 'outpath', 'year', 'nSlots', 'nEvents', 'firstEvent']: continue
       else:
         spl.append(l)
         samplefiles[l]=l
