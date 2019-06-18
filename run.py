@@ -146,12 +146,7 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
   for s in samples: SampString += '%s/%s,'%(path,s)
   if SampString.endswith(','): SampString = SampString[:-1]
 
-<<<<<<< HEAD
-  ex = '\'run.C(\"%s\", \"%s\", %f, %f, %i, \"%s\", %i, \"%s\", \"%s\", %i, %i, %i, %i)\''%(SampString, selection, xsec, nSumOfWeights, year, outname, nSlots, outpath, options, isamcatnlo, isData, nEvents, FirstEvent)
-  ex = 'root -l -b -q ' + ex
-  if runC:
-    print 'Executing command: \n', ex
-=======
+
   command = '\'run.C(\"%s\", \"%s\", %f, %f, %i, \"%s\", %i, \"%s\", \"%s\", %i, %i, %i, %i, \"%s\")\''%(SampString, selection, xsec, nSumOfWeights, year, outname, nSlots, outpath, options, isamcatnlo, isData, nEvents, FirstEvent, workingdir)
   command = 'root -l -b -q ' + command
 
@@ -178,7 +173,6 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
     outname = '%sOUT%s.out'%(pathjob,tag)
     runCommand = "sbatch -N %i -J %s -e %s -o %s %s"%(nSlots, jname, errname, outname, jobfile)
     ex(runCommand, verbose, pretend)
->>>>>>> 3617372fcca1a75b7066be229813313d98dfb0c0
 
   elif runC:
     ex(command, verbose, pretend)
