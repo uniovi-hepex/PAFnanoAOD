@@ -107,7 +107,7 @@ def GetTStringVectorSamples(path, samples):
   v = GetTStringVector(samples)
 
 
-def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, outname = '', outpath = '', options = '', nEvents = 0, FirstEvent = 0, prefix = 'Tree', verbose = False, pretend = False, dotest = False, sendJobs = False):
+def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, outname = '', outpath = '', options = '', nEvents = 0, FirstEvent = 0, prefix = 'Tree', verbose = False, pretend = False, dotest = False, sendJobs = False, queu = 'short'):
   if ',' in sample:
     sample.replace(' ', '')
     sample = sample.split(',')
@@ -171,7 +171,7 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
     jname = 'PAF%s'%(tag)
     errname = '%sERR%s.out'%(pathjob,tag)
     outname = '%sOUT%s.out'%(pathjob,tag)
-    runCommand = "sbatch -N %i -J %s -e %s -o %s %s"%(nSlots, jname, errname, outname, jobfile)
+    runCommand = "sbatch -p %s -c %i -J %s -e %s -o %s %s"%(queue, nSlots, jname, errname, outname, jobfile)
     ex(runCommand, verbose, pretend)
 
   elif runC:
@@ -258,6 +258,7 @@ parser.add_argument('--options','-o'    , default=''           , help = 'Options
 parser.add_argument('--prefix'          , default='Tree'       , help = 'Prefix of the name...')
 parser.add_argument('--outname'         , default=''           , help = 'Name of the output file')
 parser.add_argument('--outpath'         , default=''           , help = 'Output path')
+parser.add_argument('--queue'           , default='short'      , help = 'Queue to send jobs')
 parser.add_argument('--firstEvent'      , default=0            , help = 'First event')
 parser.add_argument('--nEvents'         , default=0            , help = 'Number of events')
 parser.add_argument('--nSlots','-n'     , default=1            , help = 'Number of slots')
@@ -280,6 +281,7 @@ nEvents     = args.nEvents
 nSlots      = args.nSlots
 FirstEvent  = args.firstEvent
 sendJobs    = args.sendJobs
+queue       = args.queue
 ncores = nSlots
 
 # Check if a cfg file is given as first argument
@@ -291,6 +293,7 @@ if not os.path.isfile('./'+fname):
     fname = l[0] + '.' + l[1]
 if os.path.isfile(fname):
   if verbose: print ' >> Using config file \'%s\'...'%fname
+  selection = ''
   spl = []
   samplefiles = {}
   nslots = {}
@@ -307,7 +310,7 @@ if os.path.isfile(fname):
       if   l == 'verbose': verbose = 1
       elif l == 'pretend': pretend = 1
       elif l == 'test'   : dotest  = 1
-      elif l in ['path', 'sample', 'options', 'selection', 'xsec', 'prefix', 'outpath', 'year', 'nSlots', 'nEvents', 'firstEvent']: continue
+      elif l in ['path', 'sample', 'options', 'selection', 'xsec', 'prefix', 'outpath', 'year', 'nSlots', 'nEvents', 'firstEvent', 'queue']: continue
       else:
         spl.append(l)
         samplefiles[l]=l
@@ -326,6 +329,7 @@ if os.path.isfile(fname):
       elif key == 'xsec'      : xsec      = val
       elif key == 'prefix'    : prefix    = val
       elif key == 'outpath'   : outpath   = val
+      elif key == 'queue'     : queue     = val
       elif key == 'year'      : year      = int(val)
       elif key == 'nSlots'    : nSlots    = int(val)
       elif key == 'nEvents'   : nEvents   = int(val)
@@ -352,12 +356,13 @@ if os.path.isfile(fname):
   if args.nEvents    != 0      : nEvents     = args.nEvents
   if args.nSlots     != 1      : nSlots      = args.nSlots
   if args.firstEvent != 0      : FirstEvent  = args.firstEvent
+  if args.queue      != 0      : queue       = args.queue
 
   for sname in spl:
     outname = sname
     sample  = samplefiles[sname]
     ncores  = nslots[sname]
-    RunSamplePAF(selection, path, sample, year, xsec, ncores, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs)
+    RunSamplePAF(selection, path, sample, year, xsec, ncores, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs, queue)
 
 else: # no config file...
-  RunSamplePAF(selection, path, sample, year, xsec, nSlots, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs)
+  RunSamplePAF(selection, path, sample, year, xsec, nSlots, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs, queue)
