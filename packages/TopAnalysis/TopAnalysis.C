@@ -79,7 +79,7 @@ void TopAnalysis::Initialise(){
   selection    = GetParam<TString>("selection");
   gSampleName  = GetParam<TString>("sampleName");
   gOptions     = GetParam<TString>("_options");
-  gDoSyst      = gOptions.Contains("doSyst")? true : false;
+  gDoSyst      = true;// gOptions.Contains("doSyst")? true : false;
   year         = GetParam<TString>("year").Atoi();
   gIsTTbar     = false;
   gIsLHE       = false;
@@ -124,6 +124,17 @@ void TopAnalysis::Initialise(){
   nSyst = useSyst.size();
   InitHistos();
   metvar = year == 2017? "METFixEE2017" : "MET";
+  // b tagging
+  TString pwd  = GetParam<TString>("WorkingDir");
+  TString BTagSFPath = Form("%s/packages/BTagSFUtil", pwd.Data());
+  TString taggerName="DeepCSV"; // DeepFlav
+  TString MeasType = "mujets";
+  TString stringWP = "Medium";
+  fBTagSFnom = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP,  0);
+  fBTagSFbUp = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP,  1);
+  fBTagSFbDo = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP, -1);
+  fBTagSFlUp = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP,  3);
+  fBTagSFlDo = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP, -3);
 }
 
 void TopAnalysis::InsideLoop(){
@@ -131,23 +142,26 @@ void TopAnalysis::InsideLoop(){
   lumiblock = Get<UInt_t>("luminosityBlock");
 
   // Vectors with the objects
+  cout << "Collecting objects..." << endl;
   genLeptons     = GetParam<vector<Lepton>>("genLeptons");
   selLeptons     = GetParam<vector<Lepton>>("selLeptons");
   vetoLeptons    = GetParam<vector<Lepton>>("vetoLeptons");
   selJets        = GetParam<vector<Jet>>("selJets");
-  selJetsJecUp   = GetParam<vector<Jet>>("selJetsJecUp");
-  selJetsJecDown = GetParam<vector<Jet>>("selJetsJecDown");
-  Jets15         = GetParam<vector<Jet>>("Jets15");
-  vetoJets       = GetParam<vector<Jet>>("vetoJets");
-  genJets        = GetParam<vector<Jet>>("genJets");
-  mcJets         = GetParam<vector<Jet>>("mcJets");
+  //selJetsJecUp   = GetParam<vector<Jet>>("selJetsJecUp");
+  //selJetsJecDown = GetParam<vector<Jet>>("selJetsJecDown");
+  //Jets15         = GetParam<vector<Jet>>("Jets15");
+  //vetoJets       = GetParam<vector<Jet>>("vetoJets");
+  //genJets        = GetParam<vector<Jet>>("genJets");
+  //mcJets         = GetParam<vector<Jet>>("mcJets");
 
   // Weights and SFs
+  cout << "Collecting weights..." << endl;
   NormWeight     = GetParam<Float_t>("NormWeight");
   TrigSF         = GetParam<Float_t>("TriggerSF");
   TrigSFerr      = GetParam<Float_t>("TriggerSFerr");
   TrigSF = 1; TrigSFerr = 0;
   if(!gIsData && gPUWeigth){
+    cout << "Getting PU weights..." << endl;
     PUSF         = Get<Float_t>("puWeight");
     PUSF_Up      = Get<Float_t>("puWeightUp");
     PUSF_Down    = Get<Float_t>("puWeightDown");
@@ -155,21 +169,24 @@ void TopAnalysis::InsideLoop(){
   else{PUSF = 1; PUSF_Up = 1; PUSF_Down = 1;}
 
   // Event variables
+  cout << "Getting event variables..." << endl;
   gChannel       = GetParam<Int_t>("gChannel");
   TPassMETFilters = GetParam<Bool_t>("METfilters");
   TPassTrigger    = GetParam<Bool_t>("passTrigger");
   isSS           = GetParam<Bool_t>("isSS");
 
   // Leptons and Jets
+  cout << "Setting variables..." << endl;
   GetLeptonVariables(selLeptons, vetoLeptons);
-  GetJetVariables(selJets, Jets15);
   GetGenJetVariables(genJets, mcJets);
   GetMET();
   GetWeights();
+  //GetJetVariables(selJets, Jets15);
 
   if(gIsTTbar) FillCorrHistos();
 
   // Number of events in fiducial region
+  cout << "Fiducial events..." << endl;
   if(!gIsData && makeHistos) {
     if(genLeptons.size() >= 2){ // MIND THE POSSIBLE SKIM (on reco leptons) IN THE SAMPLE!!
       Int_t GenChannel = -1;
@@ -202,52 +219,19 @@ void TopAnalysis::InsideLoop(){
     }
   }
 
-  if (makeHistos) {
-  // Fill hDummy histos...
-  if(gChannel < 0) return;
-  fhDummy[gChannel]->Fill(1);
-    if(TNSelLeps >= 2){
-      fhDummy_2leps[gChannel]->Fill(1);
-      if(TPassTrigger){
-        fhDummy_trigger[gChannel]->Fill(1);
-        if(TPassMETFilters) {
-          fhDummy_metfilters[gChannel]->Fill(1);
-          if(!isSS){
-            fhDummy_OS[gChannel]->Fill(1);
-            if((selLeptons.at(0).p + selLeptons.at(1).p).M() > 20){ 
-              fhDummy_minv[gChannel]->Fill(1);
-              if(selLeptons.at(0).p.Pt() > 27){
-                fhDummy_lep0pt[gChannel]->Fill(1);
-                if(TChannel == iElMu || (TMath::Abs((selLeptons.at(0).p + selLeptons.at(1).p).M() - 91) > 15)  ){ 
-                  fhDummy_mz[gChannel]->Fill(1);
-                  if(TChannel == iElMu || TMET > 40){   // MET > 40 in ee, µµ
-                    fhDummy_met[gChannel]->Fill(1);
-                    if(TNJets >= 2){
-                      fhDummy_njets[gChannel]->Fill(1);
-                      if(TNBtags >= 1){
-                        fhDummy_nbtags[gChannel]->Fill(1);
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
- 
   // Event Selection
   // ===================================================================================================================
+  cout << "Entering the event selection..." << endl;
   if (TNSelLeps >= 2 && TPassTrigger && TPassMETFilters) {
     for(Int_t sys = 0; sys < nSyst; sys++){
       if(!gDoSyst && sys > 0) break;
       if(gIsData  && sys > 0) break;
      
       // Get values or the corresponding variation
-      SetVariables(sys);
+      cout << "Setting variables for sys " << sys << endl;
+      SetVariables(useSyst.at(sys));
       if (invmass > 20 && lep0pt > 25 && lep1pt > 20) {
+        cout << "Fill dilepton histos" << endl;
         if(isSS) fHSSyields[gChannel][sys] -> Fill(idilepton, weight);
         else {
           fHyields[gChannel][sys] -> Fill(idilepton, weight);
@@ -256,16 +240,19 @@ void TopAnalysis::InsideLoop(){
         }
 
         if (TChannel == iElMu || (TMath::Abs(invmass - 91) > 15)  ){ //  Z Veto in ee, µµ
+          cout << "Fill ZVeto histos" << endl;
           if (isSS) fHSSyields[gChannel][sys] -> Fill(iZVeto, weight);
           else {      fHyields[gChannel][sys] -> Fill(iZVeto, weight);
             FillHistos(gChannel, iZVeto, sys);}
 
           if(TChannel == iElMu || met > 40){   // MET > 40 in ee, µµ
+            cout << "Fill MET histos" << endl;
             if(isSS) fHSSyields[gChannel][sys] -> Fill(iMETcut, weight);
             else{      fHyields[gChannel][sys] -> Fill(iMETcut, weight);
               FillHistos(gChannel, iMETcut, sys);}
 
             if(njets > 1){ //At least 2 jets
+              cout << "Fill >2jets histos" << endl;
               if(isSS) fHSSyields[gChannel][sys] -> Fill(i2jets, weight);
               else{      fHyields[gChannel][sys] -> Fill(i2jets, weight);
                 FillHistos(gChannel, i2jets, sys); }
@@ -852,6 +839,23 @@ void TopAnalysis::SetVariables(int sys){
     else if(sys == kJERDown){
       pt = Get<Float_t>("Jet_pt_jerDown", i);
       m  = Get<Float_t>("Jet_mass_jerDown", i);
+    }
+    if     (sys == kBtagUp)      isbtag = fBTagSFbUp->IsTagged(csv, flav, pt, eta);
+    else if(sys == kBtagDown)    isbtag = fBTagSFbDo->IsTagged(csv, flav, pt, eta);
+    else if(sys == kMistagUp)    isbtag = fBTagSFlUp->IsTagged(csv, flav, pt, eta);
+    else if(sys == kMistagDown)  isbtag = fBTagSFlDo->IsTagged(csv, flav, pt, eta);
+    else                         isbtag = fBTagSFnom->IsTagged(csv, flav, pt, eta);
+    if(pt > 30 && TMath::Abs(eta) <= 2.4 && jetid > 1){ // pt > 30, |eta| < 2.4, id > 1 (2, 6)
+      t.SetPtEtaPhiM(pt, eta, phi, m);
+      jet = Jet(t, csv);
+      jet.isBtag = isbtag;
+      jet.SetDeepCSVB(deepcsv);
+
+      if(Cleaning(jet, selLeptons, 0.4)){
+        njets++;
+        if(jet.isBtag) nbtags++; 
+        jets.push_back(jet);
+      }
     }
   }
 
