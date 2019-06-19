@@ -394,13 +394,19 @@ if __name__ == "__main__":
       outname = sname
       sample  = samplefiles[sname]
       ncores  = nslots[sname]
-      RunSamplePAF(selection, path, sample, year, xsec, ncores, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs, queue)
 
       if sname in chunkdir:
+        tmpsample = sample
+        tmppath   = path
         tmpnchs = int(chunkdir[sname])
         if verbose: print " >> The sample {smp} is going to be separated into {chs} chunks.".format(smp = sname, chs = str(chunkdir[sname]))
-        samples      = GetSampleList(path, sample)
-        nTrueEntries = GetAllInfoFromFile([path + x for x in samples])[0]
+        if ',' in tmpsample:
+          tmpsample.replace(' ', '')
+          tmpsample = tmpsample.split(',')
+        if not isinstance(tmpsample, list): tmpsample = [tmpsample]
+        if not tmppath.endswith('/'): tmppath += '/'
+        tmpsamples      = GetSampleList(tmppath, tmpsample)
+        nTrueEntries = GetAllInfoFromFile([tmppath + x for x in tmpsamples])[0]
 
         for ich in range(tmpnchs):
           tmpoutname    = outname + "_{ch}".format(ch = ich)
@@ -408,6 +414,7 @@ if __name__ == "__main__":
           tmpFirstEvent = tmpnEvents * ich + 1
           if (ich == tmpnchs - 1): tmpnEvents = nTrueEntries - tmpFirstEvent
           RunSamplePAF(selection, path, sample, year, xsec, ncores, tmpoutname, outpath, options, tmpnEvents, tmpFirstEvent, prefix, verbose, pretend, dotest, sendJobs, queue)
-
+      else:
+        RunSamplePAF(selection, path, sample, year, xsec, ncores, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs, queue)
   else: # no config file...
     RunSamplePAF(selection, path, sample, year, xsec, nSlots, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs, queue)
