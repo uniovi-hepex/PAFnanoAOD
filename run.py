@@ -5,6 +5,7 @@
 '''
 
 runC = True
+doSendPath = True
 
 # Check if ROOT and PAF is loaded...
 import imp, os, sys, time
@@ -145,12 +146,16 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
     print '## Output to: %s'%(outpath + "/" + outname)
 
   SamplesVector = GetTStringVectorSamples(path,samples)
-  SampString    = ''
-  for s in samples: SampString += '%s/%s,'%(path,s)
+  SampString  = ''
+  pathSamples = ''
+  if doSendPath:
+    pathSamples = path
+    for s in samples: SampString += '%s,'%(s)
+  else:
+    for s in samples: SampString += '%s/%s,'%(path,s)
   if SampString.endswith(','): SampString = SampString[:-1]
 
-
-  command = '\'run.C(\"%s\", \"%s\", %f, %f, %i, \"%s\", %i, \"%s\", \"%s\", %i, %i, %i, %i, \"%s\")\''%(SampString, selection, xsec, nSumOfWeights, year, outname, nSlots, outpath, options, isamcatnlo, isData, nEvents, FirstEvent, workingdir)
+  command = '\'run.C(\"%s\", \"%s\", %f, %f, %i, \"%s\", %i, \"%s\", \"%s\", %i, %i, %i, %i, \"%s\", \"%s\")\''%(SampString, selection, xsec, nSumOfWeights, year, outname, nSlots, outpath, options, isamcatnlo, isData, nEvents, FirstEvent, workingdir, pathSamples)
   command = 'root -l -b -q ' + command
 
   if sendJobs:
