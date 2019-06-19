@@ -16,7 +16,7 @@ std::vector<TString> TStringToVector(TString t, char separator = ','){
   return v;
 }
 
-void run(TString samp, TString selection, Float_t xsec, Float_t sumofweights, Int_t year, TString outname, Int_t nSlots = 1, TString outpath = "", TString options = "", Bool_t isamcatnlo = false, Bool_t isData = false, Int_t nEvents = 0, Int_t FirstEvent = 0, TString workingdir = ""){
+void run(TString samp, TString selection, Float_t xsec, Float_t sumofweights, Int_t year, TString outname, Int_t nSlots = 1, TString outpath = "", TString options = "", Bool_t isamcatnlo = false, Bool_t isData = false, Int_t nEvents = 0, Int_t FirstEvent = 0){
 
   PAFProject* myProject = 0;
   vector<TString> samples = TStringToVector(samp);
@@ -27,9 +27,8 @@ void run(TString samp, TString selection, Float_t xsec, Float_t sumofweights, In
   else if (nSlots <=64 ) pafmode = new PAFPROOFLiteEnvironment(nSlots);
   else                   pafmode = new PAFPoDEnvironment(nSlots);
 
-  
   myProject = new PAFProject(pafmode);
-  myProject->AddDataFiles(samples); 
+  myProject->AddDataFiles(samples);
   myProject->SetDefaultTreeName("Events");
   
   // Deal with first and last event
@@ -43,13 +42,12 @@ void run(TString samp, TString selection, Float_t xsec, Float_t sumofweights, In
   myProject->SetOutputFile(outpath + "/" + outname);
   
   // Parameters for the analysis
-  if(workingdir == "") workingdir = gSystem->pwd();
   myProject->SetInputParam("sampleName",        outname);
   myProject->SetInputParam("IsData",            isData    );
   myProject->SetInputParam("weight",            xsec/sumofweights);
   myProject->SetInputParam("IsMCatNLO",         isamcatnlo);
   myProject->SetInputParam("selection",         selection);
-  myProject->SetInputParam("WorkingDir",        workingdir);
+  myProject->SetInputParam("WorkingDir",        gSystem->pwd());
   myProject->SetInputParam("xsec",              xsec);
   myProject->SetInputParam("_options",          options);
   myProject->SetInputParam("year",              TString(Form("%i",year)));

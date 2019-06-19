@@ -1,5 +1,5 @@
 '''
-  Example: 
+  Example:
   python run.py tt -p /pool/ciencias/userstorage/juanr/nanoAODv4/2017/ -s TTTo2L2Nu
   python run.py 2017.cfg
 '''
@@ -7,7 +7,7 @@
 runC = True
 
 # Check if ROOT and PAF is loaded...
-import imp, os, sys, time
+import imp, os, sys, time, re
 try:
     imp.find_module('ROOT')
     found = True
@@ -26,13 +26,15 @@ except ImportError:
 
 from fileReader import getDicFiles, GetAllInfoFromFile, IsVarInTree
 
+
 def ex(command, verbose = False, pretend = False):
   if verbose:
     print 'Executing command: ', command
-  if pretend: 
+  if pretend:
     print 'Pretending...'
     return
   os.system(command)
+
 
 def loadxsecdic(fname, verbose):
   xsecdir = {}
@@ -58,17 +60,19 @@ def loadxsecdic(fname, verbose):
     val = lst[1]
     if val == '': val = 1
     xsecdir[key] = float(val)
-  return xsecdir 
+  return xsecdir
+
 
 def GetXsec(xsec, s, verbose):
   if isinstance(xsec, int): xsec = float(xsec)
   if isinstance(xsec, str):
     xsecdic = loadxsecdic(xsec, verbose)
-    if not s in xsecdic.keys():
+    if not re.sub("_[0-9]$", "", s) in xsecdic.keys():
       print 'ERROR: not found xsec value for sample %s'%s
       xsec = 1
-    else: xsec = xsecdic[s]
+    else: xsec = xsecdic[re.sub("_[0-9]$", "", s)]
   return xsec
+
 
 def GetSampleList(path, sample):
   dic = getDicFiles(path)
@@ -85,6 +89,7 @@ def GetSampleList(path, sample):
       samples += dic[s]
   return samples
 
+
 def GetOptions(path, sample, options = ""):
   if not path.endswith('/'): path += '/'
   if not sample.endswith(".root"): sample += '.root'
@@ -95,6 +100,7 @@ def GetOptions(path, sample, options = ""):
   options += doPUweight + doJECunc + useJetPtNom + useLepGood + options
   if options.endswith(','): options = options[:-1]
   return options
+
 
 def GetTStringVectorSamples(path, samples):
   from ROOT import vector, TString, gSystem
@@ -141,10 +147,10 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
     print '## Runing with options: %s'%(options)
     print '## Output to: %s'%(outpath + "/" + outname)
 
-  SamplesVector = GetTStringVectorSamples(path,samples)
+  SamplesVector = GetTStringVectorSamples(path, samples)
   SampString    = ''
-  for s in samples: SampString += '%s/%s,'%(path,s)
-  if SampString.endswith(','): SampString = SampString[:-1]
+  for s in samples:            SampString += '%s/%s,'%(path,s)
+  if SampString.endswith(','): SampString =  SampString[:-1]
 
 
   command = '\'run.C(\"%s\", \"%s\", %f, %f, %i, \"%s\", %i, \"%s\", \"%s\", %i, %i, %i, %i, \"%s\")\''%(SampString, selection, xsec, nSumOfWeights, year, outname, nSlots, outpath, options, isamcatnlo, isData, nEvents, FirstEvent, workingdir)
@@ -177,14 +183,13 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
   elif runC:
     ex(command, verbose, pretend)
   else:
-    if pretend: 
+    if pretend:
       print 'Pretending...'
       return
     RunPAF(SamplesVector, selection, xsec, nSumOfWeights, year, outname, nSlots, outpath, options, isamcatnlo, isData, nEvents, FirstEvent, workingdir)
 
 
 def RunPAF(samples, selection, xsec, nSumOfWeights, year, outname, nSlots = 1, outpath = '', options = '', isamcatnlo = False, isData = False, nEvents = 0, FirstEvent = 0, workingdir = ''):
-
   from ROOT import PAFProject, PAFIExecutionEnvironment ,PAFSequentialEnvironment, PAFPROOFLiteEnvironment, PAFPoDEnvironment
   from ROOT import vector, TString, gSystem
   
@@ -192,16 +197,16 @@ def RunPAF(samples, selection, xsec, nSumOfWeights, year, outname, nSlots = 1, o
   pafmode = PAFSequentialEnvironment();
   if   nSlots <=  1: pafmode = PAFSequentialEnvironment();
   elif nSlots <= 84: pafmode = PAFPROOFLiteEnvironment(nSlots);
-  else             : pafmode = PAFPoDEnvironment(nSlots);
+  else:              pafmode = PAFPoDEnvironment(nSlots);
   
-  myProject = PAFProject(pafmode); 
+  myProject = PAFProject(pafmode);
   
-  myProject.AddDataFiles(samples); 
+  myProject.AddDataFiles(samples);
   myProject.SetDefaultTreeName("Events");
   
   # Deal with first and last event
-  if nEvents > 0    : myProject.SetNEvents(nEvents);
-  if FirstEvent > 0 : myProject.SetFirstEvent(FirstEvent);
+  if nEvents > 0:      myProject.SetNEvents(nEvents);
+  if FirstEvent > 0:   myProject.SetFirstEvent(FirstEvent);
   if workingdir == "": workingdir = os.getcwd()
   
   # Set output file
@@ -239,124 +244,144 @@ def RunPAF(samples, selection, xsec, nSumOfWeights, year, outname, nSlots = 1, o
   
   myProject.Run();
 
-  
+
+
 ################################################################################
 ### Execute
 ################################################################################
-import argparse
-parser = argparse.ArgumentParser(description='Run with PAF')
-parser.add_argument('--verbose','-v'    , action='store_true'  , help = 'Activate the verbosing')
-parser.add_argument('--pretend','-p'    , action='store_true'  , help = 'Create the files but not send the jobs')
-parser.add_argument('--test','-t'       , action='store_true'  , help = 'Sends only one or two jobs, as a test')
-parser.add_argument('--sendJobs','-j'   , action='store_true'  , help = 'Send jobs!')
-parser.add_argument('selection'                                , help = 'Name of the selector')
-parser.add_argument('--path'            , default=''           , help = 'Path to look for nanoAOD')
-parser.add_argument('--sample','-s'     , default=''           , help = 'Sample(s) to process')
-parser.add_argument('--xsec','-x'       , default='xsec'       , help = 'Cross section')
-parser.add_argument('--year','-y'       , default=-1           , help = 'Year')
-parser.add_argument('--conf','-c'       , default=''           , help = 'Config file (not yet implemented')
-parser.add_argument('--options','-o'    , default=''           , help = 'Options to pass to your analysis')
-parser.add_argument('--prefix'          , default='Tree'       , help = 'Prefix of the name...')
-parser.add_argument('--outname'         , default=''           , help = 'Name of the output file')
-parser.add_argument('--outpath'         , default=''           , help = 'Output path')
-parser.add_argument('--firstEvent'      , default=0            , help = 'First event')
-parser.add_argument('--nEvents'         , default=0            , help = 'Number of events')
-parser.add_argument('--nSlots','-n'     , default=1            , help = 'Number of slots')
+if __name__ == "__main__":
+  import argparse
+  parser = argparse.ArgumentParser(description='Run with PAF')
+  parser.add_argument('--verbose','-v'    , action='store_true'  , help = 'Activate the verbosing')
+  parser.add_argument('--pretend','-p'    , action='store_true'  , help = 'Create the files but not send the jobs')
+  parser.add_argument('--test','-t'       , action='store_true'  , help = 'Sends only one or two jobs, as a test')
+  parser.add_argument('--sendJobs','-j'   , action='store_true'  , help = 'Send jobs!')
+  parser.add_argument('selection'                                , help = 'Name of the selector')
+  parser.add_argument('--path'            , default=''           , help = 'Path to look for nanoAOD')
+  parser.add_argument('--sample','-s'     , default=''           , help = 'Sample(s) to process')
+  parser.add_argument('--xsec','-x'       , default='xsec'       , help = 'Cross section')
+  parser.add_argument('--year','-y'       , default=-1           , help = 'Year')
+  parser.add_argument('--conf','-c'       , default=''           , help = 'Config file (not yet implemented')
+  parser.add_argument('--options','-o'    , default=''           , help = 'Options to pass to your analysis')
+  parser.add_argument('--prefix'          , default='Tree'       , help = 'Prefix of the name...')
+  parser.add_argument('--outname'         , default=''           , help = 'Name of the output file')
+  parser.add_argument('--outpath'         , default=''           , help = 'Output path')
+  parser.add_argument('--firstEvent'      , default=0            , help = 'First event')
+  parser.add_argument('--nEvents'         , default=0            , help = 'Number of events')
+  parser.add_argument('--nSlots','-n'     , default=1            , help = 'Number of slots')
 
-args = parser.parse_args()
-aarg = sys.argv
-selection   = args.selection
-verbose     = args.verbose
-pretend     = args.pretend
-dotest      = args.test
-sample      = args.sample
-path        = args.path
-options     = args.options
-xsec        = args.xsec
-year        = args.year
-prefix      = args.prefix
-outname     = args.outname
-outpath     = args.outpath
-nEvents     = args.nEvents
-nSlots      = args.nSlots
-FirstEvent  = args.firstEvent
-sendJobs    = args.sendJobs
-ncores = nSlots
+  args = parser.parse_args()
+  aarg = sys.argv
+  selection   = args.selection
+  verbose     = args.verbose
+  pretend     = args.pretend
+  dotest      = args.test
+  sample      = args.sample
+  path        = args.path
+  options     = args.options
+  xsec        = args.xsec
+  year        = args.year
+  prefix      = args.prefix
+  outname     = args.outname
+  outpath     = args.outpath
+  nEvents     = args.nEvents
+  nSlots      = args.nSlots
+  FirstEvent  = args.firstEvent
+  sendJobs    = args.sendJobs
+  ncores = nSlots
 
-# Check if a cfg file is given as first argument
-fname = selection
-if not os.path.isfile('./'+fname):
-  l = filter(lambda x: x[0] == fname, [x.split('.') for x in os.listdir('.')])
-  if len(l) != 0: 
-    l = l[0]
-    fname = l[0] + '.' + l[1]
-if os.path.isfile(fname):
-  if verbose: print ' >> Using config file \'%s\'...'%fname
-  spl = []
-  samplefiles = {}
-  nslots = {}
-  f = open(fname)
-  lines = f.readlines()
-  for l in lines:
-    l = l.replace(' ', '')
-    l = l.replace('\n', '')
-    if l.startswith('#'): continue
-    if '#' in l: l = l.split('#')[0]
-    if l == '': continue
-    if not ':' in l: 
-      if   l == 'verbose': verbose = 1
-      elif l == 'pretend': pretend = 1
-      elif l == 'test'   : dotest  = 1
+  # Check if a cfg file is given as first argument
+  fname = selection
+  if not os.path.isfile('./'+fname):
+    l = filter(lambda x: x[0] == fname, [x.split('.') for x in os.listdir('.')])
+    if len(l) != 0:
+      l = l[0]
+      fname = l[0] + '.' + l[1]
+  if os.path.isfile(fname):
+    if verbose: print ' >> Using config file \'%s\'...'%fname
+    spl         = []
+    samplefiles = {}
+    nslots      = {}
+    chunkdir    = {}
+
+    f = open(fname)
+    lines = f.readlines()
+    for l in lines:
+      l = l.replace(' ', '')
+      l = l.replace('\n', '')
+      if l.startswith('#'): continue
+      if '#' in l: l = l.split('#')[0]
+      if l == '': continue
+      if not ':' in l:
+        if   l == 'verbose': verbose = 1
+        elif l == 'pretend': pretend = 1
+        elif l == 'test'   : dotest  = 1
+        else:
+          spl.append(l)
+          samplefiles[l]=l
+          nslots[l]=nSlots
       else:
-        spl.append(l)
-        samplefiles[l]=l
-        nslots[l]=nSlots
-    else:
-      lst = l.split(':')
-      key = lst[0]
-      val = lst[1] if lst[1] != '' else lst[0]
-      if   key == 'pretend'   : pretend   = 1
-      elif key == 'verbose'   : verbose   = 1
-      elif key == 'test'      : dotest    = 1
-      elif key == 'path'      : path      = val
-      elif key == 'sample'    : sample    = val
-      elif key == 'options'   : options   = val
-      elif key == 'selection' : selection = val
-      elif key == 'xsec'      : xsec      = val
-      elif key == 'prefix'    : prefix    = val
-      elif key == 'outpath'   : outpath   = val
-      elif key == 'year'      : year      = int(val)
-      elif key == 'nSlots'    : nSlots    = int(val)
-      elif key == 'nEvents'   : nEvents   = int(val)
-      elif key == 'firstEvent': FirstEvent= int(val)
+        lst = l.split(':')
+        key = lst[0]
+        val = lst[1] if lst[1] != '' else lst[0]
+        if   key == 'pretend'   : pretend   = 1
+        elif key == 'verbose'   : verbose   = 1
+        elif key == 'test'      : dotest    = 1
+        elif key == 'path'      : path      = val
+        elif key == 'sample'    : sample    = val
+        elif key == 'options'   : options   = val
+        elif key == 'selection' : selection = val
+        elif key == 'xsec'      : xsec      = val
+        elif key == 'prefix'    : prefix    = val
+        elif key == 'outpath'   : outpath   = val
+        elif key == 'year'      : year      = int(val)
+        elif key == 'nSlots'    : nSlots    = int(val)
+        elif key == 'nEvents'   : nEvents   = int(val)
+        elif key == 'firstEvent': FirstEvent= int(val)
+        else:
+          ncor = nSlots if len(lst) < 3 else int(lst[2])
+          spl.append(key)
+          samplefiles[key] = val
+          nslots[key]      = ncor
+          if len(lst) > 3: chunkdir[key] = lst[3]
+
+    # Re-assign arguments...
+    if '--verbose' in aarg or '-v' in aarg : verbose     = args.verbose
+    if '--pretend' in aarg or '-p' in aarg : pretend     = args.pretend
+    if '--test'    in aarg or '-t' in aarg : dotest      = args.test
+    if '--sendJobs'in aarg or '-j' in aarg : sendJobs    = args.sendJobs
+    if args.sample     != ''     : sample      = args.sample
+    if args.path       != ''     : path        = args.path
+    if args.options    != ''     : options     = args.options
+    if args.xsec       != 'xsec' : xsec        = args.xsec
+    if args.year       != -1     : year        = args.year
+    if args.prefix     != 'Tree' : prefix      = args.prefix
+    if args.outname    != ''     : outname     = args.outname
+    if args.outpath    != ''     : outpath     = args.outpath
+    if args.nEvents    != 0      : nEvents     = args.nEvents
+    if args.nSlots     != 1      : nSlots      = args.nSlots
+    if args.firstEvent != 0      : FirstEvent  = args.firstEvent
+
+    for sname in spl:
+      outname = sname
+      sample  = samplefiles[sname]
+      ncores  = nslots[sname]
+
+      if sname in chunkdir:
+        tmpnchs = int(chunkdir[sname])
+        if verbose: print " >> The sample {smp} is going to be separated into {chs} chunks.".format(smp = sname, chs = str(chunkdir[sname]))
+        samples      = GetSampleList(path, sample)
+        nTrueEntries = GetAllInfoFromFile([path + x for x in samples])[0]
+
+        for ich in range(tmpnchs):
+          tmpoutname    = outname + "_{ch}".format(ch = ich)
+          tmpnEvents    = nTrueEntries / tmpnchs
+          tmpFirstEvent = tmpnEvents * ich + 1
+          if (ich == tmpnchs - 1): tmpnEvents = nTrueEntries - tmpFirstEvent
+          RunSamplePAF(selection, path, sample, year, xsec, ncores, tmpoutname, outpath, options, tmpnEvents, tmpFirstEvent, prefix, verbose, pretend, dotest, sendJobs)
+
       else:
-        ncor = nSlots if len(lst) < 3 else int(lst[2])
-        spl.append(key)
-        samplefiles[key] = val
-        nslots[key] = ncor
+        RunSamplePAF(selection, path, sample, year, xsec, ncores, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs)
 
-  # Re-assign arguments...
-  if '--verbose' in aarg or '-v' in aarg : verbose     = args.verbose
-  if '--pretend' in aarg or '-p' in aarg : pretend     = args.pretend
-  if '--test'    in aarg or '-t' in aarg : dotest      = args.test
-  if '--sendJobs'in aarg or '-j' in aarg : sendJobs    = args.sendJobs
-  if args.sample     != ''     : sample      = args.sample
-  if args.path       != ''     : path        = args.path
-  if args.options    != ''     : options     = args.options
-  if args.xsec       != 'xsec' : xsec        = args.xsec
-  if args.year       != -1     : year        = args.year
-  if args.prefix     != 'Tree' : prefix      = args.prefix
-  if args.outname    != ''     : outname     = args.outname
-  if args.outpath    != ''     : outpath     = args.outpath
-  if args.nEvents    != 0      : nEvents     = args.nEvents
-  if args.nSlots     != 1      : nSlots      = args.nSlots
-  if args.firstEvent != 0      : FirstEvent  = args.firstEvent
-
-  for sname in spl:
-    outname = sname
-    sample  = samplefiles[sname]
-    ncores  = nslots[sname]
-    RunSamplePAF(selection, path, sample, year, xsec, ncores, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs)
-
-else: # no config file...
-  RunSamplePAF(selection, path, sample, year, xsec, nSlots, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs)
+  else: # no config file...
+    RunSamplePAF(selection, path, sample, year, xsec, nSlots, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs)
