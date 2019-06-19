@@ -20,9 +20,9 @@ void TWTTbarAnalysis::Initialise() {
   gIsData     = GetParam<Bool_t>("IsData");
   gSampleName = GetParam<TString>("sampleName");
   gOptions    = GetParam<TString>("_options");
-  if (gOptions.Contains("Semi")) {
-    cout << "> Running the semileptonic ttbar sample" << endl;
-  }
+//   if (gOptions.Contains("Semi")) {
+//     cout << "> Running the semileptonic ttbar sample" << endl;
+//   }
   gPUWeight   = gOptions.Contains("PUweight")? true : false;
   gIsTTbar    = false;
   gIsLHE      = false;
@@ -100,11 +100,11 @@ void TWTTbarAnalysis::InsideLoop() {
   GetLeptonVariables();
   GetGenLepVariables();
   
-  if (gOptions.Contains("Semi")) {
-    if (gIsTTbar && DressNLeps > 1 ) return;
-  } else {
-    if (gIsTTbar && DressNLeps < 2 ) return; // Dilepton selection for ttbar!
-  }
+//   if (gOptions.Contains("Semi")) {
+//     if (gIsTTbar && DressNLeps > 1 ) return;
+//   } else {
+//     if (gIsTTbar && DressNLeps < 2 ) return; // Dilepton selection for ttbar!
+//   }
   
   GetJetVariables();
   GetGenJetVariables();
