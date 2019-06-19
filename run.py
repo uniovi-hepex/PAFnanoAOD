@@ -113,7 +113,7 @@ def GetTStringVectorSamples(path, samples):
   v = GetTStringVector(samples)
 
 
-def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, outname = '', outpath = '', options = '', nEvents = 0, FirstEvent = 0, prefix = 'Tree', verbose = False, pretend = False, dotest = False, sendJobs = False):
+def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, outname = '', outpath = '', options = '', nEvents = 0, FirstEvent = 0, prefix = 'Tree', verbose = False, pretend = False, dotest = False, sendJobs = False, queu = 'short'):
   if ',' in sample:
     sample.replace(' ', '')
     sample = sample.split(',')
@@ -177,7 +177,7 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
     jname = 'PAF%s'%(tag)
     errname = '%sERR%s.out'%(pathjob,tag)
     outname = '%sOUT%s.out'%(pathjob,tag)
-    runCommand = "sbatch -N %i -J %s -e %s -o %s %s"%(nSlots, jname, errname, outname, jobfile)
+    runCommand = "sbatch -p %s -c %i -J %s -e %s -o %s %s"%(queue, nSlots, jname, errname, outname, jobfile)
     ex(runCommand, verbose, pretend)
 
   elif runC:
@@ -196,8 +196,7 @@ def RunPAF(samples, selection, xsec, nSumOfWeights, year, outname, nSlots = 1, o
   # PAF mode selection (based on number of slots)
   pafmode = PAFSequentialEnvironment();
   if   nSlots <=  1: pafmode = PAFSequentialEnvironment();
-  elif nSlots <= 84: pafmode = PAFPROOFLiteEnvironment(nSlots);
-  else:              pafmode = PAFPoDEnvironment(nSlots);
+  else             : pafmode = PAFPROOFLiteEnvironment(nSlots);
   
   myProject = PAFProject(pafmode);
   
@@ -266,6 +265,7 @@ if __name__ == "__main__":
   parser.add_argument('--prefix'          , default='Tree'       , help = 'Prefix of the name...')
   parser.add_argument('--outname'         , default=''           , help = 'Name of the output file')
   parser.add_argument('--outpath'         , default=''           , help = 'Output path')
+  parser.add_argument('--queue'           , default='short'      , help = 'Queue to send jobs')
   parser.add_argument('--firstEvent'      , default=0            , help = 'First event')
   parser.add_argument('--nEvents'         , default=0            , help = 'Number of events')
   parser.add_argument('--nSlots','-n'     , default=1            , help = 'Number of slots')
@@ -288,6 +288,7 @@ if __name__ == "__main__":
   nSlots      = args.nSlots
   FirstEvent  = args.firstEvent
   sendJobs    = args.sendJobs
+  queue       = args.queue
   ncores = nSlots
 
   # Check if a cfg file is given as first argument
@@ -299,11 +300,11 @@ if __name__ == "__main__":
       fname = l[0] + '.' + l[1]
   if os.path.isfile(fname):
     if verbose: print ' >> Using config file \'%s\'...'%fname
+    selection   = ''
     spl         = []
     samplefiles = {}
     nslots      = {}
     chunkdir    = {}
-
     f = open(fname)
     lines = f.readlines()
     for l in lines:
@@ -312,14 +313,17 @@ if __name__ == "__main__":
       if l.startswith('#'): continue
       if '#' in l: l = l.split('#')[0]
       if l == '': continue
+      if l.endswith(':'): l = l[:-1]
       if not ':' in l:
         if   l == 'verbose': verbose = 1
         elif l == 'pretend': pretend = 1
         elif l == 'test'   : dotest  = 1
+        elif l in ['path', 'sample', 'options', 'selection', 'xsec', 'prefix', 'outpath', 'year', 'nSlots', 'nEvents', 'firstEvent', 'queue']: continue
         else:
           spl.append(l)
-          samplefiles[l]=l
-          nslots[l]=nSlots
+          samplefiles[l] = l
+          nslots[l]      = nSlots
+          if len(lst) > 3: chunkdir[key] = lst[3]
       else:
         lst = l.split(':')
         key = lst[0]
@@ -334,6 +338,7 @@ if __name__ == "__main__":
         elif key == 'xsec'      : xsec      = val
         elif key == 'prefix'    : prefix    = val
         elif key == 'outpath'   : outpath   = val
+        elif key == 'queue'     : queue     = val
         elif key == 'year'      : year      = int(val)
         elif key == 'nSlots'    : nSlots    = int(val)
         elif key == 'nEvents'   : nEvents   = int(val)
@@ -342,8 +347,7 @@ if __name__ == "__main__":
           ncor = nSlots if len(lst) < 3 else int(lst[2])
           spl.append(key)
           samplefiles[key] = val
-          nslots[key]      = ncor
-          if len(lst) > 3: chunkdir[key] = lst[3]
+          nslots[key] = ncor
 
     # Re-assign arguments...
     if '--verbose' in aarg or '-v' in aarg : verbose     = args.verbose
@@ -361,11 +365,13 @@ if __name__ == "__main__":
     if args.nEvents    != 0      : nEvents     = args.nEvents
     if args.nSlots     != 1      : nSlots      = args.nSlots
     if args.firstEvent != 0      : FirstEvent  = args.firstEvent
+    if args.queue      != 0      : queue       = args.queue
 
     for sname in spl:
       outname = sname
       sample  = samplefiles[sname]
       ncores  = nslots[sname]
+      RunSamplePAF(selection, path, sample, year, xsec, ncores, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs, queue)
 
       if sname in chunkdir:
         tmpnchs = int(chunkdir[sname])
@@ -380,8 +386,5 @@ if __name__ == "__main__":
           if (ich == tmpnchs - 1): tmpnEvents = nTrueEntries - tmpFirstEvent
           RunSamplePAF(selection, path, sample, year, xsec, ncores, tmpoutname, outpath, options, tmpnEvents, tmpFirstEvent, prefix, verbose, pretend, dotest, sendJobs)
 
-      else:
-        RunSamplePAF(selection, path, sample, year, xsec, ncores, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs)
-
   else: # no config file...
-    RunSamplePAF(selection, path, sample, year, xsec, nSlots, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs)
+    RunSamplePAF(selection, path, sample, year, xsec, nSlots, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs, queue)

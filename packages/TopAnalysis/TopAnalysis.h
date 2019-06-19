@@ -15,9 +15,8 @@ const TString sCut[nLevels] = {"dilepton", "ZVeto", "MET", "2jets", "1btag"};
 const Int_t nPtBins = 14;
 const Float_t ptBins[nPtBins+1] = {30, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 200, 300, 400, 600};
 
-enum eSysts                   {kNorm, kMuonEffUp, kMuonEffDown, kElecEffUp, kElecEffDown, kMuonEnergyUp, kMuonEnergyDown, kElecEnergyUp, kElecEnergyDown, kJESUp, kJESDown, kJERUp, kJERDown, kPUUp, kPUDown, kTrigUp, kTrigDown, kUnclMETUp, kUnclMETDown, kBtagUp, kBtagDown, kMistagUp, kMistagDown, nSysts};
-
-const TString gSyst[nSysts] = {"", "MuonEffUp", "MuonEffDown", "ElecEffUp", "ElecEffDown", "MuonEnergyUp", "MuonEnergyDown", "ElecEnergyUp", "ElecEnergyDown", "JESUp", "JESDown", "JERUp", "JERDown", "PUUp", "PUDown", "TrigUp", "TrigDown", "UnclMETUp", "UnclMETDown", "BtagUp", "BtagDown", "MistagUp", "MistagDown"};
+enum eSysts                   {kNorm, kMuonEffUp,  kMuonEffDown,  kElecEffUp,  kElecEffDown,  kMuonEnergyUp,  kMuonEnergyDown,  kElecEnergyUp,  kElecEnergyDown,  kJESUp,  kJESDown,  kJERUp,  kJERDown,  kPUUp,  kPUDown, kTrigUp, kTrigDown,   kUnclMETUp,   kUnclMETDown, kBtagUp,  kBtagDown,  kMistagUp,  kMistagDown, nSysts};
+const TString gSyst[nSysts] = {"",    "MuonEffUp", "MuonEffDown", "ElecEffUp", "ElecEffDown", "MuonEnergyUp", "MuonEnergyDown", "ElecEnergyUp", "ElecEnergyDown", "JESUp", "JESDown", "JERUp", "JERDown", "PUUp", "PUDown", "TrigUp", "TrigDown", "UnclMETUp", "UnclMETDown", "BtagUp", "BtagDown", "MistagUp", "MistagDown"};
 
 
 class TopAnalysis : public PAFChainItemSelector{

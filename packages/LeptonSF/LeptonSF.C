@@ -137,13 +137,8 @@ void LeptonSF::loadHisto(Int_t iHisto, Int_t wp){
         fMuonIdSF_BCDEF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fBCDEF + ".root", histoname, "fMuonIsoSF_BCDEF");
         fMuonIdSF_GH    = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fGH    + ".root", histoname, "fMuonIsoSF_GH");
       }
-      else if(wp == iMedium){
-        histoname = "NUM_TightRelIso_DEN_TightIDandIPCut_eta_pt";
-        fMuonIdSF_BCDEF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fBCDEF + ".root", histoname, "fMuonIsoSF_BCDEF");
-        fMuonIdSF_GH    = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fGH    + ".root", histoname, "fMuonIsoSF_GH");
-      }
       else if(wp == iTight){
-        histoname = "NUM_TightID_DEN_genTracks_eta_pt";
+        histoname = "NUM_TightRelIso_DEN_TightIDandIPCut_eta_pt";
         fMuonIdSF_BCDEF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fBCDEF + ".root", histoname, "fMuonIdSF_BCDEF");
         fMuonIdSF_GH    = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fGH    + ".root", histoname, "fMuonIdSF_GH");
       }
