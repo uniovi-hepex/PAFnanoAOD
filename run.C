@@ -16,7 +16,7 @@ std::vector<TString> TStringToVector(TString t, char separator = ','){
   return v;
 }
 
-void run(TString samp, TString selection, Float_t xsec, Float_t sumofweights, Int_t year, TString outname, Int_t nSlots = 1, TString outpath = "", TString options = "", Bool_t isamcatnlo = false, Bool_t isData = false, Int_t nEvents = 0, Int_t FirstEvent = 0){
+void run(TString samp, TString selection, Float_t xsec, Float_t sumofweights, Int_t year, TString outname, Int_t nSlots = 1, TString outpath = "", TString options = "", Bool_t isamcatnlo = false, Bool_t isData = false, Int_t nEvents = 0, Int_t FirstEvent = 0, TString workingdir = ""){
 
   PAFProject* myProject = 0;
   vector<TString> samples = TStringToVector(samp);
