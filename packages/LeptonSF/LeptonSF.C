@@ -134,13 +134,13 @@ void LeptonSF::loadHisto(Int_t iHisto, Int_t wp){
       TString fGH    = "2016LegacyReReco_RunGH_SF_ISO";
       if(wp == iLoose){
         histoname = "NUM_LooseRelIso_DEN_TightIDandIPCut_eta_pt";
-        fMuonIdSF_BCDEF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fBCDEF + ".root", histoname, "fMuonIsoSF_BCDEF");
-        fMuonIdSF_GH    = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fGH    + ".root", histoname, "fMuonIsoSF_GH");
+        fMuonIsoSF_BCDEF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fBCDEF + ".root", histoname, "fMuonIsoSF_BCDEF");
+        fMuonIsoSF_GH    = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fGH    + ".root", histoname, "fMuonIsoSF_GH");
       }
       else if(wp == iTight){
         histoname = "NUM_TightRelIso_DEN_TightIDandIPCut_eta_pt";
-        fMuonIdSF_BCDEF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fBCDEF + ".root", histoname, "fMuonIdSF_BCDEF");
-        fMuonIdSF_GH    = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fGH    + ".root", histoname, "fMuonIdSF_GH");
+        fMuonIsoSF_BCDEF = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fBCDEF + ".root", histoname, "fMuonIdSF_BCDEF");
+        fMuonIsoSF_GH    = (TH2D*) GetHistogramFromFileD(path_to_SF_histos + fGH    + ".root", histoname, "fMuonIdSF_GH");
       }
     }
   }
@@ -371,7 +371,7 @@ Float_t LeptonSF::GetLeptonSF(Float_t pt, Float_t ieta, Int_t type){
           pr = fMuonIdSF->GetBinContent(fMuonIdSF->FindBin(pt,eta));
         }
         else{ // 2016
-          pr = (fMuonIdSF->GetBinContent(fMuonIdSF->FindBin(pt,eta))*lumiBCDEF + fMuonIdSF_GH->GetBinContent(fMuonIdSF_GH->FindBin(pt,eta))*lumiGH)/(lumiBCDEF+lumiGH);
+          pr = (fMuonIdSF_BCDEF->GetBinContent(fMuonIdSF_BCDEF->FindBin(pt,eta))*lumiBCDEF + fMuonIdSF_GH->GetBinContent(fMuonIdSF_GH->FindBin(pt,eta))*lumiGH)/(lumiBCDEF+lumiGH);
         }
       }
       else if(id == iMuonIsoSUSY) pr = fMuonIsoSFSUSY     ->GetBinContent(fMuonIsoSFSUSY    ->FindBin(pt,eta));
@@ -380,7 +380,7 @@ Float_t LeptonSF::GetLeptonSF(Float_t pt, Float_t ieta, Int_t type){
           pr = fMuonIsoSF->GetBinContent(fMuonIsoSF->FindBin(pt,eta));
         }
         else{ // 2016
-          pr = (fMuonIsoSF->GetBinContent(fMuonIsoSF->FindBin(pt,eta))*lumiBCDEF + fMuonIsoSF_GH->GetBinContent(fMuonIsoSF_GH->FindBin(pt,eta))*lumiGH)/(lumiBCDEF+lumiGH);
+          pr = (fMuonIsoSF_BCDEF->GetBinContent(fMuonIsoSF_BCDEF->FindBin(pt,eta))*lumiBCDEF + fMuonIsoSF_GH->GetBinContent(fMuonIsoSF_GH->FindBin(pt,eta))*lumiGH)/(lumiBCDEF+lumiGH);
         }
       }
       else if (id == iMuonIP2D)            pr = fMuonIP2DSF          ->GetBinContent(fMuonIP2DSF          ->FindBin(pt,eta));
@@ -397,13 +397,8 @@ Float_t LeptonSF::GetLeptonSF(Float_t pt, Float_t ieta, Int_t type){
       if (pt > 200) pt = 199;
       if (((id == iEleclepMVA2lSSttH) || (id == iEleclepMVA3l4lttH)) && (pt >= 100)) pt = 99;
       if (id == iElecReco) {
-        if (gIs2017 || gIs2018) {
-          eta = ieta;
-          pr = fElecTrackerSFF->GetBinContent(fElecTrackerSFF->FindBin(eta,pt));
-        }
-        else {
-          pr = fElecTrackerSF ->GetBinContent(fElecTrackerSF->FindBin(eta, 50));
-        }
+        eta = ieta;
+        pr = fElecTrackerSFF->GetBinContent(fElecTrackerSFF->FindBin(eta,pt));
       }
       else if (id == iElecIdSUSY)          pr = fElecIdSF            ->GetBinContent(fElecIdSF            ->FindBin(pt,eta));
       else if (id == iElecIsoSUSY)         pr = fElecIsoSF           ->GetBinContent(fElecIsoSF           ->FindBin(pt,eta));
@@ -444,7 +439,7 @@ Float_t LeptonSF::GetLeptonSFerror(Float_t pt, Float_t ieta, Int_t type){
           err += p2( fMuonIdSF->GetBinError(fMuonIdSF->FindBin(pt,eta)));
         }
         else { // 2016
-          err += p2( (fMuonIdSF->GetBinError(fMuonIdSF->FindBin(pt,eta))*lumiBCDEF + fMuonIdSF_GH->GetBinError(fMuonIdSF_GH->FindBin(pt,eta))*lumiGH)/(lumiBCDEF+lumiGH) );
+          err += p2( (fMuonIdSF_BCDEF->GetBinError(fMuonIdSF_BCDEF->FindBin(pt,eta))*lumiBCDEF + fMuonIdSF_GH->GetBinError(fMuonIdSF_GH->FindBin(pt,eta))*lumiGH)/(lumiBCDEF+lumiGH) );
         }
       }
       else if (id == iMuonIsoSUSY) err += p2(fMuonIsoSFSUSY ->GetBinError(fMuonIsoSFSUSY->FindBin(pt,eta)));
@@ -453,7 +448,7 @@ Float_t LeptonSF::GetLeptonSFerror(Float_t pt, Float_t ieta, Int_t type){
           err += p2(fMuonIsoSF->GetBinError(fMuonIsoSF->FindBin(pt,eta)));
         }
         else{ // 2016
-          err += p2( (fMuonIsoSF->GetBinError(fMuonIsoSF->FindBin(pt,eta))*lumiBCDEF + fMuonIsoSF_GH->GetBinError(fMuonIsoSF_GH->FindBin(pt,eta))*lumiGH)/(lumiBCDEF+lumiGH) );
+          err += p2( (fMuonIsoSF_BCDEF->GetBinError(fMuonIsoSF_BCDEF->FindBin(pt,eta))*lumiBCDEF + fMuonIsoSF_GH->GetBinError(fMuonIsoSF_GH->FindBin(pt,eta))*lumiGH)/(lumiBCDEF+lumiGH) );
         }
       }
       else if (id == iMuonIP2D)            err += p2(fMuonIP2DSF          ->GetBinError(fMuonIP2DSF         ->FindBin(pt,eta)));
