@@ -41,12 +41,13 @@ void run(TString samp, TString selection, Float_t xsec, Float_t sumofweights, In
   myProject->SetOutputFile(outpath + "/" + outname);
   
   // Parameters for the analysis
+  if(workingdir == "") workingdir = gSystem->pwd();
   myProject->SetInputParam("sampleName",        outname);
   myProject->SetInputParam("IsData",            isData    );
   myProject->SetInputParam("weight",            xsec/sumofweights);
   myProject->SetInputParam("IsMCatNLO",         isamcatnlo);
   myProject->SetInputParam("selection",         selection);
-  myProject->SetInputParam("WorkingDir",        gSystem->pwd());
+  myProject->SetInputParam("WorkingDir",        workingdir);
   myProject->SetInputParam("xsec",              xsec);
   myProject->SetInputParam("_options",          options);
   myProject->SetInputParam("year",              TString(Form("%i",year)));
