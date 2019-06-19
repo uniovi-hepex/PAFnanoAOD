@@ -18,8 +18,6 @@ Datasets/
 *temp/
 jobs/*
 inputdata.root
-plotter/TW/Differential/temp/*
-plotter/TW/Differential/results/*
 plotter/TWTTbar/temp/*
 plotter/TWTTbar/results/*
 plotter/TWTTbar/logs/*

@@ -568,7 +568,7 @@ void TWTTbarAnalysis::GetJetVariables() {
 }
 
 
-void TWTTbarAnalysis::GetGenJetVariables() {  // TERMINAR DE REHACER DESDE JET SELECTOR
+void TWTTbarAnalysis::GetGenJetVariables() {
   if (gIsData) return;
   DressNJets = genJets.size();
   
@@ -579,7 +579,7 @@ void TWTTbarAnalysis::GetGenJetVariables() {  // TERMINAR DE REHACER DESDE JET S
       if (genJets.at(i).p.Pt() > 30) {
         DressJets.push_back(genJets.at(i));
         TDressHT += genJets.at(i).Pt();
-        if (TMath::Abs(genJets.at(i).flavmc) == 5) DressNBJets++;
+        if (genJets.at(i).isBtag) DressNBJets++;
       }
     }
     else if (TMath::Abs(genJets.at(i).p.Eta()) < 4.7) {
@@ -597,9 +597,9 @@ void TWTTbarAnalysis::GetGenJetVariables() {  // TERMINAR DE REHACER DESDE JET S
     TDressJet1_Phi  = DressJets.at(0).Phi();
     TDressJet1_Eta  = DressJets.at(0).Eta();
     if (DressNJets >= 2) {
-      TDressJet1_Pt   = DressJets.at(1).Pt();
-      TDressJet1_E    = DressJets.at(1).E();
-      TDressJet1_Eta  = DressJets.at(1).Eta();
+      TDressJet2_Pt   = DressJets.at(1).Pt();
+      TDressJet2_E    = DressJets.at(1).E();
+      TDressJet2_Eta  = DressJets.at(1).Eta();
     }
   }
 }
@@ -629,10 +629,10 @@ void TWTTbarAnalysis::GetMETandGenMET() {
 //   TMET_PhiJERUp     = (vMET + diff_MET_JER).Phi();
 //   TMETJERUp         = (vMET + diff_MET_JER).Pt();
 
-  TPartMET      = Get<Float_t>("GenMET_pt");
-  TPartMET_Phi  = Get<Float_t>("GenMET_phi");
   TDressMET     = Get<Float_t>("MET_fiducialGenPt");
   TDressMET_Phi = Get<Float_t>("MET_fiducialGenPhi");
+  TPartMET      = Get<Float_t>("GenMET_pt");
+  TPartMET_Phi  = Get<Float_t>("GenMET_phi");
   if (gIsLHE)  for(UShort_t i = 0; i < Get<Int_t>("nLHEweight"); i++) TLHEWeight[i] = Get<Float_t>("LHEweight_wgt", i);
 }
 
