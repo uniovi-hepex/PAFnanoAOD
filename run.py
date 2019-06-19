@@ -411,7 +411,7 @@ if __name__ == "__main__":
         for ich in range(tmpnchs):
           tmpoutname    = outname + "_{ch}".format(ch = ich)
           tmpnEvents    = nTrueEntries / tmpnchs
-          tmpFirstEvent = tmpnEvents * ich + 1
+          tmpFirstEvent = tmpnEvents * ich
           if (ich == tmpnchs - 1): tmpnEvents = nTrueEntries - tmpFirstEvent
           RunSamplePAF(selection, path, sample, year, xsec, ncores, tmpoutname, outpath, options, tmpnEvents, tmpFirstEvent, prefix, verbose, pretend, dotest, sendJobs, queue)
       else:
