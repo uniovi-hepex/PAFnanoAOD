@@ -67,7 +67,8 @@ class TWTTbarAnalysis : public PAFChainItemSelector{
     
     TTree* fMiniTree;
     TH1F* fhDummy;
-    Float_t  TLHEWeight[254];
+    Float_t   TLHEWeight[254];
+    ULong64_t TEvent;
 
     Short_t TChannel, GenChannel;
     Bool_t TIsSS, TDressIsSS;

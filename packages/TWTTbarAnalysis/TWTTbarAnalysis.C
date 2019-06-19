@@ -58,6 +58,9 @@ void TWTTbarAnalysis::Initialise() {
 
 void TWTTbarAnalysis::InsideLoop() {
   ResetTWTTbarVariables();
+
+  TEvent = Get<ULong64_t>("event");
+
   // Vectors with the objects
   DressLeptons      = GetParam<vector<Lepton>>("genLeptons");
   selLeptons        = GetParam<vector<Lepton>>("selLeptons");
@@ -146,6 +149,7 @@ void TWTTbarAnalysis::Summary(){}
 //---------------------------------------------------------------------
 void TWTTbarAnalysis::SetTWTTbarVariables() {
   // Detector level variables
+  fMiniTree->Branch("TEvent",                &TEvent,                "TEvent/l");
   fMiniTree->Branch("TChannel",              &TChannel,              "TChannel/S");
   fMiniTree->Branch("TIsSS",                 &TIsSS,                 "TIsSS/O");
   fMiniTree->Branch("TWeight",               &TWeight,               "TWeight/F");
