@@ -63,7 +63,8 @@ def loadxsecdic(fname, verbose):
   return xsecdir
 
 
-def GetXsec(xsec, s, verbose):
+def GetXsec(xsec, s, verbose, isdata):
+  if isdata: return 1
   if isinstance(xsec, int): xsec = float(xsec)
   if isinstance(xsec, str):
     xsecdic = loadxsecdic(xsec, verbose)
@@ -121,15 +122,17 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
   
   if not path.endswith('/'): path += '/'
   
-  xsec = GetXsec(xsec, outname, verbose)
   
   # Get dictionary with all files in the path directory
   samples = GetSampleList(path, sample)
   
   nEventsInTree, nGenEvents, nSumOfWeights, isData = GetAllInfoFromFile([path + x for x in samples])
+  xsec = GetXsec(xsec, outname, verbose, isData) if not dotest else 1
   isamcatnlo = True if nGenEvents != nSumOfWeights else False
-  stipe = 'MC' if not isData else 'DATA'
+  if isData: isamcatnlo = False
+
   if verbose: 
+    stipe = 'MC' if not isData else 'DATA'
     print '## Processing a %i %s sample...'%(year, stipe)
     print '## Files found in %s'%path
     for f in samples: print ' >> %s'%f
@@ -268,7 +271,7 @@ if __name__ == "__main__":
   parser.add_argument('--queue'           , default='short'      , help = 'Queue to send jobs')
   parser.add_argument('--firstEvent'      , default=0            , help = 'First event')
   parser.add_argument('--nEvents'         , default=0            , help = 'Number of events')
-  parser.add_argument('--nSlots','-n'     , default=1            , help = 'Number of slots')
+  parser.add_argument('--nSlots','-n'     , default=-1           , help = 'Number of slots')
 
   args = parser.parse_args()
   aarg = sys.argv
@@ -289,7 +292,7 @@ if __name__ == "__main__":
   FirstEvent  = args.firstEvent
   sendJobs    = args.sendJobs
   queue       = args.queue
-  ncores = nSlots
+  ncores      = nSlots
 
   # Check if a cfg file is given as first argument
   fname = selection
@@ -321,9 +324,8 @@ if __name__ == "__main__":
         elif l in ['path', 'sample', 'options', 'selection', 'xsec', 'prefix', 'outpath', 'year', 'nSlots', 'nEvents', 'firstEvent', 'queue']: continue
         else:
           spl.append(l)
-          samplefiles[l] = l
-          nslots[l]      = nSlots
-          if len(lst) > 3: chunkdir[key] = lst[3]
+          samplefiles[l]=l
+          nslots[l]=nSlots
       else:
         lst = l.split(':')
         key = lst[0]
@@ -347,14 +349,14 @@ if __name__ == "__main__":
           ncor = nSlots if len(lst) < 3 else int(lst[2])
           spl.append(key)
           samplefiles[key] = val
-          nslots[key] = ncor
+          nslots[key]      = ncor
+          if len(lst) > 3: chunkdir[key] = lst[3]
 
     # Re-assign arguments...
     if '--verbose' in aarg or '-v' in aarg : verbose     = args.verbose
     if '--pretend' in aarg or '-p' in aarg : pretend     = args.pretend
     if '--test'    in aarg or '-t' in aarg : dotest      = args.test
     if '--sendJobs'in aarg or '-j' in aarg : sendJobs    = args.sendJobs
-    if args.sample     != ''     : sample      = args.sample
     if args.path       != ''     : path        = args.path
     if args.options    != ''     : options     = args.options
     if args.xsec       != 'xsec' : xsec        = args.xsec
@@ -363,9 +365,30 @@ if __name__ == "__main__":
     if args.outname    != ''     : outname     = args.outname
     if args.outpath    != ''     : outpath     = args.outpath
     if args.nEvents    != 0      : nEvents     = args.nEvents
-    if args.nSlots     != 1      : nSlots      = args.nSlots
     if args.firstEvent != 0      : FirstEvent  = args.firstEvent
     if args.queue      != 0      : queue       = args.queue
+
+    if args.nSlots     != -1:
+      nSlots      = int(args.nSlots)
+      for k in nslots.keys(): nslots[k] = nSlots
+    elif nSlots == -1:
+      nSlots = 1
+
+    if args.sample     != '':
+      sample = args.sample
+      if not sample in samplefiles.keys():
+        print 'WARNING: Sample \'%s\' not found in cfg file!!'%sample
+        samplefiles[sample] = sample
+        nslots[sample] = nSlots
+      spl = [sample]
+
+    if dotest:
+      nEvents = 1000
+      queue = 'cpupower'
+      spl = spl[0:1]
+      nslots[spl[0]] = 1
+      #samplefiles[spl[0]] = [samplefiles[spl[0]][0]]
+      outname = 'test'
 
     for sname in spl:
       outname = sname
@@ -384,7 +407,7 @@ if __name__ == "__main__":
           tmpnEvents    = nTrueEntries / tmpnchs
           tmpFirstEvent = tmpnEvents * ich + 1
           if (ich == tmpnchs - 1): tmpnEvents = nTrueEntries - tmpFirstEvent
-          RunSamplePAF(selection, path, sample, year, xsec, ncores, tmpoutname, outpath, options, tmpnEvents, tmpFirstEvent, prefix, verbose, pretend, dotest, sendJobs)
+          RunSamplePAF(selection, path, sample, year, xsec, ncores, tmpoutname, outpath, options, tmpnEvents, tmpFirstEvent, prefix, verbose, pretend, dotest, sendJobs, queue)
 
   else: # no config file...
     RunSamplePAF(selection, path, sample, year, xsec, nSlots, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs, queue)

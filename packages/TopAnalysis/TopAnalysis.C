@@ -100,7 +100,7 @@ void TopAnalysis::Initialise(){
 
   // Uncertainties
   useSyst.push_back(kNorm);
-  if(gDoSyst){
+  if(gDoSyst && !gIsData){
     useSyst.push_back(kMuonEffUp);
     useSyst.push_back(kMuonEffDown);
     useSyst.push_back(kElecEffUp);
@@ -130,11 +130,14 @@ void TopAnalysis::Initialise(){
   TString taggerName="DeepCSV"; // DeepFlav
   TString MeasType = "mujets";
   TString stringWP = "Medium";
-  fBTagSFnom = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP,  0);
-  fBTagSFbUp = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP,  1);
-  fBTagSFbDo = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP, -1);
-  fBTagSFlUp = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP,  3);
-  fBTagSFlDo = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP, -3);
+  if(taggerName == "DeepFlav" && year == 2017) MeasType = "comb";
+  fBTagSFnom = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP,  0, year);
+  if(!gIsData){
+    fBTagSFbUp = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP,  1, year);
+    fBTagSFbDo = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP, -1, year);
+    fBTagSFlUp = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP,  3, year);
+    fBTagSFlDo = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP, -3, year);
+  }
 }
 
 void TopAnalysis::InsideLoop(){
@@ -142,7 +145,6 @@ void TopAnalysis::InsideLoop(){
   lumiblock = Get<UInt_t>("luminosityBlock");
 
   // Vectors with the objects
-  cout << "Collecting objects..." << endl;
   genLeptons     = GetParam<vector<Lepton>>("genLeptons");
   selLeptons     = GetParam<vector<Lepton>>("selLeptons");
   vetoLeptons    = GetParam<vector<Lepton>>("vetoLeptons");
@@ -155,13 +157,11 @@ void TopAnalysis::InsideLoop(){
   //mcJets         = GetParam<vector<Jet>>("mcJets");
 
   // Weights and SFs
-  cout << "Collecting weights..." << endl;
   NormWeight     = GetParam<Float_t>("NormWeight");
   TrigSF         = GetParam<Float_t>("TriggerSF");
   TrigSFerr      = GetParam<Float_t>("TriggerSFerr");
   TrigSF = 1; TrigSFerr = 0;
   if(!gIsData && gPUWeigth){
-    cout << "Getting PU weights..." << endl;
     PUSF         = Get<Float_t>("puWeight");
     PUSF_Up      = Get<Float_t>("puWeightUp");
     PUSF_Down    = Get<Float_t>("puWeightDown");
@@ -169,14 +169,12 @@ void TopAnalysis::InsideLoop(){
   else{PUSF = 1; PUSF_Up = 1; PUSF_Down = 1;}
 
   // Event variables
-  cout << "Getting event variables..." << endl;
   gChannel       = GetParam<Int_t>("gChannel");
   TPassMETFilters = GetParam<Bool_t>("METfilters");
   TPassTrigger    = GetParam<Bool_t>("passTrigger");
   isSS           = GetParam<Bool_t>("isSS");
 
   // Leptons and Jets
-  cout << "Setting variables..." << endl;
   GetLeptonVariables(selLeptons, vetoLeptons);
   GetGenJetVariables(genJets, mcJets);
   GetMET();
@@ -186,7 +184,6 @@ void TopAnalysis::InsideLoop(){
   if(gIsTTbar) FillCorrHistos();
 
   // Number of events in fiducial region
-  cout << "Fiducial events..." << endl;
   if(!gIsData && makeHistos) {
     if(genLeptons.size() >= 2){ // MIND THE POSSIBLE SKIM (on reco leptons) IN THE SAMPLE!!
       Int_t GenChannel = -1;
@@ -221,17 +218,14 @@ void TopAnalysis::InsideLoop(){
 
   // Event Selection
   // ===================================================================================================================
-  cout << "Entering the event selection..." << endl;
   if (TNSelLeps >= 2 && TPassTrigger && TPassMETFilters) {
     for(Int_t sys = 0; sys < nSyst; sys++){
       if(!gDoSyst && sys > 0) break;
       if(gIsData  && sys > 0) break;
      
       // Get values or the corresponding variation
-      cout << "Setting variables for sys " << sys << endl;
       SetVariables(useSyst.at(sys));
       if (invmass > 20 && lep0pt > 25 && lep1pt > 20) {
-        cout << "Fill dilepton histos" << endl;
         if(isSS) fHSSyields[gChannel][sys] -> Fill(idilepton, weight);
         else {
           fHyields[gChannel][sys] -> Fill(idilepton, weight);
@@ -240,19 +234,16 @@ void TopAnalysis::InsideLoop(){
         }
 
         if (TChannel == iElMu || (TMath::Abs(invmass - 91) > 15)  ){ //  Z Veto in ee, µµ
-          cout << "Fill ZVeto histos" << endl;
           if (isSS) fHSSyields[gChannel][sys] -> Fill(iZVeto, weight);
           else {      fHyields[gChannel][sys] -> Fill(iZVeto, weight);
             FillHistos(gChannel, iZVeto, sys);}
 
           if(TChannel == iElMu || met > 40){   // MET > 40 in ee, µµ
-            cout << "Fill MET histos" << endl;
             if(isSS) fHSSyields[gChannel][sys] -> Fill(iMETcut, weight);
             else{      fHyields[gChannel][sys] -> Fill(iMETcut, weight);
               FillHistos(gChannel, iMETcut, sys);}
 
             if(njets > 1){ //At least 2 jets
-              cout << "Fill >2jets histos" << endl;
               if(isSS) fHSSyields[gChannel][sys] -> Fill(i2jets, weight);
               else{      fHyields[gChannel][sys] -> Fill(i2jets, weight);
                 FillHistos(gChannel, i2jets, sys); }

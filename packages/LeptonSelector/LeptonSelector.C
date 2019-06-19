@@ -369,41 +369,41 @@ void LeptonSelector::InsideLoop(){
 
   //=== Trigger SF
   if(gIs2016){
-  TriggerSF = 1; TriggerSFerr = 0;
-  if(!gIsData){
-    if(nSelLeptons >= 2){
-      if     (selLeptons.at(0).isMuon && selLeptons.at(1).isMuon){
-        if(gIs2017){
-          TriggerSF = LepSF->GetTrigDoubleMuSF(    selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
-          TriggerSFerr = LepSF->GetTrigDoubleMuSF_err(selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
+    TriggerSF = 1; TriggerSFerr = 0;
+    if(!gIsData){
+      if(nSelLeptons >= 2){
+        if     (selLeptons.at(0).isMuon && selLeptons.at(1).isMuon){
+          if(gIs2017){
+            TriggerSF = LepSF->GetTrigDoubleMuSF(    selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
+            TriggerSFerr = LepSF->GetTrigDoubleMuSF_err(selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
+          }
+          else{
+            TriggerSF = LepSF->GetTrigDoubleMuSF(    selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
+            TriggerSFerr = LepSF->GetTrigDoubleMuSF_err(selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
+          }
+        }
+        else if(selLeptons.at(0).isElec && selLeptons.at(1).isElec){
+          if(gIs2017){
+            TriggerSF = LepSF->GetTrigDoubleElSF(    selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
+            TriggerSFerr = LepSF->GetTrigDoubleElSF_err(selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
+          }
+          else{
+            TriggerSF = LepSF->GetTrigDoubleElSF(    selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
+            TriggerSFerr = LepSF->GetTrigDoubleElSF_err(selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
+          }
         }
         else{
-          TriggerSF = LepSF->GetTrigDoubleMuSF(    selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
-          TriggerSFerr = LepSF->GetTrigDoubleMuSF_err(selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
-        }
-      }
-      else if(selLeptons.at(0).isElec && selLeptons.at(1).isElec){
-        if(gIs2017){
-          TriggerSF = LepSF->GetTrigDoubleElSF(    selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
-          TriggerSFerr = LepSF->GetTrigDoubleElSF_err(selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
-        }
-        else{
-          TriggerSF = LepSF->GetTrigDoubleElSF(    selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
-          TriggerSFerr = LepSF->GetTrigDoubleElSF_err(selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
-        }
-      }
-      else{
-        if(gIs2017){
-          TriggerSF = LepSF->GetTrigElMuSF(    selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
-          TriggerSFerr = LepSF->GetTrigElMuSF_err(selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
-        }
-        else{
-          TriggerSF = LepSF->GetTrigElMuSF(        selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
-          TriggerSFerr = LepSF->GetTrigElMuSF_err(    selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
+          if(gIs2017){
+            TriggerSF = LepSF->GetTrigElMuSF(    selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
+            TriggerSFerr = LepSF->GetTrigElMuSF_err(selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
+          }
+          else{
+            TriggerSF = LepSF->GetTrigElMuSF(        selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
+            TriggerSFerr = LepSF->GetTrigElMuSF_err(    selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
+          }
         }
       }
     }
-  }
   }
 
   selLeptons   = SortLeptonsByPt(selLeptons);
