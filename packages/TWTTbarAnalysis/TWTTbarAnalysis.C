@@ -9,8 +9,6 @@ TWTTbarAnalysis::TWTTbarAnalysis() : PAFChainItemSelector() {
   fhDummy        = 0;
   passMETfilters = 0;
   passTrigger    = 0;
-  isSS           = 0;
-  
   for (UShort_t i = 0; i < 254; i++) TLHEWeight[i] = 0;
 }
 
