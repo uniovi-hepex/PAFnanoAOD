@@ -120,7 +120,7 @@ void TWTTbarAnalysis::InsideLoop() {
   
   // Detector level selection
   if ((TNSelLeps == 2) && passTrigger && passMETfilters && ((selLeptons.at(0).p + selLeptons.at(1).p).M() > 20) &&
-      (selLeptons.at(0).Pt() > 25) && (TChannel == iElMu) && (!isSS)) {
+      (selLeptons.at(0).Pt() > 25) && (TChannel == iElMu) && (!TisSS)) {
     
     CalculateSFAndWeights();
     CalculateTWTTbarVariables();
