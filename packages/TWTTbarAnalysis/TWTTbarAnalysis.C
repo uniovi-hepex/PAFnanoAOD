@@ -392,12 +392,6 @@ void TWTTbarAnalysis::SetTWTTbarVariables() {
 void TWTTbarAnalysis::GetLeptonVariables() {
   TNSelLeps = selLeptons.size();
 
-  if      (selLeptons.at(0).isMuon && selLeptons.at(1).isElec) TChannel = iElMu;
-  else if (selLeptons.at(0).isElec && selLeptons.at(1).isMuon) TChannel = iElMu;
-  else if (selLeptons.at(0).isMuon && selLeptons.at(1).isMuon) TChannel = iMuon;
-  else if (selLeptons.at(0).isElec && selLeptons.at(1).isElec) TChannel = iElec;
-  TIsSS = (selLeptons.at(0).charge * selLeptons.at(1).charge) > 0;
-  
   if (TNSelLeps >= 1) {
     TLep1_Pt          = selLeptons.at(0).Pt();
     TLep1_E           = selLeptons.at(0).E();
@@ -432,6 +426,16 @@ void TWTTbarAnalysis::GetLeptonVariables() {
       TLep2_EJERUp      = selLeptons.at(1).E();
       TLep2_PhiJERUp    = selLeptons.at(1).Phi();
       TLep2_EtaJERUp    = selLeptons.at(1).Eta();
+
+      if      (selLeptons.at(0).isMuon && selLeptons.at(1).isElec) TChannel = iElMu;
+      else if (selLeptons.at(0).isElec && selLeptons.at(1).isMuon) TChannel = iElMu;
+      else if (selLeptons.at(0).isMuon && selLeptons.at(1).isMuon) TChannel = iMuon;
+      else if (selLeptons.at(0).isElec && selLeptons.at(1).isElec) TChannel = iElec;
+      TIsSS = (selLeptons.at(0).charge * selLeptons.at(1).charge) > 0;
+    }
+    else {
+      TChannel = -1;
+      TIsSS    = false;
     }
   }
 }
