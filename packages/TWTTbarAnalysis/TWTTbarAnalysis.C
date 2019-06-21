@@ -93,7 +93,6 @@ void TWTTbarAnalysis::InsideLoop() {
   // Event variables
   passMETfilters    = GetParam<Bool_t>("METfilters");
   passTrigger       = GetParam<Bool_t>("passTrigger");
-  isSS              = GetParam<Bool_t>("isSS");
   year              = (UShort_t)GetParam<Int_t>("year");
   
   // Leptons and Jets
@@ -114,16 +113,16 @@ void TWTTbarAnalysis::InsideLoop() {
   fhDummy->Fill(0.5);
   
   // Particle level selection
-  if ((DressNLeps >= 2) && (DressNJets == 2) && (DressNBJets == 2) && ((DressLeptons.at(0).p + DressLeptons.at(1).p).M() > 20) &&
-      (DressLeptons.at(0).p.Pt() > 25) && !TDressIsSS && (DressNLooseCentral == 2)) {
+  if ((DressNLeps == 2) && (DressNJets == 2) && (DressNBJets == 2) && ((DressLeptons.at(0).p + DressLeptons.at(1).p).M() > 20) &&
+      (DressLeptons.at(0).Pt() > 25) && (GenChannel == iElMu) && !TDressIsSS && (DressNLooseCentral == 2)) {
     
     CalculateDressTWTTbarVariables();
     DoesItReallyPassDress();
   }
   
   // Detector level selection
-  if ((TNSelLeps >= 2) && passTrigger && passMETfilters && ((selLeptons.at(0).p + selLeptons.at(1).p).M() > 20) &&
-      (selLeptons.at(0).p.Pt() > 25) && (TChannel == iElMu || TChannel == iElec || TChannel == iMuon) && (!isSS)) {
+  if ((TNSelLeps == 2) && passTrigger && passMETfilters && ((selLeptons.at(0).p + selLeptons.at(1).p).M() > 20) &&
+      (selLeptons.at(0).Pt() > 25) && (TChannel == iElMu) && (!isSS)) {
     
     CalculateSFAndWeights();
     CalculateTWTTbarVariables();
@@ -395,13 +394,11 @@ void TWTTbarAnalysis::SetTWTTbarVariables() {
 void TWTTbarAnalysis::GetLeptonVariables() {
   TNSelLeps = selLeptons.size();
 
-  if (TNSelLeps < 2) TChannel = -1;
-  else if (selLeptons.at(0).isMuon && selLeptons.at(1).isElec) TChannel = iElMu;
+  if      (selLeptons.at(0).isMuon && selLeptons.at(1).isElec) TChannel = iElMu;
   else if (selLeptons.at(0).isElec && selLeptons.at(1).isMuon) TChannel = iElMu;
   else if (selLeptons.at(0).isMuon && selLeptons.at(1).isMuon) TChannel = iMuon;
   else if (selLeptons.at(0).isElec && selLeptons.at(1).isElec) TChannel = iElec;
-  
-  TIsSS = isSS;
+  TIsSS = (DressLeptons.at(0).charge * DressLeptons.at(1).charge) > 0;
   
   if (TNSelLeps >= 1) {
     TLep1_Pt          = selLeptons.at(0).Pt();
@@ -457,10 +454,10 @@ void TWTTbarAnalysis::GetGenLepVariables() {
       TDressLep2_Phi  = DressLeptons.at(1).Phi();
       TDressLep2_Eta  = DressLeptons.at(1).Eta();
       
-      if (DressLeptons.at(0).isElec && DressLeptons.at(1).isMuon) GenChannel = iElMu;
-      if (DressLeptons.at(0).isMuon && DressLeptons.at(1).isElec) GenChannel = iElMu;
-      if (DressLeptons.at(0).isMuon && DressLeptons.at(1).isMuon) GenChannel = iMuon;
-      if (DressLeptons.at(0).isElec && DressLeptons.at(1).isElec) GenChannel = iElec;
+      if      (DressLeptons.at(0).isElec && DressLeptons.at(1).isMuon) GenChannel = iElMu;
+      else if (DressLeptons.at(0).isMuon && DressLeptons.at(1).isElec) GenChannel = iElMu;
+      else if (DressLeptons.at(0).isMuon && DressLeptons.at(1).isMuon) GenChannel = iMuon;
+      else if (DressLeptons.at(0).isElec && DressLeptons.at(1).isElec) GenChannel = iElec;
       TDressIsSS = (DressLeptons.at(0).charge * DressLeptons.at(1).charge) > 0;
     }
   }
@@ -488,7 +485,7 @@ void TWTTbarAnalysis::GetJetVariables() {
   }
   
   for (UShort_t j = 0; j < vetoJets.size(); ++j) {
-    if (TMath::Abs(vetoJets.at(j).p.Eta()) < 2.4) {
+    if (TMath::Abs(vetoJets.at(j).Eta()) < 2.4) {
       LooseCentralJets.push_back(vetoJets.at(j));
       if (vetoJets.at(j).isBtag) NBLooseCentral++;
     }
@@ -536,7 +533,7 @@ void TWTTbarAnalysis::GetJetVariables() {
   
   for (UShort_t j = 0; j < vetoJets.size(); ++j) {
     if (vetoJets.at(j).pTJESUp > 20.) {
-      if (TMath::Abs(vetoJets.at(j).p.Eta()) < 2.4) {
+      if (TMath::Abs(vetoJets.at(j).Eta()) < 2.4) {
         LooseCentralJetsJESUp.push_back(vetoJets.at(j));
         if (vetoJets.at(j).isBtag) NBLooseCentralJESUp++;
       }
@@ -544,7 +541,7 @@ void TWTTbarAnalysis::GetJetVariables() {
     }
 
     if (vetoJets.at(j).pTJESDown > 20.) {
-      if (TMath::Abs(vetoJets.at(j).p.Eta()) < 2.4) {
+      if (TMath::Abs(vetoJets.at(j).Eta()) < 2.4) {
         LooseCentralJetsJESDown.push_back(vetoJets.at(j));
         if (vetoJets.at(j).isBtag) NBLooseCentralJESDown++;
       }
@@ -552,7 +549,7 @@ void TWTTbarAnalysis::GetJetVariables() {
     }
 
     if (vetoJets.at(j).pTJERUp > 20.) {
-      if (TMath::Abs(vetoJets.at(j).p.Eta()) < 2.4) {
+      if (TMath::Abs(vetoJets.at(j).Eta()) < 2.4) {
         LooseCentralJetsJERUp.push_back(vetoJets.at(j));
         if (vetoJets.at(j).isBtag) NBLooseCentralJERUp++;
       }
@@ -573,16 +570,16 @@ void TWTTbarAnalysis::GetGenJetVariables() {
   DressNJets = genJets.size();
   
   for (UShort_t i = 0; i < (UShort_t)DressNJets; i++) {
-    if (TMath::Abs(genJets.at(i).p.Eta()) < 2.4 && Cleaning(genJets.at(i), DressLeptons, 0.4)) {
+    if (TMath::Abs(genJets.at(i).Eta()) < 2.4 && Cleaning(genJets.at(i), DressLeptons, 0.4)) {
       DressLooseCentralJets.push_back(genJets.at(i));
       if (genJets.at(i).isBtag) DressNBLooseCentral++;
-      if (genJets.at(i).p.Pt() > 30) {
+      if (genJets.at(i).Pt() > 30) {
         DressJets.push_back(genJets.at(i));
         TDressHT += genJets.at(i).Pt();
         if (genJets.at(i).isBtag) DressNBJets++;
       }
     }
-    else if (TMath::Abs(genJets.at(i).p.Eta()) < 4.7) {
+    else if (TMath::Abs(genJets.at(i).Eta()) < 4.7) {
       DressLooseFwdJets.push_back(genJets.at(i));
     }
   }
@@ -648,6 +645,7 @@ void TWTTbarAnalysis::ResetTWTTbarVariables() {
   TPassPart              = false;
   TDressIsSS             = false;
   GenChannel             = -1;
+  TChannel               = -1;
   
   TNBJetsJESUp = 0; TNBJetsJESDown = 0; TNBJetsJERUp = 0;
   NBLooseCentral = 0; NBLooseCentralJESUp = 0; NBLooseCentralJESDown = 0; NBLooseCentralJERUp = 0;

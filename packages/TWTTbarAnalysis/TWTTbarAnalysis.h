@@ -6,10 +6,7 @@
 #include <iostream>
 #include <vector>
 
-const Int_t nChannels = 3;
-enum eSysts   {inorm, nSysts};
 const Int_t nWeights = 248;
-const TString gChanLabel[nChannels] = {"ElMu", "Muon","Elec"};
 
 
 class TWTTbarAnalysis : public PAFChainItemSelector{
@@ -186,7 +183,6 @@ class TWTTbarAnalysis : public PAFChainItemSelector{
     Bool_t   gPUWeight;
     Bool_t   passMETfilters;
     Bool_t   passTrigger;
-    Bool_t   isSS;
     Float_t NormWeight;
     UShort_t year;
     
