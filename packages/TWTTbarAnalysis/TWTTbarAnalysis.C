@@ -396,7 +396,7 @@ void TWTTbarAnalysis::GetLeptonVariables() {
   else if (selLeptons.at(0).isElec && selLeptons.at(1).isMuon) TChannel = iElMu;
   else if (selLeptons.at(0).isMuon && selLeptons.at(1).isMuon) TChannel = iMuon;
   else if (selLeptons.at(0).isElec && selLeptons.at(1).isElec) TChannel = iElec;
-  TIsSS = (DressLeptons.at(0).charge * DressLeptons.at(1).charge) > 0;
+  TIsSS = (selLeptons.at(0).charge * selLeptons.at(1).charge) > 0;
   
   if (TNSelLeps >= 1) {
     TLep1_Pt          = selLeptons.at(0).Pt();
