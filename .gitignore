@@ -21,6 +21,7 @@ inputdata.root
 plotter/TWTTbar/temp/*
 plotter/TWTTbar/results/*
 plotter/TWTTbar/logs/*
+plotter/TWTTbar/old/*
 
 #Higgs combine output :)
 higgsCombine*.root
