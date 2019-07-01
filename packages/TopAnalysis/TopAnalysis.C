@@ -124,10 +124,15 @@ void TopAnalysis::Initialise(){
   nSyst = useSyst.size();
   InitHistos();
   metvar = year == 2017? "METFixEE2017" : "MET";
+
+  gIs2017 = false; gIs2016 = false; gIs2018 = false;
+  if     (year == 2017) gIs2017 = true;
+  else if(year == 2018) gIs2018 = true;
+  else if(year == 2016) gIs2016 = true;
   // b tagging
   TString pwd  = GetParam<TString>("WorkingDir");
   TString BTagSFPath = Form("%s/packages/BTagSFUtil", pwd.Data());
-  TString taggerName="DeepCSV"; // DeepFlav
+  TString taggerName="DeepFlav"; //"CSVv2"; //"DeepCSV"; // DeepFlav
   TString MeasType = "mujets";
   TString stringWP = "Medium";
   if(taggerName == "DeepFlav" && year == 2017) MeasType = "comb";
@@ -157,10 +162,12 @@ void TopAnalysis::InsideLoop(){
   //mcJets         = GetParam<vector<Jet>>("mcJets");
 
   // Weights and SFs
-  NormWeight     = GetParam<Float_t>("NormWeight");
+  NormWeight     = GetParam<Double_t>("NormWeight");
   TrigSF         = GetParam<Float_t>("TriggerSF");
   TrigSFerr      = GetParam<Float_t>("TriggerSFerr");
-  TrigSF = 1; TrigSFerr = 0;
+  if(!gIs2016){
+    TrigSF = 1; TrigSFerr = 0;
+  }
   if(!gIsData && gPUWeigth){
     PUSF         = Get<Float_t>("puWeight");
     PUSF_Up      = Get<Float_t>("puWeightUp");
@@ -182,6 +189,7 @@ void TopAnalysis::InsideLoop(){
   //GetJetVariables(selJets, Jets15);
 
   if(gIsTTbar) FillCorrHistos();
+  fhDummy->Fill(1);
 
   // Number of events in fiducial region
   if(!gIsData && makeHistos) {
@@ -228,6 +236,7 @@ void TopAnalysis::InsideLoop(){
       if (invmass > 20 && lep0pt > 25 && lep1pt > 20) {
         if(isSS) fHSSyields[gChannel][sys] -> Fill(idilepton, weight);
         else {
+          cout << "Filling dilep, " << TRun << endl;
           fHyields[gChannel][sys] -> Fill(idilepton, weight);
           FillHistos(gChannel, idilepton, sys);
           if(sys == 0) FillDYHistos(gChannel); // Only once
@@ -452,6 +461,7 @@ void TopAnalysis::GetWeights(){
       ElecSFDo *= selLeptons.at(1).GetSF(-1);
     }
   }
+  MuonSF = 1;
   TWeight             = NormWeight*ElecSF*MuonSF*TrigSF*PUSF;
   TWeight_ElecEffUp   = NormWeight*ElecSFUp*MuonSF*TrigSF*PUSF;
   TWeight_ElecEffDown = NormWeight*ElecSFDo*MuonSF*TrigSF*PUSF;
@@ -465,8 +475,9 @@ void TopAnalysis::GetWeights(){
 
 void TopAnalysis::InitHistos(){
   fHWeightsFidu  = CreateH1F("hPDFweightsFidu","hPDFweightsFidu", nWeights, -0.5, nWeights - 0.5);
+  fhDummy = CreateH1F("fhDummy","fhDummy", 1, 0, 2);
   for(Int_t ch = 0; ch < nChannels; ch++){
-    fhDummy[ch] = CreateH1F("fhDummy_"+gChanLabel[ch],"fhDummy_"+gChanLabel[ch], 1, 0, 2);
+    fhDummyCh[ch] = CreateH1F("fhDummy_"+gChanLabel[ch],"fhDummy_"+gChanLabel[ch], 1, 0, 2);
     fhDummy_2leps[ch] = CreateH1F("fhDummy_2leps"+gChanLabel[ch],"fhDummy_2leps"+gChanLabel[ch], 1, 0, 2);
     fhDummy_trigger[ch] = CreateH1F("fhDummy_trigger"+gChanLabel[ch],"fhDummy_trigger"+gChanLabel[ch], 1, 0, 2);
     fhDummy_metfilters[ch] = CreateH1F("fhDummy_metfilters"+gChanLabel[ch],"fhDummy_metfilters"+gChanLabel[ch], 1, 0, 2);
