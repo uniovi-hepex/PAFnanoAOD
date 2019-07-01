@@ -110,9 +110,6 @@ BTagSFUtil::BTagSFUtil(const string& MeasurementType,
     }
   }
 
-
-
-
   reader_b = new BTagCalibrationReader(op, "central", sysTypes);
   reader_c = new BTagCalibrationReader(op, "central", sysTypes);
   reader_l = new BTagCalibrationReader(op, "central", sysTypes);
@@ -268,9 +265,11 @@ void  BTagSFUtil::LoadHistos(const TString& path, int year, const TString& tagge
   TString fname = path + "/BtagMCSF.root";
   cout << Form("INFO: [BTagSFUtil] Loading btag MC efficiencies from %s", fname.Data()) << endl;
   TFile* f = TFile::Open(fname);
-  TString hnameB = Form("BtagSFB_%s%s_%i", tagger.Data(), wp.Data(), year);
-  TString hnameC = Form("BtagSFC_%s%s_%i", tagger.Data(), wp.Data(), year);
-  TString hnameL = Form("BtagSFL_%s%s_%i", tagger.Data(), wp.Data(), year);
+  TString tag = TString(tagger.Data());
+  if(tag == "DeepFlav") tag = "DFlav";
+  TString hnameB = Form("BtagSFB_%s%s_%i", tag.Data(), wp.Data(), year);
+  TString hnameC = Form("BtagSFC_%s%s_%i", tag.Data(), wp.Data(), year);
+  TString hnameL = Form("BtagSFL_%s%s_%i", tag.Data(), wp.Data(), year);
   cout << "INFO: [BTagSFUtil] Loading histograms: " << endl;
   cout << Form("                   >> %s ", hnameB.Data()) << endl;
   cout << Form("                   >> %s ", hnameC.Data()) << endl;
