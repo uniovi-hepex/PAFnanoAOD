@@ -266,7 +266,7 @@ parser.add_argument('--options','-o'    , default=''           , help = 'Options
 parser.add_argument('--prefix'          , default='Tree'       , help = 'Prefix of the name...')
 parser.add_argument('--outname'         , default=''           , help = 'Name of the output file')
 parser.add_argument('--outpath'         , default=''           , help = 'Output path')
-parser.add_argument('--queue'           , default='short'      , help = 'Queue to send jobs')
+parser.add_argument('--queue','-q'      , default='short'      , help = 'Queue to send jobs')
 parser.add_argument('--firstEvent'      , default=0            , help = 'First event')
 parser.add_argument('--nEvents'         , default=0            , help = 'Number of events')
 parser.add_argument('--nSlots','-n'     , default=-1           , help = 'Number of slots')
