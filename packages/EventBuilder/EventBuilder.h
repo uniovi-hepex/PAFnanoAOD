@@ -45,8 +45,8 @@ class EventBuilder : public PAFChainItemSelector{
     TH2F* MuMuTrigEffDen;
     TH2F* ElMuTrigEffDen;
 
-    Float_t NormWeight; // Nominal
-    Float_t Weight;  // CrossSection/NumberOfGenEvents
+    Double_t NormWeight; // Nominal
+    Double_t Weight;  // CrossSection/NumberOfGenEvents
     Float_t genWeight;   // For aMCatNLO samples
 
     Float_t nTrueInt;
@@ -81,6 +81,7 @@ class EventBuilder : public PAFChainItemSelector{
     Bool_t gIsDoubleElec;
     Bool_t gIsMuonEG;
     Bool_t gIsMET;
+    Bool_t gIsEGamma;
     Bool_t  gIsData;
     Int_t run;
     Int_t year;
@@ -103,7 +104,6 @@ class EventBuilder : public PAFChainItemSelector{
     Bool_t gIs2016;
     Bool_t gIs2017;
     Bool_t gIs2018;
-    Bool_t gIsData2017;
   
 
     void SetCountLHE();
