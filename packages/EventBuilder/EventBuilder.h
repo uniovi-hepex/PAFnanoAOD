@@ -45,8 +45,8 @@ class EventBuilder : public PAFChainItemSelector{
     TH2F* MuMuTrigEffDen;
     TH2F* ElMuTrigEffDen;
 
-    Double_t NormWeight; // Nominal
-    Double_t Weight;  // CrossSection/NumberOfGenEvents
+    Float_t NormWeight; // Nominal
+    Float_t Weight;  // CrossSection/NumberOfGenEvents
     Float_t genWeight;   // For aMCatNLO samples
 
     Float_t nTrueInt;

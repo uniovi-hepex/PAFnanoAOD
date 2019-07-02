@@ -123,7 +123,7 @@ void EventBuilder::Initialise(){
   }
 */
 
-  Weight = GetParam<Double_t>("weight");
+  Weight = GetParam<Float_t>("weight");
 
   passTrigger = 1;
   isSS = 0;

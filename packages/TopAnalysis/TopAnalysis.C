@@ -162,7 +162,7 @@ void TopAnalysis::InsideLoop(){
   //mcJets         = GetParam<vector<Jet>>("mcJets");
 
   // Weights and SFs
-  NormWeight     = GetParam<Double_t>("NormWeight");
+  NormWeight     = GetParam<Float_t>("NormWeight");
   TrigSF         = GetParam<Float_t>("TriggerSF");
   TrigSFerr      = GetParam<Float_t>("TriggerSFerr");
   if(!gIs2016){
