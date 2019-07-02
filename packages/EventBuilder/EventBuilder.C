@@ -123,7 +123,7 @@ void EventBuilder::Initialise(){
   }
 */
 
-  Weight = GetParam<Float_t>("weight");
+  Weight = GetParam<Double_t>("weight");
 
   passTrigger = 1;
   isSS = 0;
@@ -207,7 +207,7 @@ void EventBuilder::InsideLoop(){
   METfilters = PassesMETfilters();
 
   // >>>>>>>>> Calculate norm weight
-  if(gIsMCatNLO) genWeight = Get<Float_t>("genWeight");
+  if(gIsMCatNLO) genWeight = (Double_t)Get<Float_t>("genWeight");
   else           genWeight = 1;
   NormWeight = Weight*genWeight;
 

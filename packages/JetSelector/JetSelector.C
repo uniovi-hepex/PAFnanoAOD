@@ -73,7 +73,7 @@ void JetSelector::Initialise(){
   }
   else if (gSelection == itWtt) {
     if (year != 2018) taggerName = "CSVv2";
-    else              taggerName = "DeepCSV";
+    else              taggerName = "DeepFlav";
     stringWP = "Medium";
     jet_MaxEta = 2.4;
     jet_MinPt  = 30;
