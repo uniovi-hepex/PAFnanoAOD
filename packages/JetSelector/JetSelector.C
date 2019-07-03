@@ -62,7 +62,7 @@ void JetSelector::Initialise(){
   vetoJet_minPt = 30;
   vetoJet_maxEta = 5.0;
   minDR = 0.4;
-  if(gSelection == itt) {
+  if      (gSelection == itt) {
     taggerName="DeepCSV";//"DeepFlav";
     stringWP = "Medium";
     jet_MaxEta = 2.4;
@@ -72,18 +72,18 @@ void JetSelector::Initialise(){
     minDR = 0.4;
   }
   else if (gSelection == itWtt) {
-    if (year != 2018) taggerName = "CSVv2";
-    else              taggerName = "DeepFlav";
-    stringWP = "Medium";
-    jet_MaxEta = 2.4;
-    jet_MinPt  = 30;
-    vetoJet_minPt = 20.;
-    vetoJet_maxEta = 4.7;
-    minDR = 0.4;
+    taggerName      = "DeepFlav";
+    stringWP        = "Medium";
+    jet_MaxEta      = 2.4;
+    jet_MinPt       = 30;
+    vetoJet_minPt   = 20.;
+    vetoJet_maxEta  = 4.7;
+    minDR           = 0.4;
   }
 
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-  MeasType = "mujets";
+  if (taggerName == "DeepFlav" && year == 2017) MeasType = "comb";
+  else                                          MeasType = "mujets";
   TString pwd  = GetParam<TString>("WorkingDir");
   TString BTagSFPath = Form("%s/packages/BTagSFUtil", pwd.Data());
   
