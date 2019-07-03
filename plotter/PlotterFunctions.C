@@ -12,7 +12,6 @@
 //   Or           ---> (pt1, eta1, phi1, m1, pt2, eta2, phi2, m2)
 
 #include "TLorentzVector.h"
-#include "t4/t4Functions.C"
 #include "stop/StopFunctions.C"
 
 #ifndef PlotterFunctions_C
@@ -46,6 +45,7 @@ Int_t NBtagNJets(Int_t nJets, Int_t nBtags);
 //#################### EXTRA
 Float_t GetPt(Float_t lep0pt, Float_t lep1pt, Int_t lep0id, Int_t lep1id, Int_t id);
 Bool_t PassEtaCut(Float_t lep0eta, Float_t lep1eta, Int_t lep0id, Int_t lep1id, Float_t etamin, Float_t etamax, Int_t id);
+
 
 ////////////////////////////////////////////////////////////
 // Funtion definitions below here
@@ -306,5 +306,6 @@ int GetMT2orDiPtorDeltaEtaBins(float mt2, float lep0pt, float lep1pt, float dphi
   }
   return 0;
 }
+
 
 #endif

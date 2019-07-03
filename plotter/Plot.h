@@ -11,8 +11,17 @@
 #include "TLatex.h"
 #include "TString.h"
 #include "TGaxis.h"
+#include "TExec.h"
 #include <iostream>
 #include "TResultsTable.h"
+#include "TSystem.h"
+#include "TLine.h"
+#include "TStyle.h"
+#include "TLatex.h"
+#include "TGraphAsymmErrors.h"
+
+#include <fstream>
+#include <iostream>
 
 //##################################################
 //# Configuration
@@ -39,6 +48,7 @@ public:
   bool doLegend        = true;
   bool doUncInLegend   = false;
   bool doExternalSyst  = false;
+  bool NoShowVarName   = false;
 
   std::vector<Histo*> VBkgs;
   std::vector<Histo*> VSignals;
@@ -59,7 +69,7 @@ public:
   Histo* hData = NULL;
   THStack* hStack = NULL;
   Histo* hAllBkg = NULL;
- // Histo* hSignal = NULL; // For a default signal if needed
+// Histo* hSignal = NULL; // For a default signal if needed
 
   Int_t nBkgs = 0;
   TPad* plot = NULL; TPad* pratio = NULL;
@@ -73,13 +83,8 @@ public:
   TString sys = "0";
   Float_t sys_lumi = 0.025;
 
-//  Plot(){
-//    plotFolder = DefaultPlotfolder; 
-//    limitFolder = DefaultLimitFolder; 
-//    Lumi = DefaultLumi;
-//    nSignalSamples = 0;
-//  }
-  Plot(TString variable, TString cuts = "", TString channel = "ElMu", Int_t nbins = 0, Double_t bin0 = 0, Double_t binN = 0, TString tit = "title", TString xtit = "VAR"){
+
+  Plot(TString variable, TString cuts = "", TString channel = "ElMu", Int_t nbins = 0, Float_t bin0 = 0, Float_t binN = 0, TString tit = "title", TString xtit = "VAR"){
     var    = variable;
     cut    = (cuts);
     chan   = channel;
@@ -113,33 +118,33 @@ public:
     xtitle = ""; varname = ""; 
     Init();
   }
-	
-	virtual ~Plot(){
-	  //if(plot) delete plot;
-	  //if(pratio) delete pratio;
-	  //		if(texlumi) delete texlumi;
-	  //		if(texcms) delete texcms;
-	  //		if(texchan) delete texchan;
-	  VData.clear();
-	  VBkgs.clear();
-	  VSignals.clear();
-	  VSignalsErr.clear();
-	  VSyst.clear();
-	  VSumHistoSystUp.clear();
-	  VSumHistoSystDown.clear();
-	  VSystLabel.clear();
-	  VTagSamples.clear();
-	  VTagDataSamples.clear();
-	  VTagProcesses.clear();
-	  if(hratio) delete hratio;
-	  if(TotalSysUp) delete TotalSysUp;
-	  if(TotalSysDown) delete TotalSysDown;
-	  if(hData && doData) delete hData;
-	  if(hStack) delete hStack;
-	  if(hAllBkg) delete hAllBkg;
-	  VBinLabels.clear();
-	  if(f)       delete f;
-	};            // Destructor
+
+  virtual ~Plot(){
+    //if(plot) delete plot;
+    //if(pratio) delete pratio;
+    //		if(texlumi) delete texlumi;
+    //		if(texcms) delete texcms;
+    //		if(texchan) delete texchan;
+    VData.clear();
+    VBkgs.clear();
+    VSignals.clear();
+    VSignalsErr.clear();
+    VSyst.clear();
+    VSumHistoSystUp.clear();
+    VSumHistoSystDown.clear();
+    VSystLabel.clear();
+    VTagSamples.clear();
+    VTagDataSamples.clear();
+    VTagProcesses.clear();
+    if(hratio) delete hratio;
+    if(TotalSysUp) delete TotalSysUp;
+    if(TotalSysDown) delete TotalSysDown;
+    if(hData && doData) delete hData;
+    if(hStack) delete hStack;
+    if(hAllBkg) delete hAllBkg;
+    VBinLabels.clear();
+    if(f)       delete f;
+  };            // Destructor
 
   void Init(){
     plotFolder = DefaultPlotfolder;
@@ -167,6 +172,7 @@ public:
     texcms = NULL;
     texPrelim = NULL;
     texchan = NULL;
+    texchansize = 0.05;
     hratio = NULL;
     TotalSysUp = NULL;
     TotalSysDown = NULL;
@@ -181,16 +187,19 @@ public:
     texlumiX = 0.73; texlumiY = 0.97; texlumiSize = 0.05;
     texPrelimX = 0.15;
     texPrelimY =  0.83;
-    texPrelimSize =  0.052; // 22
+    texPrelimSize =  22;
     texCMSX =  0.15;
     texCMSY =  0.89;
-    texCMSsize =  0.06;
+    texCMSsize =  22;
     RatioErrorColor = kGray+2;
     RatioErrorStyle = 3444;
     StackErrorColor = kGray+2;
     StackErrorStyle = 3444;
     weight = "TWeight";
     systematics = "";
+    
+    heightcanvas = 600;
+    widthcanvas  = 800;
 
     ytitle = "";
     xtitleOffset = 1.2;
@@ -207,11 +216,14 @@ public:
     yRatioTitleSize = 0.12;
     yRatioTitleLabelSize = 0.12;
     yRatioTitleOffset = 0.26;
+    NCols = 1;
+    doDecimalsInXAxis = true;
+    Xerrorbars        = true;
 
     dataStyle = "psameE1X0";
     dataTag   = "Data";
 
-    chX = 0.15; chY = 0.81; chSize = 0.05; chlabel = ""; f = 0;
+    chX = 0.15; chY = 0.81; chSize = 22; chlabel = ""; f = 0;
     RatioMin = 0.8; RatioMax = 1.2;
     ScaleMax = 1.2; ScaleLog = 500;
     PlotMinimum = -999; PlotMaximum = -999;
@@ -225,12 +237,14 @@ public:
     kTextLumiX = 0.73; kTextLumiY = 0.97; kTextLumiSize = 0.05;
     kTextCMSX = 0.15; kTextCMSY = 0.89; kTextCMSsize = 0.06;
     kTextPrelimX = 0.15; kTextPrelimY = 0.83; kTextPrelimSize = 0.052;
+    
+    centerYaxis = true;
   }
 
 
-	
+
 public:
-	void AddSample(TString p = "TTbar_Powheg", TString pr = "", Int_t type = itBkg, Int_t color = 0, TString tsys = "0", TString options = "");
+  void AddSample(TString p = "TTbar_Powheg", TString pr = "", Int_t type = itBkg, Int_t color = 0, TString tsys = "0", TString options = "");
   void Multiloop(TString p = "TTbar_Powheg", TString pr = "", Int_t type = itBkg, Int_t color = 0, TString sys = "");
   void PrepareHisto(vector<Histo*> vH, TString name, TString pr, Int_t type = itBkg, Int_t color = 0, TString sys = "");
   void PrepareHisto(Histo* h, TString name, TString pr, Int_t type = itBkg, Int_t color = 0, TString sys = "");
@@ -238,14 +252,15 @@ public:
   void AddHistoFromFileTGraph(TString filename, TString name, int type = 0, int color = 0, TString sys = "", TString pathInRootfile = "");
   void Group(Histo* h);
 
-	// ######### Methods ########
+  // ######### Methods ########
   Histo* GetH(TString sample = "TTbar_Powheg", TString s = "0", Int_t type = itBkg);
   TCanvas *SetCanvas();
   TLegend* SetLegend();
   virtual void SetLegendPosition(TString);
   virtual void SetLegendPosition(float x1 = 0.70, float y1 = 0.65, float x2 = 0.93, float y2 = 0.93){ fLegX1 = x1; fLegY1 = y1; fLegX2 = x2; fLegY2 = y2;}
   virtual void SetLegendNCol(int n){ fnLegCol = n;}
-  virtual void SetTexChan(); 
+  virtual void SetTexChan();
+  virtual void SetTexChanSize(Float_t siz = 0.05) {texchansize = siz;};
   void SetPad(TPad* pad, TString limits, TString margins, bool doGrid);
   virtual void SetHRatio(TH1F* h = nullptr); // To be updated
   virtual void SetYaxis(TAxis *a = nullptr);
@@ -280,29 +295,37 @@ public:
   virtual void SetLumiUnc(Float_t lum){sys_lumi = lum;} 
   virtual void SetPlotFolder(TString f){plotFolder = f;} 
   virtual void SetLimitFolder(TString f){limitFolder = f;}   
-	virtual void SetCut(TString cuts){cut = (cuts);}
-	virtual void SetBins(Int_t nbins, Double_t bin0, Double_t binN){ nb = nbins; x0 = bin0; xN = binN;}
-	virtual void SetBins(Histo* h){ nb = h->GetXaxis()->GetNbins(); x0 = h->GetXaxis()->GetBinLowEdge(1); xN = h->GetXaxis()->GetBinLowEdge(nb+1);}
-	virtual void SetBins(TH1* h){ nb = h->GetXaxis()->GetNbins(); x0 = h->GetXaxis()->GetBinLowEdge(1); xN = h->GetXaxis()->GetBinLowEdge(nb+1);}
-	void SetTitle(TString tit){title = tit;}
-	virtual void SetTitleX(TString xtit, Float_t size = -999){xtitle = xtit; if(size != -999) xtitleSize = size;}
-	virtual void SetTitleY(TString ytit, Float_t size = -999){ytitle = ytit; if(size != -999) ytitleSize = size;}
+  virtual void SetCut(TString cuts){cut = (cuts);}
+  virtual void SetBins(Int_t nbins, Double_t bin0, Double_t binN){ nb = nbins; x0 = bin0; xN = binN;}
+  virtual void SetBins(Histo* h){ nb = h->GetXaxis()->GetNbins(); x0 = h->GetXaxis()->GetBinLowEdge(1); xN = h->GetXaxis()->GetBinLowEdge(nb+1);}
+  virtual void SetBins(TH1* h){ nb = h->GetXaxis()->GetNbins(); x0 = h->GetXaxis()->GetBinLowEdge(1); xN = h->GetXaxis()->GetBinLowEdge(nb+1);}
+  void SetTitle(TString tit){title = tit;}
+  virtual void SetTitleX(TString xtit, Float_t size = -999){xtitle = xtit; if(size != -999) xtitleSize = size;}
+  virtual void SetTitleY(TString ytit, Float_t size = -999){ytitle = ytit; if(size != -999) ytitleSize = size;}
   TString GetTitleX(){return xtitle;}
   TString GetTitleY(){return ytitle;}
+  void SetDecimalsInXAxis(Bool_t x){doDecimalsInXAxis = x;}
+  void AddLumiSyst( Float_t);
+  void AddNormSyst( TString, TString, Float_t);
 
   void SetDataTag(TString t){dataTag = t;}
   void SetDataStyle(TString t){dataStyle = t;}
   virtual void SetYaxisDivisions(Int_t div){ytitleDivisions = div;}
+  virtual void SetXaxisDivisions(Int_t div){xtitleDivisions = div;}
   virtual void SetXaxisOffset(Float_t Offset, Float_t size = -999){ xtitleOffset = Offset; if(size != -999) xAxisLabelSize = size;}
   virtual void SetYaxisOffset(Float_t Offset, Float_t size = -999){ ytitleOffset = Offset; if(size != -999) ytitleLabelSize = size;}
   virtual void SetYratioOffset(Float_t offset, Float_t size = -999){ yRatioTitleOffset = offset; if(size != -999) yRatioTitleLabelSize = size;}
   virtual void SetBinLabels(TString t, char separator = ','){VBinLabels = TStringToVector(t, separator);}
+  void ObliterateXErrorBars() {Xerrorbars = false;}
   void SetXaxisLabelSize(float x){xAxisLabelSize = x;}
   void SetXaxisTitleSize(float x){xAxisTitleSize = x;}
+  void SetTextLumiPosX(Float_t x){texlumiX = x;}
+  void SetTextLumiPosY(Float_t x){texlumiY = x;}
+  void SetNColumns(Int_t nc){NCols = nc;}
 
   void AddToHistos(Histo* p);
-	void AddVarHistos(TString sys);
-	void AddSystematic(TString s, TString pr = "");
+  void AddVarHistos(TString sys);
+  void AddSystematic(TString s, TString pr = "");
   void AddStatError(TString process = "");
   void AddToSystematicLabels(TString sys){
     if(sys.Contains(",")){
@@ -338,9 +361,9 @@ public:
   void PrintSystematics(); 
   virtual void PrintYields(TString cuts = "", TString labels = "", TString channels = "", TString options = "");
   virtual void PrintBinsYields(TString options = "txt,tex,html");
-	virtual void PrintSystYields();
-	virtual Float_t GetYield(TString pr = "ttbar", TString systag = "0", Int_t ibin = -1);
-	virtual Float_t GetBinYield(TString pr = "ttbar", Int_t bin = 1, TString systag = "0");
+  virtual void PrintSystYields();
+  virtual Float_t GetYield(TString pr = "ttbar", TString systag = "0", Int_t ibin = -1);
+  virtual Float_t GetBinYield(TString pr = "ttbar", Int_t bin = 1, TString systag = "0");
   virtual Histo* GetHisto(TString pr = "ttbar", TString systag = "0");
   virtual Int_t GetProcessType(TString pr, TString systag = "");
   virtual Int_t GetProcessIndex(TString pr, TString systag = "");
@@ -351,10 +374,10 @@ public:
   void AddUncToHisto(TString pr, TString sys, TString pr_new, TString sys_new);
   Histo* GetHistoError(TString pr, TString sys);
   virtual void AddNormUnc(TString pr, Float_t systUp = 1, Float_t systDown = - 99);
-	virtual void SetLineStyle(TString pr = "ttbar", Int_t s = 0){  Histo* h = GetHisto(pr, "0"); h->SetLineStyle(s);}
-	virtual void SetLineColor(TString pr = "ttbar", Int_t s = 0){  Histo* h = GetHisto(pr, "0"); h->SetLineColor(s); h->SetFillColor(s);}
-	virtual void SetMarkerColor(TString pr = "ttbar", Int_t s = 0){  Histo* h = GetHisto(pr, "0"); h->SetMarkerColor(s);}
-	virtual void SetMarkerStyle(TString pr = "ttbar", Int_t s = 0){  Histo* h = GetHisto(pr, "0"); h->SetMarkerStyle(s);}
+  virtual void SetLineStyle(TString pr = "ttbar", Int_t s = 0){  Histo* h = GetHisto(pr, "0"); h->SetLineStyle(s);}
+  virtual void SetLineColor(TString pr = "ttbar", Int_t s = 0){  Histo* h = GetHisto(pr, "0"); h->SetLineColor(s); h->SetFillColor(s);}
+  virtual void SetMarkerColor(TString pr = "ttbar", Int_t s = 0){  Histo* h = GetHisto(pr, "0"); h->SetMarkerColor(s);}
+  virtual void SetMarkerStyle(TString pr = "ttbar", Int_t s = 0){  Histo* h = GetHisto(pr, "0"); h->SetMarkerStyle(s);}
   virtual Histo* GetSymmetricHisto(TString pr = "ttbar", TString systag = "0");
   virtual void AddSymmetricHisto(TString pr, TString systag);
   virtual Float_t GetData(Int_t ibin = -1);
@@ -365,6 +388,9 @@ public:
   virtual void RemoveSystematic(TString sys);
   virtual void UseEnvelope(TString pr, TString tags, TString newname = "");
 
+  virtual void SetCanvasHeight(Float_t r) { heightcanvas = r;}
+  virtual void SetCanvasWidth(Float_t r)  { widthcanvas = r;}
+  
   void SetHistoTotalSyst(Histo* h){ hAllBkg = h->CloneHisto("AllBkg"); hAllBkg->SetDirectory(0); doExternalSyst = true;}
   virtual void SetWeight(TString t){ weight = t;}
   virtual void SetSystematics(TString t){ weight = t;}
@@ -392,6 +418,7 @@ public:
   void SetPadRatioLimits( TString t){ kPadRatioLimits = t;}
   void SetPadPlotMargins( TString t){ kPadPlotMargins = t;}
   void SetPadRatioMargins(TString t){ kPadRatioMargins = t;}
+  virtual void SetCenterYAxis(Bool_t doitornot){ centerYaxis = doitornot;};
 
   virtual void SetSignalProcess(TString p){ SignalProcess = p;}
   virtual void SetSignalStyle(TString p){ SignalStyle = p;} 
@@ -439,7 +466,7 @@ protected:
   Float_t PlotMaximum;
 
   TString varname = "";
-	TString var;
+  TString var;
   TString chan;
   TString signal;
   TString cut;
@@ -455,11 +482,20 @@ protected:
   Float_t ytitleOffset;
   Float_t xAxisLabelSize;
   Float_t xAxisTitleSize;
+  TString yAxisTitleStyle;
   Int_t   ytitleDivisions;
   Float_t chX;
   Float_t chY;
   Float_t chSize;
- 
+  
+  Bool_t doDecimalsInXAxis;
+  
+  TExec *ex1;
+  TExec *ex2;
+  Bool_t  Xerrorbars;
+  Float_t heightcanvas;
+  Float_t widthcanvas;
+  
   TString dataStyle;
   TString dataTag;
   TString SignalProcess;
@@ -481,10 +517,12 @@ protected:
   float texCMSX; // 0.15
   float texCMSY; // 0.89
   float texCMSsize; // 22
+  float texchansize; // 22
   Int_t  RatioErrorColor;
   Int_t  RatioErrorStyle;
   Int_t  StackErrorColor;
   Int_t  StackErrorStyle;
+  Int_t  NCols;
 
   TString SystVar;
   Int_t iS;
@@ -493,6 +531,7 @@ protected:
   TString limitFolder;
   Bool_t ShowSystematics = false;
   TString chlabel;
+  Bool_t centerYaxis; // 22
 
   float fLegX1; float fLegY1; float fLegX2; float fLegY2; Float_t LegendTextSize; int fnLegCol;
   TString kPadPlotLimits; TString kPadRatioLimits; TString kPadPlotMargins; TString kPadRatioMargins;
