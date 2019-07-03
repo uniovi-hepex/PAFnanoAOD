@@ -256,9 +256,7 @@ def RunPAF(samples, selection, xsec, nSumOfWeights, year, outname, nSlots = 1, o
 ################################################################################
 ### Execute
 ################################################################################
-<<<<<<< HEAD
 if __name__ == "__main__":
-  import argparse
   parser = argparse.ArgumentParser(description='Run with PAF')
   parser.add_argument('--verbose','-v'    , action='store_true'  , help = 'Activate the verbosing')
   parser.add_argument('--pretend','-p'    , action='store_true'  , help = 'Create the files but not send the jobs')
@@ -274,7 +272,7 @@ if __name__ == "__main__":
   parser.add_argument('--prefix'          , default='Tree'       , help = 'Prefix of the name...')
   parser.add_argument('--outname'         , default=''           , help = 'Name of the output file')
   parser.add_argument('--outpath'         , default=''           , help = 'Output path')
-  parser.add_argument('--queue'           , default='short'      , help = 'Queue to send jobs')
+  parser.add_argument('--queue','-q'      , default='short'      , help = 'Queue to send jobs')
   parser.add_argument('--firstEvent'      , default=0            , help = 'First event')
   parser.add_argument('--nEvents'         , default=0            , help = 'Number of events')
   parser.add_argument('--nSlots','-n'     , default=-1           , help = 'Number of slots')
@@ -332,77 +330,6 @@ if __name__ == "__main__":
           spl.append(l)
           samplefiles[l]=l
           nslots[l]=nSlots
-=======
-import argparse
-parser = argparse.ArgumentParser(description='Run with PAF')
-parser.add_argument('--verbose','-v'    , action='store_true'  , help = 'Activate the verbosing')
-parser.add_argument('--pretend','-p'    , action='store_true'  , help = 'Create the files but not send the jobs')
-parser.add_argument('--test','-t'       , action='store_true'  , help = 'Sends only one or two jobs, as a test')
-parser.add_argument('--sendJobs','-j'   , action='store_true'  , help = 'Send jobs!')
-parser.add_argument('selection'                                , help = 'Name of the selector')
-parser.add_argument('--path'            , default=''           , help = 'Path to look for nanoAOD')
-parser.add_argument('--sample','-s'     , default=''           , help = 'Sample(s) to process')
-parser.add_argument('--xsec','-x'       , default='xsec'       , help = 'Cross section')
-parser.add_argument('--year','-y'       , default=-1           , help = 'Year')
-parser.add_argument('--conf','-c'       , default=''           , help = 'Config file (not yet implemented')
-parser.add_argument('--options','-o'    , default=''           , help = 'Options to pass to your analysis')
-parser.add_argument('--prefix'          , default='Tree'       , help = 'Prefix of the name...')
-parser.add_argument('--outname'         , default=''           , help = 'Name of the output file')
-parser.add_argument('--outpath'         , default=''           , help = 'Output path')
-parser.add_argument('--queue','-q'      , default='short'      , help = 'Queue to send jobs')
-parser.add_argument('--firstEvent'      , default=0            , help = 'First event')
-parser.add_argument('--nEvents'         , default=0            , help = 'Number of events')
-parser.add_argument('--nSlots','-n'     , default=-1           , help = 'Number of slots')
-
-args = parser.parse_args()
-aarg = sys.argv
-selection   = args.selection
-verbose     = args.verbose
-pretend     = args.pretend
-dotest      = args.test
-sample      = args.sample
-path        = args.path
-options     = args.options
-xsec        = args.xsec
-year        = args.year
-prefix      = args.prefix
-outname     = args.outname
-outpath     = args.outpath
-nEvents     = args.nEvents
-nSlots      = args.nSlots
-FirstEvent  = args.firstEvent
-sendJobs    = args.sendJobs
-queue       = args.queue
-ncores = nSlots
-
-# Check if a cfg file is given as first argument
-fname = selection
-if not os.path.isfile('./'+fname):
-  l = filter(lambda x: x[0] == fname, [x.split('.') for x in os.listdir('.')])
-  if len(l) != 0: 
-    l = l[0]
-    fname = l[0] + '.' + l[1]
-if os.path.isfile(fname):
-  if verbose: print ' >> Using config file \'%s\'...'%fname
-  selection = ''
-  spl = []
-  samplefiles = {}
-  nslots = {}
-  f = open(fname)
-  lines = f.readlines()
-  for l in lines:
-    l = l.replace(' ', '')
-    l = l.replace('\n', '')
-    if l.startswith('#'): continue
-    if '#' in l: l = l.split('#')[0]
-    if l == '': continue
-    if l.endswith(':'): l = l[:-1]
-    if not ':' in l: 
-      if   l == 'verbose': verbose = 1
-      elif l == 'pretend': pretend = 1
-      elif l == 'test'   : dotest  = 1
-      elif l in ['path', 'sample', 'options', 'selection', 'xsec', 'prefix', 'outpath', 'year', 'nSlots', 'nEvents', 'firstEvent', 'queue']: continue
->>>>>>> 6717791b59e7e122124d5be7bfbc8c6d24719a13
       else:
         lst = l.split(':')
         key = lst[0]
