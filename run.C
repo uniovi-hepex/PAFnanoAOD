@@ -16,10 +16,15 @@ std::vector<TString> TStringToVector(TString t, char separator = ','){
   return v;
 }
 
-void run(TString samp, TString selection, Double_t xsec, Double_t sumofweights, Int_t year, TString outname, Int_t nSlots = 1, TString outpath = "", TString options = "", Bool_t isamcatnlo = false, Bool_t isData = false, Int_t nEvents = 0, Int_t FirstEvent = 0, TString workingdir = ""){
+void run(TString samp, TString selection, Double_t xsec, Double_t sumofweights, Int_t year, TString outname, Int_t nSlots = 1, TString outpath = "", TString options = "", Bool_t isamcatnlo = false, Bool_t isData = false, Int_t nEvents = 0, Int_t FirstEvent = 0, TString workingdir = "", TString path = "") {
 
   PAFProject* myProject = 0;
   vector<TString> samples = TStringToVector(samp);
+  if(path != ""){
+    if(!path.EndsWith("/")) path += "/";
+    int nFiles = samples.size(); int i;
+    for(i = 0; i < nFiles; i++) samples.at(i) = path + samples.at(i);
+  }
 
   // PAF mode selection (based on number of slots)
   PAFIExecutionEnvironment* pafmode = 0;

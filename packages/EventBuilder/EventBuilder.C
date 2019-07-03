@@ -74,9 +74,9 @@ void EventBuilder::Initialise(){
   nProcessedEvents = 0;
   
   gIs2017 = false; gIs2016 = false; gIs2018 = false;
-  if(gOptions.Contains("2017")) gIs2017 = true;
-  if(gOptions.Contains("2018")) gIs2018 = true;
-  if(gOptions.Contains("2016")) gIs2016 = true;
+  if     (year == 2017) gIs2017 = true;
+  else if(year == 2018) gIs2018 = true;
+  else if(year == 2016) gIs2016 = true;
 
   gSelection     = GetSelection(selection);
 
@@ -104,7 +104,7 @@ void EventBuilder::Initialise(){
   vetoLeptons = std::vector<Lepton>();
 
   gIsDoubleElec = false; gIsDoubleMuon = false; gIsSingleElec = false;
-  gIsSingleMuon = false; gIsMuonEG = false; gIsMET = false;
+  gIsSingleMuon = false; gIsMuonEG = false; gIsMET = false; gIsEGamma = false;
   if(gSampleName.Contains("DoubleEG")) gIsDoubleElec = true;
   else if(gSampleName.Contains("DoubleMuon")) gIsDoubleMuon = true;
   else if(gSampleName.Contains("SingleElec")) gIsSingleElec = true;
@@ -112,6 +112,7 @@ void EventBuilder::Initialise(){
   else if(gSampleName.Contains("MuonEG"))     gIsMuonEG     = true;
   else if(gSampleName.Contains("HighEGJet"))  gIsSingleElec = true;
   else if(gSampleName.Contains("MET"))        gIsMET = true;
+  else if(gSampleName.Contains("EGamma"))     gIsEGamma = true;
   if(gOptions.Contains("DoubleEG")) gIsDoubleElec = true;
   else if(gOptions.Contains("SingleElec")) gIsSingleElec = true;
 
@@ -177,7 +178,7 @@ void EventBuilder::InsideLoop(){
     //  Float_t PUSF  = Get<Float_t>("puWeight");
     //  TWeight       = NormWeight*lepSF*PUSF;
     //}
-    Float_t MET = year == 2017? Get<Float_t>("METFixEE2017_pt") : Get<Float_t>("MET_pt");
+    Float_t MET = gIs2017? Get<Float_t>("METFixEE2017_pt") : Get<Float_t>("MET_pt");
 
     if(pt > 25 && pt2 > 20 && MET > 120){
       float eta = TMath::Abs(selLeptons.at(0).Eta());
@@ -210,7 +211,8 @@ void EventBuilder::InsideLoop(){
   if(gIsMCatNLO) genWeight = (Double_t)Get<Float_t>("genWeight");
   else           genWeight = 1;
   NormWeight = Weight*genWeight;
-
+  if(gIsData) NormWeight = 1;
+ 
   SetParam("gChannel",        gChannel);
   SetParam("NormWeight",      NormWeight);
   SetParam("passTrigger",     passTrigger);
@@ -232,25 +234,19 @@ void EventBuilder::Summary(){
 Bool_t EventBuilder::PassesDoubleElecTrigger(){
   int era = -1; if(gIsData) era = GetRunEra(Get<Int_t>("run"), year);
   Bool_t pass = false;
-  gIsData = GetParam<Bool_t>("IsData");
   if(gIsData) run = Get<UInt_t>("run");
 
-  // SAME FOR 2017... 
-  if     (year == 2016){
+  if     (gIs2016){
     pass = (Get<Bool_t>("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ"));
   }
-  else if(year == 2017){
+  else if(gIs2017){
     pass = Get<Bool_t>("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ") ||
       Get<Bool_t>("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL");
   }
-  else if(year == 2018){
+  else if(gIs2018){
     pass = Get<Bool_t>("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ") ||
       Get<Bool_t>("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL");
   }
-  /*else{
-    cout << "[EventBuilder] Wrong selection for checking trigger requirements!!" << endl;
-    return false;
-  }*/
   return pass;
 }
 
@@ -259,7 +255,7 @@ Bool_t EventBuilder::PassesDoubleMuonTrigger(){
   Bool_t pass = false;
   if (gIsData) run     = Get<UInt_t>("run");
 
-  if     (year == 2016){
+  if     (gIs2016){
    if ( (gIsData && run <= 280385) || (!gIsData)){
       pass = (Get<Bool_t>("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL")  ||
 	      Get<Bool_t>("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL"));
@@ -269,7 +265,7 @@ Bool_t EventBuilder::PassesDoubleMuonTrigger(){
 	       Get<Bool_t>("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ"));
     }
   }
-  else if(year == 2017){
+  else if(gIs2017){
     if(era == runA || era == runB){
       pass = Get<Bool_t>("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ");
     }
@@ -280,14 +276,10 @@ Bool_t EventBuilder::PassesDoubleMuonTrigger(){
       pass =  Get<Bool_t>("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ") || Get<Bool_t>("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass8") ||  Get<Bool_t>("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8");
     }
   }
-  else if(year == 2018){
-    pass = Get<Bool_t>("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ") || 
-      Get<Bool_t>("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass8") ||
+  else if(gIs2018){
+    pass = Get<Bool_t>("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass8") ||
       Get<Bool_t>("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8");
   }
-  /*else{
-    cout << "[EventBuilder] Wrong selection for checking trigger requirements!!" << endl;
-  }*/
   return pass;
 }
 
@@ -296,7 +288,7 @@ Bool_t EventBuilder::PassesElMuTrigger(){
   Bool_t pass = false;
   if (gIsData) run     = Get<UInt_t>("run");
 
-  if     (year == 2016){
+  if     (gIs2016){
     if ( (gIsData && run <= 280385) || (!gIsData)){
       pass = ( Get<Bool_t>("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL")  ||
           Get<Bool_t>("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL") );
@@ -306,7 +298,7 @@ Bool_t EventBuilder::PassesElMuTrigger(){
           Get<Bool_t>("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ") );
     }
   }
-  else if(year == 2017){
+  else if(gIs2017){
     if(era == runB){
       pass =
         Get<Bool_t>("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ") ||
@@ -323,7 +315,7 @@ Bool_t EventBuilder::PassesElMuTrigger(){
         Get<Bool_t>("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ");
     }
   }
-  else if(year == 2018){
+  else if(gIs2018){
     pass =
       Get<Bool_t>("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ") ||
       Get<Bool_t>("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL") ||
@@ -342,11 +334,13 @@ Bool_t EventBuilder::PassesElMuTrigger(){
 Bool_t EventBuilder::PassesSingleElecTrigger(){
   int era = -1; if(gIsData) era = GetRunEra(Get<Int_t>("run"), year);
   Bool_t pass = false;
-  if     (year == 2016){
+  if     (gIs2016){
     if(era == runH) pass =  Get<Bool_t>("HLT_Ele27_WPTight_Gsf");
     else pass =  Get<Bool_t>("HLT_Ele27_WPTight_Gsf") || Get<Bool_t>("HLT_Ele23_WPLoose_Gsf");
+    //if(era == runH) pass =  1;
+    //else pass = Get<Bool_t>("HLT_Ele23_WPLoose_Gsf");
   }
-  else if(year == 2017){
+  else if(gIs2017){
     if(gIsData){
       pass = Get<Bool_t>("HLT_Ele32_WPTight_Gsf_L1DoubleEG") || Get<Bool_t>("HLT_Ele35_WPTight_Gsf");// || Get<Bool_t>("HLT_Ele38_WPTight_Gsf") || Get<Bool_t>("HLT_Ele40_WPTight_Gsf");
     }
@@ -355,26 +349,22 @@ Bool_t EventBuilder::PassesSingleElecTrigger(){
     }
   }
 
-  else if(year == 2018){
+  else if(gIs2018){
       pass = Get<Bool_t>("HLT_Ele32_WPTight_Gsf_L1DoubleEG") || Get<Bool_t>("HLT_Ele35_WPTight_Gsf") || Get<Bool_t>("HLT_Ele38_WPTight_Gsf");
   }
-  /*else{
-    pass = Get<Bool_t>("HLT_Ele32_WPTight_Gsf") || Get<Bool_t>("HLT_Ele35_WPTight_Gsf") || Get<Bool_t>("HLT_Ele38_WPTight_Gsf");
-  }*/
   return pass;
 }
 
 Bool_t EventBuilder::PassesSingleMuonTrigger(){
   int era = -1; if(gIsData) era = GetRunEra(Get<Int_t>("run"), year);
   Bool_t pass = false;
-  if     (year == 2016){
-    pass = Get<Bool_t>("HLT_IsoTkMu24") || Get<Bool_t>("HLT_IsoMu24") 
-     || Get<Bool_t>("HLT_IsoTkMu20") || Get<Bool_t>("HLT_IsoMu20") ;
+  if     (gIs2016){
+    pass = Get<Bool_t>("HLT_IsoTkMu24") || Get<Bool_t>("HLT_IsoMu24") || Get<Bool_t>("HLT_IsoTkMu20") || Get<Bool_t>("HLT_IsoMu20") ;
   }
-  else if(year == 2017){
+  else if(gIs2017){
     pass = Get<Bool_t>("HLT_IsoMu24") || Get<Bool_t>("HLT_IsoMu27") || Get<Bool_t>("HLT_IsoMu24_eta2p1");
   }
-  else if(year == 2018){
+  else if(gIs2018){
     pass = Get<Bool_t>("HLT_IsoMu24");
   }
   return pass;
@@ -400,7 +390,8 @@ Bool_t EventBuilder::TrigElEl(){
     if     (gIsDoubleElec) pass =  PassesDoubleElecTrigger();
     else if(gIsSingleElec) pass = !PassesDoubleElecTrigger() && PassesSingleElecTrigger();
     else if(gIsMET)        pass = PassesDoubleElecTrigger() || PassesSingleElecTrigger();
-    else pass = false; //PassesDoubleElecTrigger() || PassesSingleElecTrigger();
+    else if(gIsEGamma)     pass = PassesDoubleElecTrigger() || PassesSingleElecTrigger();
+    else                   pass = false; //PassesDoubleElecTrigger() || PassesSingleElecTrigger();
   }
   else pass = PassesDoubleElecTrigger() || PassesSingleElecTrigger();
   return pass;
@@ -412,7 +403,7 @@ Bool_t EventBuilder::TrigMuMu(){
     if     (gIsDoubleMuon) pass =  PassesDoubleMuonTrigger();
     else if(gIsSingleMuon) pass = !PassesDoubleMuonTrigger() && PassesSingleMuonTrigger();
     else if(gIsMET)        pass = PassesDoubleMuonTrigger() || PassesSingleMuonTrigger();
-    else pass = false; //PassesDoubleMuonTrigger() || PassesSingleMuonTrigger();
+    else                   pass = false; //PassesDoubleMuonTrigger() || PassesSingleMuonTrigger();
   }
   else pass = PassesDoubleMuonTrigger() || PassesSingleMuonTrigger();
   return pass;
@@ -421,11 +412,11 @@ Bool_t EventBuilder::TrigMuMu(){
 Bool_t EventBuilder::TrigElMu(){
   Bool_t pass = false;
   if(gIsData){
-    if(gIsMuonEG    ) pass =  PassesElMuTrigger();
+    if     (gIsMuonEG    ) pass =  PassesElMuTrigger();
     else if(gIsSingleMuon) pass = !PassesElMuTrigger() &&  PassesSingleMuonTrigger();
     else if(gIsSingleElec) pass = !PassesElMuTrigger() && !PassesSingleMuonTrigger() && PassesSingleElecTrigger();
     else if(gIsMET)        pass = PassesElMuTrigger() || PassesSingleMuonTrigger() || PassesSingleElecTrigger();
-    else pass = false; //PassesElMuTrigger() || PassesSingleMuonTrigger() | PassesSingleElecTrigger();
+    else                   pass = false; //PassesElMuTrigger() || PassesSingleMuonTrigger() | PassesSingleElecTrigger();
   }
   else pass = PassesElMuTrigger() || PassesSingleMuonTrigger() | PassesSingleElecTrigger();
   return pass;
@@ -436,7 +427,7 @@ Bool_t EventBuilder::TrigElMu(){
 // ########################### MET FILTERS
 Bool_t EventBuilder::PassesMETfilters() { // Updated on 2019-06-14 for both data and MC
   if (gIsData) {
-    if      (year == 2016) {
+    if      (gIs2016) {
       if (Get<Bool_t>("Flag_goodVertices")                       &&
           Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
           Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
@@ -448,7 +439,7 @@ Bool_t EventBuilder::PassesMETfilters() { // Updated on 2019-06-14 for both data
          ) return true;
       else return false;
     }
-    else if (year == 2017) {
+    else if (gIs2017) {
       if (Get<Bool_t>("Flag_goodVertices")                       &&
           Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
           Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
@@ -462,7 +453,7 @@ Bool_t EventBuilder::PassesMETfilters() { // Updated on 2019-06-14 for both data
         ) return true;
       else return false;
     }
-    else if (year == 2018) {
+    else if (gIs2018) {
       if (Get<Bool_t>("Flag_goodVertices")                       &&
           Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
           Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
@@ -478,7 +469,7 @@ Bool_t EventBuilder::PassesMETfilters() { // Updated on 2019-06-14 for both data
     }
   }
   else { // ONLY FULLSIM
-    if      (year == 2016) {
+    if      (gIs2016) {
       if (Get<Bool_t>("Flag_goodVertices")                       &&
           Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
           Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
@@ -489,7 +480,7 @@ Bool_t EventBuilder::PassesMETfilters() { // Updated on 2019-06-14 for both data
          ) return true;
       else return false;
     }
-    else if (year == 2017) {
+    else if (gIs2017) {
       if (Get<Bool_t>("Flag_goodVertices")                       &&
           Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
           Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
@@ -502,7 +493,7 @@ Bool_t EventBuilder::PassesMETfilters() { // Updated on 2019-06-14 for both data
         ) return true;
       else return false;
     }
-    else if (year == 2018) {
+    else if (gIs2018) {
       if (Get<Bool_t>("Flag_goodVertices")                       &&
           Get<Bool_t>("Flag_globalSuperTightHalo2016Filter")     &&
           Get<Bool_t>("Flag_HBHENoiseFilter")                    &&

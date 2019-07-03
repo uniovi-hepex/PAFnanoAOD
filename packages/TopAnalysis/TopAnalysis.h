@@ -74,7 +74,7 @@ class TopAnalysis : public PAFChainItemSelector{
     Bool_t  TPassMETFilters;
     Bool_t  TPassTrigger;
     Bool_t  isSS;
-    Float_t NormWeight;
+    Double_t NormWeight;
 
     void InitHistos();
     void FillDYHistos(Int_t ch);
@@ -253,7 +253,8 @@ class TopAnalysis : public PAFChainItemSelector{
   TH1F* fHJet1DeepFlav[nChannels][nLevels][nSysts];
   TH1F* fHvertices[nChannels][nLevels][nSysts]; 
 
-  TH1F* fhDummy[nChannels];
+  TH1F* fhDummy;
+  TH1F* fhDummyCh[nChannels];
   TH1F* fhDummy_2leps[nChannels];
   TH1F* fhDummy_trigger[nChannels];
   TH1F* fhDummy_metfilters[nChannels];
@@ -275,6 +276,9 @@ class TopAnalysis : public PAFChainItemSelector{
   TH1F* hJetPtGenB;
   TH1F* hJetGenRecoPtRatio[nPtBins];
   TH1F* hJetGenRecoPtRatio2[nPtBins];
+  Bool_t gIs2016;
+  Bool_t gIs2017;
+  Bool_t gIs2018;
 
   protected:
 
