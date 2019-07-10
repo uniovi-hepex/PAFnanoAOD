@@ -130,11 +130,14 @@ public:
   void SetHistoWeights(Int_t i = 0);
   void SetFormulas();
   Histo* GetSystHisto(TString dir = "up", TString systname = "pdf");
+  Histo* GetSystVariation(TString dir = "up", TString systname = "pdf");
   void SetBinCutFormula(Int_t bin = 1);
   Float_t GetNormWeight(Int_t i = 1);
   void FillHistoWeights(Int_t bin = 0);
   void FillHistoWeightsAllBins();
   void SetBin(Int_t bin);
+  void SetLumi(Float_t lum);
+  TH1F* GetHisto(Int_t bin);
 
   Float_t GetWyield(Int_t i);
   Float_t GetNomYield(Int_t i);
@@ -210,6 +213,7 @@ void PDFunc::SetBinCutFormula(Int_t bin){
     upbin   = bin0 + (binN - bin0)/(nBins)*(bin); 
   }
   bincut = Form("((%s >= %f) && (%s < %f))", var.Data(), downbin, var.Data(), upbin);
+  if(upbin == binN) bincut = Form("(%s >= %f)", var.Data(), downbin);
   if(verbose) cout << "[PDFunc::SetBinCutFormula] Creating formula with bincut: " << bincut << endl;
   FCutBin = new TTreeFormula(Form("Form_bincut_%i", bin), bincut, tree);
 }
@@ -280,8 +284,39 @@ Histo* PDFunc::GetSystHisto(TString dir, TString systname){
   return SystHisto; 
 }
 
+Histo* PDFunc::GetSystVariation(TString dir, TString systname){
+  Histo* SystHisto;
+  if(bin0 != binN) SystHisto = new Histo(TH1F("SystHisto_" + systname + "_" + dir, var, nBins, bin0, binN));
+  else             SystHisto = new Histo(TH1F("SystHisto_" + systname + "_" + dir, var, nBins, bins));
+  SystHisto->Init();
+  Float_t variation;
+  if((Int_t) wBins.size() < nBins) cout << "[PDFunc::GetSystVariation] WARNING: histograms unfilled!" << endl;
+  else{
+    for(Int_t i = 0; i < nBins; i++){
+      SetBin(i);
+      nomyield = GetNomYield(1);
+      if(systname == "pdf" || systname == "PDF") variation = NNPDFsyst();
+      else                                       variation = MEsyst();
+      if(dir != "Up" && dir != "up") variation *= -1;
+      SystHisto->SetBinContent(i+1, variation);
+    }
+  }
+  return SystHisto; 
+}
+
+
+
 void PDFunc::SetBin(Int_t bin){
   weights = wBins.at(bin);
+}
+
+void PDFunc::SetLumi(Float_t lum){
+  Lumi = lum;
+}
+
+TH1F* PDFunc::GetHisto(Int_t bin){
+  if(bin == -99) return weights;
+  else return wBins.at(bin);
 }
 
 Float_t PDFunc::GetNormWeight(Int_t i){

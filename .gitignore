@@ -15,13 +15,13 @@ Datasets/
 
 # Others
 .DS_Store
-*temp/
+*temp*/
+jobs/*
 inputdata.root
-plotter/TW/Differential/temp/*
-plotter/TW/Differential/results/*
-plotter/TWTTbar/temp/*
+plotter/TWTTbar/temp*/*
 plotter/TWTTbar/results/*
 plotter/TWTTbar/logs/*
+plotter/TWTTbar/old/*
 
 #Higgs combine output :)
 higgsCombine*.root

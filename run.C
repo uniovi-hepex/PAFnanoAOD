@@ -16,7 +16,7 @@ std::vector<TString> TStringToVector(TString t, char separator = ','){
   return v;
 }
 
-void run(TString samp, TString selection, Float_t xsec, Float_t sumofweights, Int_t year, TString outname, Int_t nSlots = 1, TString outpath = "", TString options = "", Bool_t isamcatnlo = false, Bool_t isData = false, Int_t nEvents = 0, Int_t FirstEvent = 0, TString workingdir = "", TString path = ""){
+void run(TString samp, TString selection, Double_t xsec, Double_t sumofweights, Int_t year, TString outname, Int_t nSlots = 1, TString outpath = "", TString options = "", Bool_t isamcatnlo = false, Bool_t isData = false, Int_t nEvents = 0, Int_t FirstEvent = 0, TString workingdir = "", TString path = "") {
 
   PAFProject* myProject = 0;
   vector<TString> samples = TStringToVector(samp);
@@ -30,9 +30,9 @@ void run(TString samp, TString selection, Float_t xsec, Float_t sumofweights, In
   PAFIExecutionEnvironment* pafmode = 0;
   if      (nSlots <=1 )  pafmode = new PAFSequentialEnvironment();
   else                   pafmode = new PAFPROOFLiteEnvironment(nSlots);
-  
+
   myProject = new PAFProject(pafmode);
-  myProject->AddDataFiles(samples); 
+  myProject->AddDataFiles(samples);
   myProject->SetDefaultTreeName("Events");
   
   // Deal with first and last event
@@ -45,17 +45,19 @@ void run(TString samp, TString selection, Float_t xsec, Float_t sumofweights, In
   if(!outname.EndsWith(".root")) outname += ".root";
   myProject->SetOutputFile(outpath + "/" + outname);
   
+  Double_t tmpw = xsec/sumofweights;
+
   // Parameters for the analysis
   if(workingdir == "") workingdir = gSystem->pwd();
-  myProject->SetInputParam("sampleName",        outname);
-  myProject->SetInputParam("IsData",            isData    );
-  myProject->SetInputParam("weight",            xsec/sumofweights);
-  myProject->SetInputParam("IsMCatNLO",         isamcatnlo);
-  myProject->SetInputParam("selection",         selection);
-  myProject->SetInputParam("WorkingDir",        workingdir);
-  myProject->SetInputParam("xsec",              xsec);
-  myProject->SetInputParam("_options",          options);
-  myProject->SetInputParam("year",              TString(Form("%i",year)));
+  myProject->SetInputParam("sampleName", outname);
+  myProject->SetInputParam("IsData",     isData    );
+  myProject->SetInputParam("weight",     tmpw);
+  myProject->SetInputParam("IsMCatNLO",  isamcatnlo);
+  myProject->SetInputParam("selection",  selection);
+  myProject->SetInputParam("WorkingDir", workingdir);
+  myProject->SetInputParam("xsec",       xsec);
+  myProject->SetInputParam("_options",   options);
+  myProject->SetInputParam("year",       TString(Form("%i",year)));
   
   // Adding packages
   myProject->AddSelectorPackage("LeptonSelector");

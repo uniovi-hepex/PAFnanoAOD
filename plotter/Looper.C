@@ -14,6 +14,7 @@ void Looper::SetFormulas(TString systematic){
   stringcut = CraftFormula(cut, chan, systematic, weight, tree, options);
   if(verbose) cout << "[Looper::SetFormulas] Formula: " << stringcut << endl;
   FormulasCuts = new TTreeFormula("Form_" + sampleName + "_" + systematic + "_cut", stringcut, tree);
+  cout << FormulasCuts->GetTitle() << endl;
 
   //>>> var
   TString v = "";
@@ -32,6 +33,7 @@ void Looper::SetFormulas(TString systematic){
     }
     else vinst.push_back(0);
     FormulasVars = new TTreeFormula("Form_" + sampleName + "_" + systematic + "_var", stringvar, tree);
+    cout << FormulasVars->GetTitle() << endl;
     vvars.push_back(FormulasVars);
   }
 }
@@ -83,7 +85,9 @@ void Looper::Loop(TString sys){
 
 //=== Load the tree
 void Looper::loadTree(){
-  TString prefix = "Tree_"; TString sufix = ".root";
+//   TString prefix = "Tree_";
+  TString prefix = "";
+  TString sufix = ".root";
 	TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject(path + prefix + sampleName + sufix);
 	if (!f || !f->IsOpen()) {
 		f = new TFile(path + prefix + sampleName + sufix);
@@ -427,5 +431,3 @@ Histo* Hyperlooper::GetHisto(TString name, TString sys){
   cout << "WARNING [Hyperlooper::GetHisto] Error: not found histo with sys tag: " << sys << endl;
   return h;
 }
-
-

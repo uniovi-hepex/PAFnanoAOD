@@ -83,7 +83,8 @@ void EventBuilder::Initialise(){
   Float_t binsEta[] = {0, 1, 2.1, 2.4};     Int_t nbinsEta = 3;
   Float_t binsPt[]  = {20, 30, 40, 50, 60}; Int_t nbinsPt  = 4;
   
-  makeeffhistos = false;  // THIS IS PUT HERE SO WE DON'T DO THE TRIG EFF HISTOS BUT ALSO BECAUSE (at least for 2017's nanoAODv4) MET TRIGGERS ARE BADLY SET
+  if (gSelection ==  itt) makeeffhistos = true;
+  else                    makeeffhistos = false;
 
   if (makeeffhistos) {
     ElecTrigEffNum = CreateH2F("ElecTrigEffNum","", nbinsEta, binsEta, nbinsPt, binsPt);
@@ -123,7 +124,7 @@ void EventBuilder::Initialise(){
   }
 */
 
-  Weight = GetParam<Float_t>("weight");
+  Weight = GetParam<Double_t>("weight");
 
   passTrigger = 1;
   isSS = 0;
@@ -207,7 +208,7 @@ void EventBuilder::InsideLoop(){
   METfilters = PassesMETfilters();
 
   // >>>>>>>>> Calculate norm weight
-  if(gIsMCatNLO) genWeight = Get<Float_t>("genWeight");
+  if(gIsMCatNLO) genWeight = (Double_t)Get<Float_t>("genWeight");
   else           genWeight = 1;
   NormWeight = Weight*genWeight;
   if(gIsData) NormWeight = 1;
