@@ -1,6 +1,7 @@
 #include "TString.h"
 #include <iostream>
 #include <fstream>
+#include "TProof.h"
 
 std::vector<TString> TStringToVector(TString t, char separator = ','){
   std::vector<TString> v;
@@ -16,24 +17,31 @@ std::vector<TString> TStringToVector(TString t, char separator = ','){
   return v;
 }
 
-void run(TString samp, TString selection, Double_t xsec, Double_t sumofweights, Int_t year, TString outname, Int_t nSlots = 1, TString outpath = "", TString options = "", Bool_t isamcatnlo = false, Bool_t isData = false, Int_t nEvents = 0, Int_t FirstEvent = 0, TString workingdir = "", TString path = "") {
+void run(TString samp, TString selection, Double_t xsec, Double_t sumofweights, Int_t year, TString outname, Int_t nSlots = 1, TString outpath = "", TString options = "", Bool_t isamcatnlo = false, Bool_t isData = false, Long64_t nEvents = 0, Long64_t FirstEvent = 0, TString workingdir = "", TString path = "", Bool_t debug = false) {
+
+
+  if (debug) {
+    gProofDebugMask = TProofDebug::kAll;
+    gProofDebugLevel = 5;
+  }
 
   PAFProject* myProject = 0;
   vector<TString> samples = TStringToVector(samp);
   if(path != ""){
     if(!path.EndsWith("/")) path += "/";
-    int nFiles = samples.size(); int i;
+    Int_t nFiles = samples.size(); Int_t i;
     for(i = 0; i < nFiles; i++) samples.at(i) = path + samples.at(i);
   }
 
   // PAF mode selection (based on number of slots)
   PAFIExecutionEnvironment* pafmode = 0;
-  if      (nSlots <=1 )  pafmode = new PAFSequentialEnvironment();
-  else                   pafmode = new PAFPROOFLiteEnvironment(nSlots);
+  if   (nSlots <=1 ) pafmode = new PAFSequentialEnvironment();
+  else               pafmode = new PAFPROOFLiteEnvironment(nSlots);
+
 
   myProject = new PAFProject(pafmode);
   myProject->AddDataFiles(samples);
-  myProject->SetDefaultTreeName("Events");
+  myProject->SetDefaultTreeName("/Events");
   
   // Deal with first and last event
   if (nEvents > 0   ) myProject->SetNEvents(nEvents);
@@ -50,7 +58,7 @@ void run(TString samp, TString selection, Double_t xsec, Double_t sumofweights, 
   // Parameters for the analysis
   if(workingdir == "") workingdir = gSystem->pwd();
   myProject->SetInputParam("sampleName", outname);
-  myProject->SetInputParam("IsData",     isData    );
+  myProject->SetInputParam("IsData",     isData);
   myProject->SetInputParam("weight",     tmpw);
   myProject->SetInputParam("IsMCatNLO",  isamcatnlo);
   myProject->SetInputParam("selection",  selection);

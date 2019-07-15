@@ -28,7 +28,7 @@ except ImportError:
 from fileReader import getDicFiles, GetAllInfoFromFile, IsVarInTree
 
 
-def ex(command, verbose = False, pretend = False):
+def ExecOrder(command, verbose = False, pretend = False):
   if verbose:
     print 'Executing command: ', command
   if pretend:
@@ -115,7 +115,7 @@ def GetTStringVectorSamples(path, samples):
   v = GetTStringVector(samples)
 
 
-def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, outname = '', outpath = '', options = '', nEvents = 0, FirstEvent = 0, prefix = 'Tree', verbose = False, pretend = False, dotest = False, sendJobs = False, queu = 'short'):
+def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, outname = '', outpath = '', options = '', nEvents = 0, FirstEvent = 0, prefix = 'Tree', verbose = False, pretend = False, dotest = False, sendJobs = False, queue = 'short'):
   if ',' in sample:
     sample.replace(' ', '')
     sample = sample.split(',')
@@ -161,7 +161,7 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
     for s in samples: SampString += '%s/%s,'%(path,s)
   if SampString.endswith(','): SampString = SampString[:-1]
 
-  command = '\'run.C(\"%s\", \"%s\", %f, %f, %i, \"%s\", %i, \"%s\", \"%s\", %i, %i, %i, %i, \"%s\", \"%s\")\''%(SampString, selection, xsec, nSumOfWeights, year, outname, nSlots, outpath, options, isamcatnlo, isData, nEvents, FirstEvent, workingdir, pathSamples)
+  command = '\'run.C(\"%s\", \"%s\", %f, %f, %i, \"%s\", %i, \"%s\", \"%s\", %i, %i, %i, %i, \"%s\", \"%s\", %i)\''%(SampString, selection, xsec, nSumOfWeights, year, outname, nSlots, outpath, options, isamcatnlo, isData, nEvents, FirstEvent, workingdir, pathSamples, verbose)
   command = 'root -l -b -q ' + command
 
   if sendJobs:
@@ -173,10 +173,10 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
     pathjob = path + jobname + '/'
     jobfile = "%s%s.sh"%(pathjob,jobname)
     os.mkdir(pathjob)
-    ex('cp -r packages %s'%pathjob, verbose)
-    ex('cp xsec.cfg %s'   %pathjob, verbose)
-    ex('cp run.C %s'      %pathjob, verbose)
-    ex('cp run.py %s'     %pathjob, verbose)
+    ExecOrder('cp -r packages %s'%pathjob, verbose)
+    ExecOrder('cp xsec.cfg %s'   %pathjob, verbose)
+    ExecOrder('cp run.C %s'      %pathjob, verbose)
+    ExecOrder('cp run.py %s'     %pathjob, verbose)
     f = open(jobfile,'w')
     f.write('#!/bin/sh\n\n')
     f.write('cd %s\n\n'%pathjob)
@@ -187,10 +187,10 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
     errname = '%sERR%s.out'%(pathjob,tag)
     outname = '%sOUT%s.out'%(pathjob,tag)
     runCommand = "sbatch -p %s -c %i -J %s -e %s -o %s %s"%(queue, nSlots, jname, errname, outname, jobfile)
-    ex(runCommand, verbose, pretend)
+    ExecOrder(runCommand, verbose, pretend)
 
   elif runC:
-    ex(command, verbose, pretend)
+    ExecOrder(command, verbose, pretend)
   else:
     if pretend:
       print 'Pretending...'
@@ -298,7 +298,7 @@ if __name__ == "__main__":
   FirstEvent  = args.firstEvent
   sendJobs    = args.sendJobs
   queue       = args.queue
-  fixedchunk  = args.fixedchunk
+  fixedchunk  = int(args.fixedchunk)
   ncores      = nSlots
 
   # Check if a cfg file is given as first argument
@@ -415,19 +415,26 @@ if __name__ == "__main__":
         tmpsamples      = GetSampleList(tmppath, tmpsample)
         nTrueEntries = GetAllInfoFromFile([tmppath + x for x in tmpsamples])[0]
 
-        if fixedchunk <= 0:
+        if not sendJobs:
+          ExecOrder("sleep 2s")
+          ExecOrder("resetpaf")
+        if fixedchunk < 0:
           for ich in range(tmpnchs):
             tmpoutname    = outname + "_{ch}".format(ch = ich)
             tmpnEvents    = nTrueEntries / tmpnchs
             tmpFirstEvent = tmpnEvents * ich
             if (ich == tmpnchs - 1): tmpnEvents = nTrueEntries - tmpFirstEvent
             RunSamplePAF(selection, path, sample, year, xsec, ncores, tmpoutname, outpath, options, tmpnEvents, tmpFirstEvent, prefix, verbose, pretend, dotest, sendJobs, queue)
+            ExecOrder("sleep 3s")
+            if not sendJobs:
+              ExecOrder("resetpaf")
+              ExecOrder("sleep 5s")
         else:
           if verbose: print " >> We only are going to produce the chunk with index {chk}.".format(chk = str(fixedchunk))
           tmpoutname    = outname + "_{ch}".format(ch = fixedchunk)
           tmpnEvents    = nTrueEntries / tmpnchs
-          tmpFirstEvent = tmpnEvents * int(fixedchunk)
-          if (int(fixedchunk) == tmpnchs - 1): tmpnEvents = nTrueEntries - tmpFirstEvent
+          tmpFirstEvent = tmpnEvents * fixedchunk
+          if (fixedchunk == tmpnchs - 1): tmpnEvents = nTrueEntries - tmpFirstEvent
           RunSamplePAF(selection, path, sample, year, xsec, ncores, tmpoutname, outpath, options, tmpnEvents, tmpFirstEvent, prefix, verbose, pretend, dotest, sendJobs, queue)
 
       else:
