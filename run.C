@@ -42,8 +42,9 @@ void run(TString samp, TString selection, Double_t xsec, Double_t sumofweights, 
   // Set output file
   if(outpath == "") outpath = "./"+selection+"_temp";
   gSystem->mkdir(outpath, 1);
-  if(!outname.EndsWith(".root")) outname += ".root";
-  myProject->SetOutputFile(outpath + "/" + outname);
+  TString outfilename = Form("%s", outname.Data());
+  if(!outfilename.EndsWith(".root")) outfilename += ".root";
+  myProject->SetOutputFile(outpath + "/" + outfilename);
   
   Double_t tmpw = xsec/sumofweights;
 
