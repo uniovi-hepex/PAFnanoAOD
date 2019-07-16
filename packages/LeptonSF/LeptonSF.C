@@ -229,7 +229,7 @@ void LeptonSF::loadHisto(Int_t iHisto, Int_t wp){
     if(wp == iTight){
       if     (gIs2018) filename = "2018_ElectronTight";
       else if(gIs2017) filename = "2017_ElectronTight";
-      else if(gIs2016) filename = "2016LegacyReReco_ElectronTight";
+      else if(gIs2016) filename = "2016LegacyReReco_ElectronTight_Fall17V2";
     }
     else{
       cout << "Elec ID wp not implemented!" << endl;
@@ -394,7 +394,7 @@ Float_t LeptonSF::GetLeptonSF(Float_t pt, Float_t ieta, Int_t type){
       else if (id == iMuonTightIP2DttH)    pr = fMuonTightIP2DttH    ->GetBinContent(fMuonTightIP2DttH    ->FindBin(pt,eta));
     }
     else if (type == 1) { // For electrons
-      if (pt > 200) pt = 199;
+      if (pt > 500) pt = 499;
       if (((id == iEleclepMVA2lSSttH) || (id == iEleclepMVA3l4lttH)) && (pt >= 100)) pt = 99;
       if (id == iElecReco) {
         eta = ieta;
