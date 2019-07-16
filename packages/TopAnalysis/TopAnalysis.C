@@ -87,7 +87,7 @@ void TopAnalysis::Initialise(){
   gDoJECunc    = gOptions.Contains("JECunc")? true : false;
   gPUWeigth    = gOptions.Contains("PUweight")? true : false;
   JetPt        = gOptions.Contains("JetPtNom")? "Jet_pt_nom" : "Jet_pt";
-  if (gSampleName == "TT") gIsTTbar = true;
+  if (gSampleName == "TT" && year == 2016) gIsTTbar = true;
 
   makeTree   = false;
   makeHistos = true;
