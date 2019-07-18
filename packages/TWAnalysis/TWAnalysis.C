@@ -918,25 +918,25 @@ void TWAnalysis::DoesItReallyPassDress() { // FINAL (not all) requirements for p
 
 
 void TWAnalysis::DoesItReallyPassReco() { // FINAL (not all) requirements for detector level selection
-  if ((TNJets == 2) && (TNBJets == 2) && (NLooseCentral == 2)) {
+  if ((TNJets == 1) && (TNBJets == 1) && (NLooseCentral == 1)) {
     if (TChannel == iMuon || TChannel == iElec) {
       if ((TMET > 20) && (abs(TLep1Lep2_M - Zm) > 15)) TPassReco = true;
     }
     else TPassReco = true;
   }
-  if ((TNJetsJESUp == 2) && (TNBJetsJESUp == 2) && (NLooseCentralJESUp == 2)) {
+  if ((TNJetsJESUp == 1) && (TNBJetsJESUp == 1) && (NLooseCentralJESUp == 1)) {
     if (TChannel == iMuon || TChannel == iElec) {
       if ((TMETJESUp > 20) && (abs(TLep1Lep2_MJESUp - Zm) > 15)) TPassRecoJESUp = true;
     }
     else TPassRecoJESUp = true;
   }
-  if ((TNJetsJESDown == 2) && (TNBJetsJESDown == 2) && (NLooseCentralJESDown == 2)) {
+  if ((TNJetsJESDown == 1) && (TNBJetsJESDown == 1) && (NLooseCentralJESDown == 1)) {
     if (TChannel == iMuon || TChannel == iElec) {
       if ((TMETJESDown > 20) && (abs(TLep1Lep2_MJESDown - Zm) > 15)) TPassRecoJESDown = true;
     }
     else TPassRecoJESDown = true;
   }
-  if ((TNJetsJERUp == 2) && (TNBJetsJERUp == 2) && (NLooseCentralJERUp == 2)) {
+  if ((TNJetsJERUp == 1) && (TNBJetsJERUp == 1) && (NLooseCentralJERUp == 1)) {
     if (TChannel == iMuon || TChannel == iElec) {
       if ((TMETJERUp > 20) && (abs(TLep1Lep2_MJERUp - Zm) > 15)) TPassRecoJERUp = true;
     }
