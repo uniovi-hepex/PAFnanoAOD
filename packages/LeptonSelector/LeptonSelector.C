@@ -289,7 +289,7 @@ void LeptonSelector::InsideLoop(){
       GetGenLeptonVariables(i);
       tL = Lepton(tP, charge, type);
       
-      if (gSelection == itWtt) {
+      if (gSelection == itWtt || gSelection == itW) {
         if (tL.p.Pt() > 20 && TMath::Abs(tL.p.Eta()) < 2.4) {
           if (tL.isMuon) genLeptons.push_back(tL);
           else if (tL.isElec  && (TMath::Abs(tL.p.Eta()) < 1.4442 || TMath::Abs(tL.p.Eta()) > 1.566)) genLeptons.push_back(tL);

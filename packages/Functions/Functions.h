@@ -13,8 +13,8 @@ enum runEra{runA,runB,runC,runD,runE,runF,runG,runH};
 int GetSelection(TString sel);
 
 enum eChannel{iNoChannel, iElMu, iMuon, iElec, i2lss, iTriLep, iFourLep, iSS1tau, iOS1tau, i2lss_fake, iTriLep_fake, iElEl, iMuMu, i1Tau_emufakeOS ,i1Tau_emufakeSS, i2LOS, TotalDefinedChannels};
-enum sel{itt, itWtt, nSel};
-const TString LabSelection[] = {"tt", "TWTTbarAnalysis"};
+enum sel{itt, itWtt, itW, nSel};
+const TString LabSelection[] = {"tt", "TWTTbarAnalysis", "TWAnalysis"};
 
 enum sys{iNom, 
   iJesUp, iJesDown, iJERUp, iJERDown,
