@@ -87,6 +87,7 @@ void TopAnalysis::Initialise(){
   gDoJECunc    = gOptions.Contains("JECunc")? true : false;
   gPUWeigth    = gOptions.Contains("PUweight")? true : false;
   JetPt        = gOptions.Contains("JetPtNom")? "Jet_pt_nom" : "Jet_pt";
+  if (gSampleName == "TT" && year == 2016) gIsTTbar = true;
 
   makeTree   = false;
   makeHistos = true;
@@ -162,7 +163,7 @@ void TopAnalysis::InsideLoop(){
   //mcJets         = GetParam<vector<Jet>>("mcJets");
 
   // Weights and SFs
-  NormWeight     = GetParam<Float_t>("NormWeight");
+  NormWeight     = GetParam<Double_t>("NormWeight");
   TrigSF         = GetParam<Float_t>("TriggerSF");
   TrigSFerr      = GetParam<Float_t>("TriggerSFerr");
   if(!gIs2016){
@@ -188,8 +189,9 @@ void TopAnalysis::InsideLoop(){
   GetWeights();
   //GetJetVariables(selJets, Jets15);
 
-  if(gIsTTbar) FillCorrHistos();
   fhDummy->Fill(1);
+  if(gIsTTbar) FillCorrHistos();
+  if(gIsTTbar && genLeptons.size() < 2) return; // Dilepton selection for ttbar!!!
 
   // Number of events in fiducial region
   if(!gIsData && makeHistos) {
@@ -236,7 +238,6 @@ void TopAnalysis::InsideLoop(){
       if (invmass > 20 && lep0pt > 25 && lep1pt > 20) {
         if(isSS) fHSSyields[gChannel][sys] -> Fill(idilepton, weight);
         else {
-          cout << "Filling dilep, " << TRun << endl;
           fHyields[gChannel][sys] -> Fill(idilepton, weight);
           FillHistos(gChannel, idilepton, sys);
           if(sys == 0) FillDYHistos(gChannel); // Only once
@@ -461,7 +462,6 @@ void TopAnalysis::GetWeights(){
       ElecSFDo *= selLeptons.at(1).GetSF(-1);
     }
   }
-  MuonSF = 1;
   TWeight             = NormWeight*ElecSF*MuonSF*TrigSF*PUSF;
   TWeight_ElecEffUp   = NormWeight*ElecSFUp*MuonSF*TrigSF*PUSF;
   TWeight_ElecEffDown = NormWeight*ElecSFDo*MuonSF*TrigSF*PUSF;
