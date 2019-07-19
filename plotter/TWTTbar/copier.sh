@@ -2,12 +2,13 @@
 #
 #
 
+# TODO: copiar tolos plots
 plotspath="/nfs/fanae/user/ireneaj/www/TFG/results/"
-dos="varplots/"
+dos="MCData/"
 indstr="index.php"
 cnstr="CondN/"
 covstr="CovMat/"
-indexpath="/nfs/fanae/user/ireneaj/www/index.php"
+indexpath="/nfs/fanae/user/vrbouza/www/index.php"
 
 if [ "$1" == "p" ]; then
   echo "===> Copying unfolding results!"
@@ -31,11 +32,13 @@ elif [ "$1" != "" ]; then
 else
   d=$(date +%d)
 fi
+
 if [ "$2" != "" ]; then
   m=$2
 else
   m=$(date +%m)
 fi
+
 if [ "$3" != "" ]; then
   y=$3
 else
@@ -57,8 +60,8 @@ mkdir -p $savepath
 echo " "
 echo "Copying files (note that this process can last even minutes depending on the size of the minitrees)..."
 savepath=$savepath$slash
-#cp -R ../../TWTTbar_temp/. $savepath
-rsync -avzP ../../TWTTbar_temp/ $savepath
+#cp -R ../../temp_TWTTbar/. $savepath
+rsync -avzP ../../temp_TWTTbar/ $savepath
 
 echo " "
 echo "Done!"

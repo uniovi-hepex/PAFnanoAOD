@@ -9,8 +9,8 @@ import os
 # === ESSENTIAL PARAMETERS OF THE ANALYSIS. CHANGING THIS APPLIES TO EVERYTHING. ===
 nuncs       = 4         # Number of uncs. shown in the relative uncertainty plots
 asimov      = False     # Use of Asimov dataset or data
-unifttbar   = True      # Equally distributed ttbar or tW in the BDT disc. distr.
 doxsec      = True      # Show events or diff. cross section in final results
+doPre       = True      # Show "Preliminary" (or not) after CMS in the plots
 
 # === OTHER IMPORTANT DEFINITIONS ===
 Lumi16      = 35.92    # In femtobarns
@@ -59,7 +59,7 @@ if asimov: labellegend = 'Pseudodata'
 else:      labellegend = 'Data'
 
 storagepath = "/pool/ciencias/userstorage/vrbouza/proyectos/TWTTbar/MiniTrees/"
-minipath    = "../../temp/"
+minipath    = "../../temp_TWTTbar/"
 treename    = "fMiniTree"
 
 def GetLastFolder(stpth):
