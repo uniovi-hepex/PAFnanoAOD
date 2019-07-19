@@ -180,6 +180,7 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
     f = open(jobfile,'w')
     f.write('#!/bin/sh\n\n')
     f.write('cd %s\n\n'%pathjob)
+    f.write("sleep 5s")
     f.write(command + "\n\n")
     f.write("sleep 5s")
     f.close()
@@ -254,58 +255,30 @@ def RunPAF(samples, selection, xsec, nSumOfWeights, year, outname, nSlots = 1, o
 
 
 
-def CheckFileEvents(snames, sfiles, path, outpath):
- ''' Check events in mother file and output file, using the fhDummy histogram '''
- from ROOT import TFile
- outlist = []
- getlist = lambda x : [x] if not ',' in x else x.replace(' ', '').split(',')
- for f in snames:
-   trypath = '%s/%s.root'%(outpath, f)
-   if not os.path.isfile(trypath):
-     outlist.append(f)
-     print '\033[0;31mSample \033[0;36m%s\033[0;31m not found\033[0m'%f 
-   else:
-     tf = TFile.Open(trypath)
-     if not hasattr(tf, 'fhDummy'): 
-       print '\033[0;31mSample \033[0;36m%s\033[0;31m does not contain fhDummy\033[0m'%f 
-       outlist.append(f)
-       continue
-     dummy = tf.fhDummy.GetEntries()
-     samples = GetSampleList(path, getlist(sfiles[f]) )
-     nEventsInTree, nGenEvents, nSumOfWeights, isData = GetAllInfoFromFile([path + x for x in samples])
-     if nEventsInTree == dummy: 
-       print '\033[0;32mOK  \033[0;34m%s\033[0m'%f
-     else: 
-       print '\033[0;31mBAD \033[0;34m%s \033[0;33m(%1.2f %s)\033[0m'%(f, (nEventsInTree-dummy)/nEventsInTree*100, '%')
-       outlist.append(f)
- return outlist
-
 ################################################################################
 ### Execute
 ################################################################################
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Run with PAF')
-  parser.add_argument('--verbose','-v'    , action='store_true'  , help = 'Activate the verbosing')
-  parser.add_argument('--pretend','-p'    , action='store_true'  , help = 'Create the files but not send the jobs')
-  parser.add_argument('--test','-t'       , action='store_true'  , help = 'Sends only one or two jobs, as a test')
-  parser.add_argument('--sendJobs','-j'   , action='store_true'  , help = 'Send jobs!')
-  parser.add_argument('selection'                                , help = 'Name of the selector')
-  parser.add_argument('--path'            , default=''           , help = 'Path to look for nanoAOD')
-  parser.add_argument('--sample','-s'     , default=''           , help = 'Sample(s) to process')
-  parser.add_argument('--xsec','-x'       , default='xsec'       , help = 'Cross section')
-  parser.add_argument('--year','-y'       , default=-1           , help = 'Year')
-  parser.add_argument('--conf','-c'       , default=''           , help = 'Config file (not yet implemented')
-  parser.add_argument('--options','-o'    , default=''           , help = 'Options to pass to your analysis')
-  parser.add_argument('--prefix'          , default='Tree'       , help = 'Prefix of the name...')
-  parser.add_argument('--outname'         , default=''           , help = 'Name of the output file')
-  parser.add_argument('--outpath'         , default=''           , help = 'Output path')
-  parser.add_argument('--queue','-q'      , default='short'      , help = 'Queue to send jobs')
-  parser.add_argument('--firstEvent'      , default=0            , help = 'First event')
-  parser.add_argument('--nEvents'         , default=0            , help = 'Number of events')
-  parser.add_argument('--nSlots','-n'     , default=-1           , help = 'Number of slots')
-  parser.add_argument('--fixedchunk', '-f', default=-1           , help = 'Chunk to be produced alone. It requires to specify the number of chunks in the configuration file. IMPORTANT: is the CHUNK number (from 0 to N-1).')
-  parser.add_argument('--check'           , action='store_true'  , help = 'Check the output trees')
-  parser.add_argument('--resubmit'        , action='store_true'  , help = 'Resubmit jobs')
+  parser.add_argument('--verbose',    '-v', action='store_true', help = 'Activate the verbosing')
+  parser.add_argument('--pretend',    '-p', action='store_true', help = 'Create the files but not send the jobs')
+  parser.add_argument('--test',       '-t', action='store_true', help = 'Sends only one or two jobs, as a test')
+  parser.add_argument('--sendJobs',   '-j', action='store_true', help = 'Send jobs!')
+  parser.add_argument('selection'                              , help = 'Name of the selector')
+  parser.add_argument('--path',             default=''         , help = 'Path to look for nanoAOD')
+  parser.add_argument('--sample',     '-s', default=''         , help = 'Sample(s) to process')
+  parser.add_argument('--xsec',       '-x', default='xsec'     , help = 'Cross section')
+  parser.add_argument('--year',       '-y', default=-1         , help = 'Year')
+  parser.add_argument('--conf',       '-c', default=''         , help = 'Config file (not yet implemented')
+  parser.add_argument('--options',    '-o', default=''         , help = 'Options to pass to your analysis')
+  parser.add_argument('--prefix',           default='Tree'     , help = 'Prefix of the name...')
+  parser.add_argument('--outname',          default=''         , help = 'Name of the output file')
+  parser.add_argument('--outpath',          default=''         , help = 'Output path')
+  parser.add_argument('--queue',      '-q', default='short'    , help = 'Queue to send jobs')
+  parser.add_argument('--firstEvent',       default=0          , help = 'First event')
+  parser.add_argument('--nEvents',          default=0          , help = 'Number of events')
+  parser.add_argument('--nSlots',     '-n', default=-1         , help = 'Number of slots')
+  parser.add_argument('--fixedchunk', '-f', default=-1         , help = 'Chunk to be produced alone. It requires to specify the number of chunks in the configuration file. IMPORTANT: is the CHUNK number (from 0 to N-1).')
 
   args = parser.parse_args()
   aarg = sys.argv
@@ -327,10 +300,7 @@ if __name__ == "__main__":
   sendJobs    = args.sendJobs
   queue       = args.queue
   fixedchunk  = int(args.fixedchunk)
-  doCheck     = args.check
-  doReSubmit  = args.resubmit
   ncores      = nSlots
-  if doReSubmit: doCheck = True
 
   # Check if a cfg file is given as first argument
   fname = selection
@@ -420,18 +390,6 @@ if __name__ == "__main__":
         nslots[sample] = nSlots
       spl = [sample]
 
-    if doCheck:
-      outlist = CheckFileEvents(spl, samplefiles, path, outpath)
-      if doReSubmit:
-        spl = outlist
-        if len(spl) == 0: print 'Everything went fine!! :)'
-        else: 
-          print 'Files to resubmit: '
-          for f in spl:
-            print ' >> %s'%f
-      else: 
-        exit()
-
     if dotest:
       nEvents = 1000
       queue = 'cpupower'
@@ -468,7 +426,6 @@ if __name__ == "__main__":
             tmpFirstEvent = tmpnEvents * ich
             if (ich == tmpnchs - 1): tmpnEvents = nTrueEntries - tmpFirstEvent
             RunSamplePAF(selection, path, sample, year, xsec, ncores, tmpoutname, outpath, options, tmpnEvents, tmpFirstEvent, prefix, verbose, pretend, dotest, sendJobs, queue)
-            ExecOrder("sleep 3s")
             if not sendJobs:
               ExecOrder("resetpaf")
               ExecOrder("sleep 5s")
@@ -484,4 +441,3 @@ if __name__ == "__main__":
         RunSamplePAF(selection, path, sample, year, xsec, ncores, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs, queue)
   else: # no config file...
     RunSamplePAF(selection, path, sample, year, xsec, nSlots, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs, queue)
-
