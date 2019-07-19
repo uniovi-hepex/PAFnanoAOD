@@ -714,7 +714,7 @@ TLegend* Plot::SetLegend(){ // To be executed before using the legend
       //  if(VSignals.at(i)->GetProcess() == SignalProcess){
           VSignals.at(i)->SetLineWidth(2);
           VSignals.at(i)->SetFillColor(VSignals.at(i)->GetColor());
-          VSignals.at(i)->AddToLegend(leg, doYieldsInLeg);  
+          VSignals.at(i)->AddToLegend(leg, doYieldsInLeg);
       //  }
       }
     }
@@ -723,7 +723,7 @@ TLegend* Plot::SetLegend(){ // To be executed before using the legend
       // if(VSignals.at(i)->GetProcess() == SignalProcess){
           VSignals.at(i)->SetLineWidth(2);
           VSignals.at(i)->SetFillColor(0);
-          VSignals.at(i)->AddToLegend(leg, doYieldsInLeg);  
+          VSignals.at(i)->AddToLegend(leg, doYieldsInLeg);
       // }
       }
     }
@@ -974,7 +974,8 @@ void Plot::DrawComp(TString tag, bool doNorm, TString options){
 }
 
 
-void Plot::DrawStack(TString tag){
+void Plot::DrawStack(TString tag) {
+  if (verbose) cout << "[Plot::DrawStack] Entering DrawStack." << endl;
   std::vector<Histo*> VStackedSignals;
   if(verbose) cout << "[Plot::DrawStack] Setting Canvas..." << endl;
   TCanvas* c = SetCanvas(); plot->cd(); 
@@ -984,6 +985,7 @@ void Plot::DrawStack(TString tag){
   cout << "Integral of hAllBkg: " << hAllBkg->Integral() << endl;
 
   //--------- Plotting options for the signal
+  if (verbose) cout << "[Plot::DrawStack] Adjusting signal settings." << endl;
   Int_t nSignals = 0;
   VSignalsStack.clear();
   Histo* hSignal = nullptr;
@@ -1010,13 +1012,13 @@ void Plot::DrawStack(TString tag){
       hSignal->SetLineColor(hSignal->GetColor());
       hSignal->SetFillColor(hSignal->GetColor());
       //hStack->Add(hSignal);
-    }   
+    }
   }
 /*  TH1F* hSigDraw;
   if(doSignal){
     hSigDraw = (TH1F*) hSignal->Clone("hSigDraw");
     hSigDraw->Add((TH1F*) hAllBkg->Clone("hAllBkg_clone"));
-    hSigDraw->Draw("hist"); 
+    hSigDraw->Draw("hist");
   }*/
 
   hStack->Draw("hist");
@@ -1034,55 +1036,55 @@ void Plot::DrawStack(TString tag){
   }*/
 
   //--------- Adjust max and min for the plot
-  float maxData = doData? hData->GetMax() : hAllBkg->GetMax();
-  float maxMC = hAllBkg->GetMax();
-  cout << "maxMC   = " << maxMC   << endl;
-  cout << "maxData = " << maxData << endl;
-  float Max = maxMC > maxData? maxMC : maxData;
-  if(doSetLogy){
-    if(verbose) cout << "[Plot::DrawStack] Setting log scale..." << endl;
-    if(PlotMinimum == 0 || PlotMinimum == -999)  PlotMinimum = 0.1;
+  if (verbose) cout << "[Plot::DrawStack] Adjusting axis and histogram details." << endl;
+  Float_t maxData = doData? hData->GetMax() : hAllBkg->GetMax();
+  Float_t maxMC   = hAllBkg->GetMax();
+  Float_t Max     = maxMC > maxData? maxMC : maxData;
+  if (verbose) cout << "maxMC   = " << maxMC   << endl;
+  if (verbose) cout << "maxData = " << maxData << endl;
+
+  if (doSetLogy) {
+    if (verbose) cout << "[Plot::DrawStack] Setting log scale in Y axis." << endl;
+    if (PlotMinimum == 0 || PlotMinimum == -999)  PlotMinimum = 0.1;
     PlotMaximum = PlotMaximum == -999? Max*ScaleLog : PlotMaximum;
     hStack->SetMaximum(PlotMaximum);
     hStack->SetMinimum(PlotMinimum);
     plot->SetLogy();
   }
-  else{
+  else {
     PlotMinimum = PlotMinimum == -999? 0 : PlotMinimum;
     PlotMaximum = PlotMaximum == -999? Max*ScaleMax : PlotMaximum;
-    
+
     hStack->SetMaximum(PlotMaximum);
     hStack->SetMinimum(PlotMinimum);
-  }  
+  }
 
-  cout << "Setting Y axis..." << endl;
   SetAxis(hStack->GetYaxis(), ytitle, ytitleSize, ytitleOffset, ytitleDivisions, ytitleLabelSize);
   if (centerYaxis) hStack->GetYaxis()->CenterTitle();
   hStack->GetXaxis()->SetLabelSize(0.0);
 
-  cout << "Integral of hAllBkg: " << hAllBkg->Integral() << ", yield: " << hAllBkg->GetYield() << endl;
-  cout << "Continuing..." << endl;
-
   //--------- Draw signal
-  //if(doSignal && (SignalStyle == "scan" || SignalStyle == "BSM" || SignalStyle == "") ){
-  //  cout << "Signal style: scan ----> nSignals = " << nSignals << endl;
-  //  for(Int_t  i = 0; i < nSignals; i++) VSignals.at(i)->Draw(SignalDrawStyle + "same");
-  //  cout << "Drawn singals!!" << endl;
-  //}
+  if (verbose) cout << "[Plot::DrawStack] Drawing signal(s).";
+  if (doSignal && (SignalStyle == "scan" || SignalStyle == "BSM" || SignalStyle == "")) {
+   cout << "Signal style: scan ----> nSignals = " << nSignals << endl;
+   for (Int_t  i = 0; i < nSignals; i++) VSignals.at(i)->Draw(SignalDrawStyle + "same");
+   cout << "Drawn singals!!" << endl;
+  }
 
-
-  //---------  Draw systematic errors 
-  if(doSys){
-    cout << "Setting hAllBkg..." << endl;
+  //---------  Draw systematic errors
+  if (doSys) {
+    if (verbose) cout << "[Plot::DrawStack] Drawing systematic uncertainties." << endl;
     hAllBkg->SetFillStyle(3444); // 3444 o 3004 (3145 default here)
     hAllBkg->SetFillColor(StackErrorColor); // kGray+2 as default
     hAllBkg->SetLineColor(StackErrorColor);
     hAllBkg->SetLineWidth(0);
     hAllBkg->SetMarkerSize(0);
   }
+
   if(doSys && ((Int_t) VSystLabel.size() > 0 || doExternalSyst))  hAllBkg->Draw("same,e2");
-  for(Int_t  i = 0; i < nSignals; i++)
-    VSignalsStack.at(i)->Draw("hist,same");
+
+//   for(Int_t  i = 0; i < nSignals; i++)
+//     VSignalsStack.at(i)->Draw("hist,same");
 
   //--------- Draw Data
   if (!Xerrorbars) {
@@ -1090,15 +1092,20 @@ void Plot::DrawStack(TString tag){
     ex2 = new TExec("ex2", "gStyle->SetErrorX(0.5);");
     ex1->Draw("same");
   }
-  if(doData && RatioStyle != "S/B") hData->Draw(dataStyle);
-  if(doSignal && (SignalStyle == "scan" || SignalStyle == "BSM" || SignalStyle == "") ){
-    for(Int_t  i = 0; i < nSignals; i++)
-      VSignalsStack.at(i)->Draw("hist,same");
+  if (doData && RatioStyle != "S/B") {
+    if (verbose) cout << "[Plot::DrawStack] Drawing data." << endl;
+    hData->Draw(dataStyle);
   }
+
+//   if(doSignal && (SignalStyle == "scan" || SignalStyle == "BSM" || SignalStyle == "") ){
+//     for(Int_t  i = 0; i < nSignals; i++)
+//       VSignalsStack.at(i)->Draw("hist,same");
+//   }
+
   if (!Xerrorbars) ex2->Draw("same");
 
   //--------- Draw systematics ratio
-
+  if (verbose) cout << "[Plot::DrawStack] Drawing systematics ratio." << endl;
   Int_t nbins = hAllBkg->GetNbinsX(); Float_t binval = 0; Float_t errbin = 0; Float_t totalerror = 0;
   TH1F* hratioerr =  (TH1F*) hAllBkg->Clone("hratioerr");
   if(doSys){
@@ -1117,11 +1124,10 @@ void Plot::DrawStack(TString tag){
     hratioerr->SetMarkerSize(0);
   }
 
-  cout << "Integral of hAllBkg: " << hAllBkg->Integral() << ", yield: " << hAllBkg->GetYield() << endl;
-  cout << "BLAAA" << endl;
   //--------- Set legend and other texts
+  if (verbose) cout << "[Plot::DrawStack] Setting legend and other texts." << endl;
   TLegend* leg = SetLegend();
-  if(doLegend) leg->Draw("same");      
+  if(doLegend) leg->Draw("same");
   texcms->Draw("same");     // CMS 
   texlumi->Draw("same");    // The luminosity
   texPrelim->Draw("same");  // Preliminary

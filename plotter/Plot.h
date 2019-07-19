@@ -38,7 +38,7 @@ class Plot {
 public:
   bool verbose         = false;
   bool doSys           = true;
-  bool doData          = true; 
+  bool doData          = true;
   bool doYieldsInLeg   = true;
   bool doSingleLep     = false;
   bool doStackOverflow = true;
