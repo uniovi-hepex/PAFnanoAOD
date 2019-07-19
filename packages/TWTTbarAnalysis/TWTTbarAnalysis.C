@@ -71,22 +71,22 @@ void TWTTbarAnalysis::InsideLoop() {
   genJets           = GetParam<vector<Jet>>("genJets");
   
   // Weights and SFs
-  NormWeight        = GetParam<Float_t>("NormWeight");
-  TrigSF            = GetParam<Float_t>("TriggerSF");
-  TrigSFerr         = GetParam<Float_t>("TriggerSFerr");
+  NormWeight        = GetParam<Double_t>("NormWeight");
+  TrigSF            = (Double_t)GetParam<Float_t>("TriggerSF");
+  TrigSFerr         = (Double_t)GetParam<Float_t>("TriggerSFerr");
 
   if (!gIsData && gPUWeight) {
-    PUSF         = Get<Float_t>("puWeight");
-    PUSF_Up      = Get<Float_t>("puWeightUp");
-    PUSF_Down    = Get<Float_t>("puWeightDown");
+    PUSF         = (Double_t)Get<Float_t>("puWeight");
+    PUSF_Up      = (Double_t)Get<Float_t>("puWeightUp");
+    PUSF_Down    = (Double_t)Get<Float_t>("puWeightDown");
   }
   else {PUSF = 1; PUSF_Up = 1; PUSF_Down = 1;}
 
-  BtagSF            = GetParam<Float_t>("BtagSF");
-  BtagSFBtagUp      = GetParam<Float_t>("BtagSFBtagUp");
-  BtagSFBtagDown    = GetParam<Float_t>("BtagSFBtagDown");
-  BtagSFMistagUp    = GetParam<Float_t>("BtagSFMistagUp");
-  BtagSFMistagDown  = GetParam<Float_t>("BtagSFMistagDown");
+  BtagSF            = (Double_t)GetParam<Float_t>("BtagSF");
+  BtagSFBtagUp      = (Double_t)GetParam<Float_t>("BtagSFBtagUp");
+  BtagSFBtagDown    = (Double_t)GetParam<Float_t>("BtagSFBtagDown");
+  BtagSFMistagUp    = (Double_t)GetParam<Float_t>("BtagSFMistagUp");
+  BtagSFMistagDown  = (Double_t)GetParam<Float_t>("BtagSFMistagDown");
 
   // Event variables
   passMETfilters    = GetParam<Bool_t>("METfilters");
@@ -106,22 +106,22 @@ void TWTTbarAnalysis::InsideLoop() {
   GetJetVariables();
   GetGenJetVariables();
   GetMETandGenMET();
-  
+
   TWeight_normal = NormWeight;
   fhDummy->Fill(0.5);
   
   // Particle level selection
-  if ((DressNLeps == 2) && (DressNJets == 2) && (DressNBJets == 2) && ((DressLeptons.at(0).p + DressLeptons.at(1).p).M() > 20) &&
-      (DressLeptons.at(0).Pt() > 25) && (GenChannel == iElMu) && !TDressIsSS && (DressNLooseCentral == 2)) {
-    
+  if ((DressNLeps >= 2) && (DressNJets == 2) && (DressNBJets == 2) && (DressNLooseCentral == 2) &&
+      ((DressLeptons.at(0).p + DressLeptons.at(1).p).M() > 20) && (TDressLep1_Pt > 25) && (TDressLep2_Pt > 20) && !TDressIsSS) {
+
     CalculateDressTWTTbarVariables();
     DoesItReallyPassDress();
   }
   
   // Detector level selection
-  if ((TNSelLeps == 2) && passTrigger && passMETfilters && ((selLeptons.at(0).p + selLeptons.at(1).p).M() > 20) &&
-      (selLeptons.at(0).Pt() > 25) && (TChannel == iElMu) && (!TIsSS)) {
-    
+  if ((TNSelLeps >= 2) && passTrigger && passMETfilters && ((selLeptons.at(0).p + selLeptons.at(1).p).M() > 20) &&
+      (TLep1_Pt > 25) && (TLep2_Pt > 20) && (!TIsSS)) {
+
     CalculateSFAndWeights();
     CalculateTWTTbarVariables();
     DoesItReallyPassReco();
@@ -149,20 +149,20 @@ void TWTTbarAnalysis::SetTWTTbarVariables() {
   fMiniTree->Branch("TEvent",                &TEvent,                "TEvent/l");
   fMiniTree->Branch("TChannel",              &TChannel,              "TChannel/S");
   fMiniTree->Branch("TIsSS",                 &TIsSS,                 "TIsSS/O");
-  fMiniTree->Branch("TWeight",               &TWeight,               "TWeight/F");
-  fMiniTree->Branch("TWeight_ElecEffUp",     &TWeight_ElecEffUp,     "TWeight_ElecEffUp/F");
-  fMiniTree->Branch("TWeight_ElecEffDown",   &TWeight_ElecEffDown,   "TWeight_ElecEffDown/F");
-  fMiniTree->Branch("TWeight_MuonEffUp",     &TWeight_MuonEffUp,     "TWeight_MuonEffUp/F");
-  fMiniTree->Branch("TWeight_MuonEffDown",   &TWeight_MuonEffDown,   "TWeight_MuonEffDown/F");
-  fMiniTree->Branch("TWeight_TrigUp",        &TWeight_TrigUp,        "TWeight_TrigUp/F");
-  fMiniTree->Branch("TWeight_TrigDown",      &TWeight_TrigDown,      "TWeight_TrigDown/F");
-  fMiniTree->Branch("TWeight_PUUp",          &TWeight_PUUp,          "TWeight_PUUp/F");
-  fMiniTree->Branch("TWeight_PUDown",        &TWeight_PUDown,        "TWeight_PUDown/F");
-  fMiniTree->Branch("TWeight_BtagUp",        &TWeight_BtagUp,        "TWeight_BtagUp/F");
-  fMiniTree->Branch("TWeight_BtagDown",      &TWeight_BtagDown,      "TWeight_BtagDown/F");
-  fMiniTree->Branch("TWeight_MistagUp",      &TWeight_MistagUp,      "TWeight_MistagUp/F");
-  fMiniTree->Branch("TWeight_MistagDown",    &TWeight_MistagDown,    "TWeight_MistagDown/F");
-  fMiniTree->Branch("TWeight_normal",        &TWeight_normal,        "TWeight_normal/F");
+  fMiniTree->Branch("TWeight",               &TWeight,               "TWeight/D");
+  fMiniTree->Branch("TWeight_ElecEffUp",     &TWeight_ElecEffUp,     "TWeight_ElecEffUp/D");
+  fMiniTree->Branch("TWeight_ElecEffDown",   &TWeight_ElecEffDown,   "TWeight_ElecEffDown/D");
+  fMiniTree->Branch("TWeight_MuonEffUp",     &TWeight_MuonEffUp,     "TWeight_MuonEffUp/D");
+  fMiniTree->Branch("TWeight_MuonEffDown",   &TWeight_MuonEffDown,   "TWeight_MuonEffDown/D");
+  fMiniTree->Branch("TWeight_TrigUp",        &TWeight_TrigUp,        "TWeight_TrigUp/D");
+  fMiniTree->Branch("TWeight_TrigDown",      &TWeight_TrigDown,      "TWeight_TrigDown/D");
+  fMiniTree->Branch("TWeight_PUUp",          &TWeight_PUUp,          "TWeight_PUUp/D");
+  fMiniTree->Branch("TWeight_PUDown",        &TWeight_PUDown,        "TWeight_PUDown/D");
+  fMiniTree->Branch("TWeight_BtagUp",        &TWeight_BtagUp,        "TWeight_BtagUp/D");
+  fMiniTree->Branch("TWeight_BtagDown",      &TWeight_BtagDown,      "TWeight_BtagDown/D");
+  fMiniTree->Branch("TWeight_MistagUp",      &TWeight_MistagUp,      "TWeight_MistagUp/D");
+  fMiniTree->Branch("TWeight_MistagDown",    &TWeight_MistagDown,    "TWeight_MistagDown/D");
+  fMiniTree->Branch("TWeight_normal",        &TWeight_normal,        "TWeight_normal/D");
   fMiniTree->Branch("TLHEWeight",            TLHEWeight,             "TLHEWeight[254]/F");
   
   
@@ -632,7 +632,7 @@ void TWTTbarAnalysis::GetMETandGenMET() {
   TDressMET_Phi = Get<Float_t>("MET_fiducialGenPhi");
   TPartMET      = Get<Float_t>("GenMET_pt");
   TPartMET_Phi  = Get<Float_t>("GenMET_phi");
-  if (gIsLHE)  for(UShort_t i = 0; i < Get<Int_t>("nLHEweight"); i++) TLHEWeight[i] = Get<Float_t>("LHEweight_wgt", i);
+//   if (gIsLHE)  for(UShort_t i = 0; i < Get<Int_t>("nLHEweight"); i++) TLHEWeight[i] = Get<Float_t>("LHEweight_wgt", i);
 }
 
 
@@ -1027,6 +1027,7 @@ void TWTTbarAnalysis::DoesItReallyPassReco() { // FINAL (not all) requirements f
     }
     else TPassReco = true;
   }
+
   if ((TNJetsJESUp == 2) && (TNBJetsJESUp == 2) && (NLooseCentralJESUp == 2)) {
     if (TChannel == iMuon || TChannel == iElec) {
       if ((TMETJESUp > 20) && (abs(TLep1Lep2_MJESUp - Zm) > 15)) TPassRecoJESUp = true;
@@ -1059,38 +1060,38 @@ void TWTTbarAnalysis::CalculateSFAndWeights() {
   }
   else {
     // SF calculations
-    lepSF = selLeptons.at(0).GetSF( 0) * selLeptons.at(1).GetSF( 0);
+    lepSF = (Double_t)(selLeptons.at(0).GetSF( 0) * selLeptons.at(1).GetSF( 0));
     if (TChannel == iElec) {
-      ElecSF   = selLeptons.at(0).GetSF( 0)*selLeptons.at(1).GetSF( 0);
-      ElecSFUp = selLeptons.at(0).GetSF( 1)*selLeptons.at(1).GetSF( 1);
-      ElecSFDo = selLeptons.at(0).GetSF(-1)*selLeptons.at(1).GetSF(-1);
+      ElecSF   = (Double_t)(selLeptons.at(0).GetSF( 0)*selLeptons.at(1).GetSF( 0));
+      ElecSFUp = (Double_t)(selLeptons.at(0).GetSF( 1)*selLeptons.at(1).GetSF( 1));
+      ElecSFDo = (Double_t)(selLeptons.at(0).GetSF(-1)*selLeptons.at(1).GetSF(-1));
       MuonSFUp = 1; MuonSFDo = 1; MuonSF = 1;
     }
     else if (TChannel == iMuon) {
-      MuonSFUp = selLeptons.at(0).GetSF( 1)*selLeptons.at(1).GetSF( 1);
-      MuonSFDo = selLeptons.at(0).GetSF(-1)*selLeptons.at(1).GetSF(-1);
+      MuonSFUp = (Double_t)(selLeptons.at(0).GetSF( 1)*selLeptons.at(1).GetSF( 1));
+      MuonSFDo = (Double_t)(selLeptons.at(0).GetSF(-1)*selLeptons.at(1).GetSF(-1));
       ElecSFUp = 1; ElecSFDo = 1; ElecSF = 1;
     }
     else {
       if(selLeptons.at(0).isMuon) {
-        MuonSF   *= selLeptons.at(0).GetSF( 0);
-        MuonSFUp *= selLeptons.at(0).GetSF( 1);
-        MuonSFDo *= selLeptons.at(0).GetSF(-1);
+        MuonSF   *= (Double_t)selLeptons.at(0).GetSF( 0);
+        MuonSFUp *= (Double_t)selLeptons.at(0).GetSF( 1);
+        MuonSFDo *= (Double_t)selLeptons.at(0).GetSF(-1);
       }
       else {
-        ElecSF   *= selLeptons.at(0).GetSF( 0);
-        ElecSFUp *= selLeptons.at(0).GetSF( 1);
-        ElecSFDo *= selLeptons.at(0).GetSF(-1);
+        ElecSF   *= (Double_t)selLeptons.at(0).GetSF( 0);
+        ElecSFUp *= (Double_t)selLeptons.at(0).GetSF( 1);
+        ElecSFDo *= (Double_t)selLeptons.at(0).GetSF(-1);
       }
       if (selLeptons.at(1).isMuon) {
-        MuonSF   *= selLeptons.at(1).GetSF( 0);
-        MuonSFUp *= selLeptons.at(1).GetSF( 1);
-        MuonSFDo *= selLeptons.at(1).GetSF(-1);
+        MuonSF   *= (Double_t)selLeptons.at(1).GetSF( 0);
+        MuonSFUp *= (Double_t)selLeptons.at(1).GetSF( 1);
+        MuonSFDo *= (Double_t)selLeptons.at(1).GetSF(-1);
       }
       else {
-        ElecSF   *= selLeptons.at(1).GetSF( 0);
-        ElecSFUp *= selLeptons.at(1).GetSF( 1);
-        ElecSFDo *= selLeptons.at(1).GetSF(-1);
+        ElecSF   *= (Double_t)selLeptons.at(1).GetSF( 0);
+        ElecSFUp *= (Double_t)selLeptons.at(1).GetSF( 1);
+        ElecSFDo *= (Double_t)selLeptons.at(1).GetSF(-1);
       }
     }
     // Weight calculations
@@ -1113,50 +1114,50 @@ void TWTTbarAnalysis::CalculateSFAndWeights() {
 
 void TWTTbarAnalysis::SetMinimaAndMaxima() {
   //   Setting maximum value of the unfolding candidate variables.
-  if (TLep1_Pt               >= 300)         TLep1_Pt             = 299.999;
-  if (TLep1_E                >= 350)         TLep1_E              = 349.999;
-  if (TLep1_Eta              >= 2.4)         TLep1_Eta            = 2.39999;
-  if (TLep2_Pt               >= 150)         TLep2_Pt             = 149.999;
-  if (TLep2_E                >= 250)         TLep2_E              = 249.999;
-  if (TLep2_Eta              >= 2.4)         TLep2_Eta            = 2.39999;
-  if (TJet1_Pt               >= 300)         TJet1_Pt             = 299.999;
-  if (TJet1_E                >= 400)         TJet1_E              = 399.999;
-  if (TJet1_Eta              >= 2.4)         TJet1_Eta            = 2.39999;
-  if (TJet2_Pt               >= 300)         TJet2_Pt             = 299.999;
-  if (TJet2_E                >= 400)         TJet2_E              = 399.999;
-  if (TJet2_Eta              >= 2.4)         TJet2_Eta            = 2.39999;
-  if (TLep1Lep2_Pt           >= 200)         TLep1Lep2_Pt         = 199.999;
-  if (TLep1Lep2_M            >= 300)         TLep1Lep2_M          = 299.999;
+  if (TLep1_Pt               >= 300)         TLep1_Pt             = 299.99;
+  if (TLep1_E                >= 350)         TLep1_E              = 349.99;
+  if (TLep1_Eta              >= 2.4)         TLep1_Eta            = 2.39;
+  if (TLep2_Pt               >= 150)         TLep2_Pt             = 149.99;
+  if (TLep2_E                >= 250)         TLep2_E              = 249.99;
+  if (TLep2_Eta              >= 2.4)         TLep2_Eta            = 2.39;
+  if (TJet1_Pt               >= 300)         TJet1_Pt             = 299.99;
+  if (TJet1_E                >= 400)         TJet1_E              = 399.99;
+  if (TJet1_Eta              >= 2.4)         TJet1_Eta            = 2.39;
+  if (TJet2_Pt               >= 300)         TJet2_Pt             = 299.99;
+  if (TJet2_E                >= 400)         TJet2_E              = 399.99;
+  if (TJet2_Eta              >= 2.4)         TJet2_Eta            = 2.39;
+  if (TLep1Lep2_Pt           >= 200)         TLep1Lep2_Pt         = 199.99;
+  if (TLep1Lep2_M            >= 300)         TLep1Lep2_M          = 299.99;
   if (TLep1Lep2_DPhi         >= TMath::Pi()) TLep1Lep2_DPhi       = 3.14;
-  if (TLep1Jet1_M            >= 400)         TLep1Jet1_M          = 399.999;
+  if (TLep1Jet1_M            >= 400)         TLep1Jet1_M          = 399.99;
   if (TLep1Jet1_DPhi         >= TMath::Pi()) TLep1Jet1_DPhi       = 3.14;
-  if (TLep1Jet2_M            >= 400)         TLep1Jet2_M          = 399.999;
+  if (TLep1Jet2_M            >= 400)         TLep1Jet2_M          = 399.99;
   if (TLep1Jet2_DPhi         >= TMath::Pi()) TLep1Jet2_DPhi       = 3.14;
-  if (TLep2Jet1_M            >= 300)         TLep2Jet1_M          = 299.999;
+  if (TLep2Jet1_M            >= 300)         TLep2Jet1_M          = 299.99;
   if (TLep2Jet1_DPhi         >= TMath::Pi()) TLep2Jet1_DPhi       = 3.14;
-  if (TLep2Jet2_M            >= 300)         TLep2Jet2_M          = 299.999;
+  if (TLep2Jet2_M            >= 300)         TLep2Jet2_M          = 299.99;
   if (TLep2Jet2_DPhi         >= TMath::Pi()) TLep2Jet2_DPhi       = 3.14;
-  if (Sys_Pt                 >= 700)         Sys_Pt               = 699.999;
-  if (Sys_E                  >= 700)         Sys_E                = 699.999;
-  if (Sys_Eta                >= 2.4)         Sys_Eta              = 2.39999;
-  if (Sys_M                  >= 700)         Sys_M                = 699.999;
-  if (Sys_Pz                 >= 450)         Sys_Pz               = 449.999;
-  if (TMiniMax               >= 420)         TMiniMax             = 419.999;
-  if (THT                    >= 600)         THT                  = 599.999;
-  if (TMET                   >= 200)         TMET                 = 199.999;
+  if (Sys_Pt                 >= 700)         Sys_Pt               = 699.99;
+  if (Sys_E                  >= 700)         Sys_E                = 699.99;
+  if (Sys_Eta                >= 2.4)         Sys_Eta              = 2.39;
+  if (Sys_M                  >= 700)         Sys_M                = 699.99;
+  if (Sys_Pz                 >= 450)         Sys_Pz               = 449.99;
+  if (TMiniMax               >= 420)         TMiniMax             = 419.99;
+  if (THT                    >= 600)         THT                  = 599.99;
+  if (TMET                   >= 200)         TMET                 = 199.99;
   
   if (TLep1_Pt               < 0)         TLep1_Pt                = 0;
   if (TLep1_E                < 0)         TLep1_E                 = 0;
-  if (TLep1_Eta              <= -2.4)     TLep1_Eta               = -2.39999;
+  if (TLep1_Eta              <= -2.4)     TLep1_Eta               = -2.39;
   if (TLep2_Pt               < 0)         TLep2_Pt                = 0;
   if (TLep2_E                < 0)         TLep2_E                 = 0;
-  if (TLep2_Eta              <= -2.4)     TLep2_Eta               = -2.39999;
+  if (TLep2_Eta              <= -2.4)     TLep2_Eta               = -2.39;
   if (TJet1_Pt               < 0)         TJet1_Pt                = 0;
   if (TJet1_E                < 0)         TJet1_E                 = 0;
-  if (TJet1_Eta              <= -2.4)     TJet1_Eta               = -2.39999;
+  if (TJet1_Eta              <= -2.4)     TJet1_Eta               = -2.39;
   if (TJet2_Pt               < 0)         TJet2_Pt                = 0;
   if (TJet2_E                < 0)         TJet2_E                 = 0;
-  if (TJet2_Eta              <= -2.4)     TJet2_Eta               = -2.39999;
+  if (TJet2_Eta              <= -2.4)     TJet2_Eta               = -2.39;
   if (TLep1Lep2_Pt           < 0)         TLep1Lep2_Pt            = 0;
   if (TLep1Lep2_M            < 0)         TLep1Lep2_M             = 0;
   if (TLep1Lep2_DPhi         <= -TMath::Pi()) TLep1Lep2_DPhi      = -3.14;
@@ -1170,58 +1171,58 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
   if (TLep2Jet2_DPhi         <= -TMath::Pi()) TLep2Jet2_DPhi      = -3.14;
   if (Sys_Pt                 < 0)         Sys_Pt                  = 0;
   if (Sys_E                  < 0)         Sys_E                   = 0;
-  if (Sys_Eta                <= -2.4)     Sys_Eta                 = -2.39999;
+  if (Sys_Eta                <= -2.4)     Sys_Eta                 = -2.39;
   if (Sys_M                  < 0)         Sys_M                   = 0;
-  if (Sys_Pz                 <= -450)     Sys_Pz                  = -449.999;
+  if (Sys_Pz                 <= -450)     Sys_Pz                  = -449.99;
   if (TMiniMax               < 0)         TMiniMax                = 0;
   if (THT                    < 0)         THT                     = 0;
   if (TMET                   < 0)         TMET                    = 0;
   
   
-  if (TLep1_PtJESUp          >= 300)      TLep1_PtJESUp           = 299.999;
-  if (TLep1_EJESUp           >= 350)      TLep1_EJESUp            = 349.999;
-  if (TLep1_EtaJESUp         >= 2.4)      TLep1_EtaJESUp          = 2.39999;
-  if (TLep2_PtJESUp          >= 150)      TLep2_PtJESUp           = 149.999;
-  if (TLep2_EJESUp           >= 250)      TLep2_EJESUp            = 249.999;
-  if (TLep2_EtaJESUp         >= 2.4)      TLep2_EtaJESUp          = 2.39999;
-  if (TJet1_PtJESUp          >= 300)      TJet1_PtJESUp           = 299.999;
-  if (TJet1_EJESUp           >= 400)      TJet1_EJESUp            = 399.999;
-  if (TJet1_EtaJESUp         >= 2.4)      TJet1_EtaJESUp          = 2.39999;
-  if (TJet2_PtJESUp          >= 300)      TJet2_PtJESUp           = 299.999;
-  if (TJet2_EJESUp           >= 400)      TJet2_EJESUp            = 399.999;
-  if (TJet2_EtaJESUp         >= 2.4)      TJet2_EtaJESUp          = 2.39999;
-  if (TLep1Lep2_PtJESUp      >= 200)      TLep1Lep2_PtJESUp       = 199.999;
-  if (TLep1Lep2_MJESUp       >= 300)      TLep1Lep2_MJESUp        = 299.999;
+  if (TLep1_PtJESUp          >= 300)      TLep1_PtJESUp           = 299.99;
+  if (TLep1_EJESUp           >= 350)      TLep1_EJESUp            = 349.99;
+  if (TLep1_EtaJESUp         >= 2.4)      TLep1_EtaJESUp          = 2.39;
+  if (TLep2_PtJESUp          >= 150)      TLep2_PtJESUp           = 149.99;
+  if (TLep2_EJESUp           >= 250)      TLep2_EJESUp            = 249.99;
+  if (TLep2_EtaJESUp         >= 2.4)      TLep2_EtaJESUp          = 2.39;
+  if (TJet1_PtJESUp          >= 300)      TJet1_PtJESUp           = 299.99;
+  if (TJet1_EJESUp           >= 400)      TJet1_EJESUp            = 399.99;
+  if (TJet1_EtaJESUp         >= 2.4)      TJet1_EtaJESUp          = 2.39;
+  if (TJet2_PtJESUp          >= 300)      TJet2_PtJESUp           = 299.99;
+  if (TJet2_EJESUp           >= 400)      TJet2_EJESUp            = 399.99;
+  if (TJet2_EtaJESUp         >= 2.4)      TJet2_EtaJESUp          = 2.39;
+  if (TLep1Lep2_PtJESUp      >= 200)      TLep1Lep2_PtJESUp       = 199.99;
+  if (TLep1Lep2_MJESUp       >= 300)      TLep1Lep2_MJESUp        = 299.99;
   if (TLep1Lep2_DPhiJESUp    >= TMath::Pi()) TLep1Lep2_DPhiJESUp  = 3.14;
-  if (TLep1Jet1_MJESUp       >= 400)      TLep1Jet1_MJESUp        = 399.999;
+  if (TLep1Jet1_MJESUp       >= 400)      TLep1Jet1_MJESUp        = 399.99;
   if (TLep1Jet1_DPhiJESUp    >= TMath::Pi()) TLep1Jet1_DPhiJESUp  = 3.14;
-  if (TLep1Jet2_MJESUp       >= 400)      TLep1Jet2_MJESUp        = 399.999;
+  if (TLep1Jet2_MJESUp       >= 400)      TLep1Jet2_MJESUp        = 399.99;
   if (TLep1Jet2_DPhiJESUp    >= TMath::Pi()) TLep1Jet2_DPhiJESUp  = 3.14;
-  if (TLep2Jet1_MJESUp       >= 300)      TLep2Jet1_MJESUp        = 299.999;
+  if (TLep2Jet1_MJESUp       >= 300)      TLep2Jet1_MJESUp        = 299.99;
   if (TLep2Jet1_DPhiJESUp    >= TMath::Pi()) TLep2Jet1_DPhiJESUp  = 3.14;
-  if (TLep2Jet2_MJESUp       >= 300)      TLep2Jet2_MJESUp        = 299.999;
+  if (TLep2Jet2_MJESUp       >= 300)      TLep2Jet2_MJESUp        = 299.99;
   if (TLep2Jet2_DPhiJESUp    >= TMath::Pi()) TLep2Jet2_DPhiJESUp  = 3.14;
-  if (Sys_PtJESUp            >= 700)      Sys_PtJESUp             = 699.999;
-  if (Sys_EJESUp             >= 700)      Sys_EJESUp              = 699.999;
-  if (Sys_EtaJESUp           >= 2.4)      Sys_EtaJESUp            = 2.39999;
-  if (Sys_MJESUp             >= 700)      Sys_MJESUp              = 699.999;
-  if (Sys_PzJESUp            >= 450)      Sys_PzJESUp             = 449.999;
-  if (TMiniMaxJESUp          >= 420)      TMiniMaxJESUp           = 419.999;
-  if (THTJESUp               >= 600)      THTJESUp                = 599.999;
-  if (TMETJESUp              >= 200)      TMETJESUp               = 199.999;
+  if (Sys_PtJESUp            >= 700)      Sys_PtJESUp             = 699.99;
+  if (Sys_EJESUp             >= 700)      Sys_EJESUp              = 699.99;
+  if (Sys_EtaJESUp           >= 2.4)      Sys_EtaJESUp            = 2.39;
+  if (Sys_MJESUp             >= 700)      Sys_MJESUp              = 699.99;
+  if (Sys_PzJESUp            >= 450)      Sys_PzJESUp             = 449.99;
+  if (TMiniMaxJESUp          >= 420)      TMiniMaxJESUp           = 419.99;
+  if (THTJESUp               >= 600)      THTJESUp                = 599.99;
+  if (TMETJESUp              >= 200)      TMETJESUp               = 199.99;
   
   if (TLep1_PtJESUp          < 0)          TLep1_PtJESUp          = 0;
   if (TLep1_EJESUp           < 0)          TLep1_EJESUp           = 0;
-  if (TLep1_EtaJESUp         <= -2.4)      TLep1_EtaJESUp         = -2.39999;
+  if (TLep1_EtaJESUp         <= -2.4)      TLep1_EtaJESUp         = -2.39;
   if (TLep2_PtJESUp          < 0)          TLep2_PtJESUp          = 0;
   if (TLep2_EJESUp           < 0)          TLep2_EJESUp           = 0;
-  if (TLep2_EtaJESUp         <= -2.4)      TLep2_EtaJESUp         = -2.39999;
+  if (TLep2_EtaJESUp         <= -2.4)      TLep2_EtaJESUp         = -2.39;
   if (TJet1_PtJESUp          < 0)          TJet1_PtJESUp          = 0;
   if (TJet1_EJESUp           < 0)          TJet1_EJESUp           = 0;
-  if (TJet1_EtaJESUp         <= -2.4)      TJet1_EtaJESUp         = -2.39999;
+  if (TJet1_EtaJESUp         <= -2.4)      TJet1_EtaJESUp         = -2.39;
   if (TJet2_PtJESUp          < 0)          TJet2_PtJESUp          = 0;
   if (TJet2_EJESUp           < 0)          TJet2_EJESUp           = 0;
-  if (TJet2_EtaJESUp         <= -2.4)      TJet2_EtaJESUp         = -2.39999;
+  if (TJet2_EtaJESUp         <= -2.4)      TJet2_EtaJESUp         = -2.39;
   if (TLep1Lep2_PtJESUp      < 0)          TLep1Lep2_PtJESUp      = 0;
   if (TLep1Lep2_MJESUp       < 0)          TLep1Lep2_MJESUp       = 0;
   if (TLep1Lep2_DPhiJESUp    <= -TMath::Pi()) TLep1Lep2_DPhiJESUp = -3.14;
@@ -1235,58 +1236,58 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
   if (TLep2Jet2_DPhiJESUp    <= -TMath::Pi()) TLep2Jet2_DPhiJESUp = -3.14;
   if (Sys_PtJESUp            < 0)          Sys_PtJESUp            = 0;
   if (Sys_EJESUp             < 0)          Sys_EJESUp             = 0;
-  if (Sys_EtaJESUp           <= -2.4)      Sys_EtaJESUp           = -2.39999;
+  if (Sys_EtaJESUp           <= -2.4)      Sys_EtaJESUp           = -2.39;
   if (Sys_MJESUp             < 0)          Sys_MJESUp             = 0;
-  if (Sys_PzJESUp            <= -450)      Sys_PzJESUp            = -449.999;
+  if (Sys_PzJESUp            <= -450)      Sys_PzJESUp            = -449.99;
   if (TMiniMaxJESUp          < 0)          TMiniMaxJESUp          = 0;
   if (THTJESUp               < 0)          THTJESUp               = 0;
   if (TMETJESUp              < 0)          TMETJESUp              = 0;
   
   
-  if (TLep1_PtJESDown        >= 300)       TLep1_PtJESDown        = 299.999;
-  if (TLep1_EJESDown         >= 350)       TLep1_EJESDown         = 349.999;
-  if (TLep1_EtaJESDown       >= 2.4)       TLep1_EtaJESDown       = 2.39999;
-  if (TLep2_PtJESDown        >= 150)       TLep2_PtJESDown        = 149.999;
-  if (TLep2_EJESDown         >= 250)       TLep2_EJESDown         = 249.999;
-  if (TLep2_EtaJESDown       >= 2.4)       TLep2_EtaJESDown       = 2.39999;
-  if (TJet1_PtJESDown        >= 300)       TJet1_PtJESDown        = 299.999;
-  if (TJet1_EJESDown         >= 400)       TJet1_EJESDown         = 399.999;
-  if (TJet1_EtaJESDown       >= 2.4)       TJet1_EtaJESDown       = 2.39999;
-  if (TJet2_PtJESDown        >= 300)       TJet2_PtJESDown        = 299.999;
-  if (TJet2_EJESDown         >= 400)       TJet2_EJESDown         = 399.999;
-  if (TJet2_EtaJESDown       >= 2.4)       TJet2_EtaJESDown       = 2.39999;
-  if (TLep1Lep2_PtJESDown    >= 200)       TLep1Lep2_PtJESDown    = 199.999;
-  if (TLep1Lep2_MJESDown     >= 300)       TLep1Lep2_MJESDown     = 299.999;
+  if (TLep1_PtJESDown        >= 300)       TLep1_PtJESDown        = 299.99;
+  if (TLep1_EJESDown         >= 350)       TLep1_EJESDown         = 349.99;
+  if (TLep1_EtaJESDown       >= 2.4)       TLep1_EtaJESDown       = 2.39;
+  if (TLep2_PtJESDown        >= 150)       TLep2_PtJESDown        = 149.99;
+  if (TLep2_EJESDown         >= 250)       TLep2_EJESDown         = 249.99;
+  if (TLep2_EtaJESDown       >= 2.4)       TLep2_EtaJESDown       = 2.39;
+  if (TJet1_PtJESDown        >= 300)       TJet1_PtJESDown        = 299.99;
+  if (TJet1_EJESDown         >= 400)       TJet1_EJESDown         = 399.99;
+  if (TJet1_EtaJESDown       >= 2.4)       TJet1_EtaJESDown       = 2.39;
+  if (TJet2_PtJESDown        >= 300)       TJet2_PtJESDown        = 299.99;
+  if (TJet2_EJESDown         >= 400)       TJet2_EJESDown         = 399.99;
+  if (TJet2_EtaJESDown       >= 2.4)       TJet2_EtaJESDown       = 2.39;
+  if (TLep1Lep2_PtJESDown    >= 200)       TLep1Lep2_PtJESDown    = 199.99;
+  if (TLep1Lep2_MJESDown     >= 300)       TLep1Lep2_MJESDown     = 299.99;
   if (TLep1Lep2_DPhiJESDown  >= TMath::Pi()) TLep1Lep2_DPhiJESDown= 3.14;
-  if (TLep1Jet1_MJESDown     >= 400)       TLep1Jet1_MJESDown     = 399.999;
+  if (TLep1Jet1_MJESDown     >= 400)       TLep1Jet1_MJESDown     = 399.99;
   if (TLep1Jet1_DPhiJESDown  >= TMath::Pi()) TLep1Jet1_DPhiJESDown= 3.14;
-  if (TLep1Jet2_MJESDown     >= 400)       TLep1Jet2_MJESDown     = 399.999;
+  if (TLep1Jet2_MJESDown     >= 400)       TLep1Jet2_MJESDown     = 399.99;
   if (TLep1Jet2_DPhiJESDown  >= TMath::Pi()) TLep1Jet2_DPhiJESDown= 3.14;
-  if (TLep2Jet1_MJESDown     >= 300)       TLep2Jet1_MJESDown     = 299.999;
+  if (TLep2Jet1_MJESDown     >= 300)       TLep2Jet1_MJESDown     = 299.99;
   if (TLep2Jet1_DPhiJESDown  >= TMath::Pi()) TLep2Jet1_DPhiJESDown= 3.14;
-  if (TLep2Jet2_MJESDown     >= 300)       TLep2Jet2_MJESDown     = 299.999;
+  if (TLep2Jet2_MJESDown     >= 300)       TLep2Jet2_MJESDown     = 299.99;
   if (TLep2Jet2_DPhiJESDown  >= TMath::Pi()) TLep2Jet2_DPhiJESDown= 3.14;
-  if (Sys_PtJESDown          >= 700)       Sys_PtJESDown          = 699.999;
-  if (Sys_EJESDown           >= 700)       Sys_EJESDown           = 699.999;
-  if (Sys_EtaJESDown         >= 2.4)       Sys_EtaJESDown         = 2.39999;
-  if (Sys_MJESDown           >= 700)       Sys_MJESDown           = 699.999;
-  if (Sys_PzJESDown          >= 450)       Sys_PzJESDown          = 449.999;
-  if (TMiniMaxJESDown        >= 420)       TMiniMaxJESDown        = 419.999;
-  if (THTJESDown             >= 600)       THTJESDown             = 599.999;
-  if (TMETJESDown            >= 200)       TMETJESDown            = 199.999;
+  if (Sys_PtJESDown          >= 700)       Sys_PtJESDown          = 699.99;
+  if (Sys_EJESDown           >= 700)       Sys_EJESDown           = 699.99;
+  if (Sys_EtaJESDown         >= 2.4)       Sys_EtaJESDown         = 2.39;
+  if (Sys_MJESDown           >= 700)       Sys_MJESDown           = 699.99;
+  if (Sys_PzJESDown          >= 450)       Sys_PzJESDown          = 449.99;
+  if (TMiniMaxJESDown        >= 420)       TMiniMaxJESDown        = 419.99;
+  if (THTJESDown             >= 600)       THTJESDown             = 599.99;
+  if (TMETJESDown            >= 200)       TMETJESDown            = 199.99;
   
   if (TLep1_PtJESDown        < 0)          TLep1_PtJESDown        = 0;
   if (TLep1_EJESDown         < 0)          TLep1_EJESDown         = 0;
-  if (TLep1_EtaJESDown       <= -2.4)      TLep1_EtaJESDown       = -2.39999;
+  if (TLep1_EtaJESDown       <= -2.4)      TLep1_EtaJESDown       = -2.39;
   if (TLep2_PtJESDown        < 0)          TLep2_PtJESDown        = 0;
   if (TLep2_EJESDown         < 0)          TLep2_EJESDown         = 0;
-  if (TLep2_EtaJESDown       <= -2.4)      TLep2_EtaJESDown       = -2.39999;
+  if (TLep2_EtaJESDown       <= -2.4)      TLep2_EtaJESDown       = -2.39;
   if (TJet1_PtJESDown        < 0)          TJet1_PtJESDown        = 0;
   if (TJet1_EJESDown         < 0)          TJet1_EJESDown         = 0;
-  if (TJet1_EtaJESDown       <= -2.4)      TJet1_EtaJESDown       = -2.39999;
+  if (TJet1_EtaJESDown       <= -2.4)      TJet1_EtaJESDown       = -2.39;
   if (TJet2_PtJESDown        < 0)          TJet2_PtJESDown        = 0;
   if (TJet2_EJESDown         < 0)          TJet2_EJESDown         = 0;
-  if (TJet2_EtaJESDown       <= -2.4)      TJet2_EtaJESDown       = -2.39999;
+  if (TJet2_EtaJESDown       <= -2.4)      TJet2_EtaJESDown       = -2.39;
   if (TLep1Lep2_PtJESDown    < 0)          TLep1Lep2_PtJESDown    = 0;
   if (TLep1Lep2_MJESDown     < 0)          TLep1Lep2_MJESDown     = 0;
   if (TLep1Lep2_DPhiJESDown  <= -TMath::Pi()) TLep1Lep2_DPhiJESDown = -3.14;
@@ -1300,57 +1301,57 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
   if (TLep2Jet2_DPhiJESDown  <= -TMath::Pi()) TLep2Jet2_DPhiJESDown = -3.14;
   if (Sys_PtJESDown          < 0)          Sys_PtJESDown         = 0;
   if (Sys_EJESDown           < 0)          Sys_EJESDown          = 0;
-  if (Sys_EtaJESDown         <= -2.4)      Sys_EtaJESDown        = -2.39999;
+  if (Sys_EtaJESDown         <= -2.4)      Sys_EtaJESDown        = -2.39;
   if (Sys_MJESDown           < 0)          Sys_MJESDown          = 0;
-  if (Sys_PzJESDown          <= -450)      Sys_PzJESDown         = -449.999;
+  if (Sys_PzJESDown          <= -450)      Sys_PzJESDown         = -449.99;
   if (TMiniMaxJESDown        < 0)          TMiniMaxJESDown       = 0;
   if (THTJESDown             < 0)          THTJESDown            = 0;
   if (TMETJESDown            < 0)          TMETJESDown           = 0;
   
-  if (TLep1_PtJERUp          >= 300)       TLep1_PtJERUp         = 299.999;
-  if (TLep1_EJERUp           >= 350)       TLep1_EJERUp          = 349.999;
-  if (TLep1_EtaJERUp         >= 2.4)       TLep1_EtaJERUp        = 2.39999;
-  if (TLep2_PtJERUp          >= 150)       TLep2_PtJERUp         = 149.999;
-  if (TLep2_EJERUp           >= 250)       TLep2_EJERUp          = 249.999;
-  if (TLep2_EtaJERUp         >= 2.4)       TLep2_EtaJERUp        = 2.39999;
-  if (TJet1_PtJERUp          >= 300)       TJet1_PtJERUp         = 299.999;
-  if (TJet1_EJERUp           >= 400)       TJet1_EJERUp          = 399.999;
-  if (TJet1_EtaJERUp         >= 2.4)       TJet1_EtaJERUp        = 2.39999;
-  if (TJet2_PtJERUp          >= 300)       TJet2_PtJERUp         = 299.999;
-  if (TJet2_EJERUp           >= 400)       TJet2_EJERUp          = 399.999;
-  if (TJet2_EtaJERUp         >= 2.4)       TJet2_EtaJERUp        = 2.39999;
-  if (TLep1Lep2_PtJERUp      >= 200)       TLep1Lep2_PtJERUp     = 199.999;
-  if (TLep1Lep2_MJERUp       >= 300)       TLep1Lep2_MJERUp      = 299.999;
+  if (TLep1_PtJERUp          >= 300)       TLep1_PtJERUp         = 299.99;
+  if (TLep1_EJERUp           >= 350)       TLep1_EJERUp          = 349.99;
+  if (TLep1_EtaJERUp         >= 2.4)       TLep1_EtaJERUp        = 2.39;
+  if (TLep2_PtJERUp          >= 150)       TLep2_PtJERUp         = 149.99;
+  if (TLep2_EJERUp           >= 250)       TLep2_EJERUp          = 249.99;
+  if (TLep2_EtaJERUp         >= 2.4)       TLep2_EtaJERUp        = 2.39;
+  if (TJet1_PtJERUp          >= 300)       TJet1_PtJERUp         = 299.99;
+  if (TJet1_EJERUp           >= 400)       TJet1_EJERUp          = 399.99;
+  if (TJet1_EtaJERUp         >= 2.4)       TJet1_EtaJERUp        = 2.39;
+  if (TJet2_PtJERUp          >= 300)       TJet2_PtJERUp         = 299.99;
+  if (TJet2_EJERUp           >= 400)       TJet2_EJERUp          = 399.99;
+  if (TJet2_EtaJERUp         >= 2.4)       TJet2_EtaJERUp        = 2.39;
+  if (TLep1Lep2_PtJERUp      >= 200)       TLep1Lep2_PtJERUp     = 199.99;
+  if (TLep1Lep2_MJERUp       >= 300)       TLep1Lep2_MJERUp      = 299.99;
   if (TLep1Lep2_DPhiJERUp    >= TMath::Pi()) TLep1Lep2_DPhiJERUp = 3.14;
-  if (TLep1Jet1_MJERUp       >= 400)       TLep1Jet1_MJERUp      = 399.999;
+  if (TLep1Jet1_MJERUp       >= 400)       TLep1Jet1_MJERUp      = 399.99;
   if (TLep1Jet1_DPhiJERUp    >= TMath::Pi()) TLep1Jet1_DPhiJERUp = 3.14;
-  if (TLep1Jet2_MJERUp       >= 400)       TLep1Jet2_MJERUp      = 399.999;
+  if (TLep1Jet2_MJERUp       >= 400)       TLep1Jet2_MJERUp      = 399.99;
   if (TLep1Jet2_DPhiJERUp    >= TMath::Pi()) TLep1Jet2_DPhiJERUp = 3.14;
-  if (TLep2Jet1_MJERUp       >= 300)       TLep2Jet1_MJERUp      = 299.999;
+  if (TLep2Jet1_MJERUp       >= 300)       TLep2Jet1_MJERUp      = 299.99;
   if (TLep2Jet1_DPhiJERUp    >= TMath::Pi()) TLep2Jet1_DPhiJERUp = 3.14;
-  if (TLep2Jet2_MJERUp       >= 300)       TLep2Jet2_MJERUp      = 299.999;
+  if (TLep2Jet2_MJERUp       >= 300)       TLep2Jet2_MJERUp      = 299.99;
   if (TLep2Jet2_DPhiJERUp    >= TMath::Pi()) TLep2Jet2_DPhiJERUp = 3.14;
-  if (Sys_PtJERUp            >= 700)       Sys_PtJERUp           = 699.999;
-  if (Sys_EJERUp             >= 700)       Sys_EJERUp            = 699.999;
-  if (Sys_EtaJERUp           >= 2.4)       Sys_EtaJERUp          = 2.39999;
-  if (Sys_MJERUp             >= 700)       Sys_MJERUp            = 699.999;
-  if (Sys_PzJERUp            >= 450)       Sys_PzJERUp           = 449.999;
-  if (TMiniMaxJERUp          >= 420)       TMiniMaxJERUp         = 419.999;
-  if (THTJERUp               >= 600)       THTJERUp              = 599.999;
-  if (TMETJERUp              >= 200)       TMETJERUp             = 199.999;
+  if (Sys_PtJERUp            >= 700)       Sys_PtJERUp           = 699.99;
+  if (Sys_EJERUp             >= 700)       Sys_EJERUp            = 699.99;
+  if (Sys_EtaJERUp           >= 2.4)       Sys_EtaJERUp          = 2.39;
+  if (Sys_MJERUp             >= 700)       Sys_MJERUp            = 699.99;
+  if (Sys_PzJERUp            >= 450)       Sys_PzJERUp           = 449.99;
+  if (TMiniMaxJERUp          >= 420)       TMiniMaxJERUp         = 419.99;
+  if (THTJERUp               >= 600)       THTJERUp              = 599.99;
+  if (TMETJERUp              >= 200)       TMETJERUp             = 199.99;
   
   if (TLep1_PtJERUp          < 0)          TLep1_PtJERUp         = 0;
   if (TLep1_EJERUp           < 0)          TLep1_EJERUp          = 0;
-  if (TLep1_EtaJERUp         <= -2.4)      TLep1_EtaJERUp        = -2.39999;
+  if (TLep1_EtaJERUp         <= -2.4)      TLep1_EtaJERUp        = -2.39;
   if (TLep2_PtJERUp          < 0)          TLep2_PtJERUp         = 0;
   if (TLep2_EJERUp           < 0)          TLep2_EJERUp          = 0;
-  if (TLep2_EtaJERUp         <= -2.4)      TLep2_EtaJERUp        = -2.39999;
+  if (TLep2_EtaJERUp         <= -2.4)      TLep2_EtaJERUp        = -2.39;
   if (TJet1_PtJERUp          < 0)          TJet1_PtJERUp         = 0;
   if (TJet1_EJERUp           < 0)          TJet1_EJERUp          = 0;
-  if (TJet1_EtaJERUp         <= -2.4)      TJet1_EtaJERUp        = -2.39999;
+  if (TJet1_EtaJERUp         <= -2.4)      TJet1_EtaJERUp        = -2.39;
   if (TJet2_PtJERUp          < 0)          TJet2_PtJERUp         = 0;
   if (TJet2_EJERUp           < 0)          TJet2_EJERUp          = 0;
-  if (TJet2_EtaJERUp         <= -2.4)      TJet2_EtaJERUp        = -2.39999;
+  if (TJet2_EtaJERUp         <= -2.4)      TJet2_EtaJERUp        = -2.39;
   if (TLep1Lep2_PtJERUp      < 0)          TLep1Lep2_PtJERUp     = 0;
   if (TLep1Lep2_MJERUp       < 0)          TLep1Lep2_MJERUp      = 0;
   if (TLep1Lep2_DPhiJERUp    <= -TMath::Pi()) TLep1Lep2_DPhiJERUp = -3.14;
@@ -1364,58 +1365,58 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
   if (TLep2Jet2_DPhiJERUp    <= -TMath::Pi()) TLep2Jet2_DPhiJERUp = -3.14;
   if (Sys_PtJERUp            < 0)          Sys_PtJERUp           = 0;
   if (Sys_EJERUp             < 0)          Sys_EJERUp            = 0;
-  if (Sys_EtaJERUp           <= -2.4)      Sys_EtaJERUp          = -2.39999;
+  if (Sys_EtaJERUp           <= -2.4)      Sys_EtaJERUp          = -2.39;
   if (Sys_MJERUp             < 0)          Sys_MJERUp            = 0;
-  if (Sys_PzJERUp            <= -450)      Sys_PzJERUp           = -449.999;
+  if (Sys_PzJERUp            <= -450)      Sys_PzJERUp           = -449.99;
   if (TMiniMaxJERUp          < 0)          TMiniMaxJERUp         = 0;
   if (THTJERUp               < 0)          THTJERUp              = 0;
   if (TMETJERUp              < 0)          TMETJERUp             = 0;
   
   // Particle level variables
-  if (TDressLep1_Pt               >= 300)         TDressLep1_Pt             = 299.999;
-  if (TDressLep1_E                >= 350)         TDressLep1_E              = 349.999;
-  if (TDressLep1_Eta              >= 2.4)         TDressLep1_Eta            = 2.39999;
-  if (TDressLep2_Pt               >= 150)         TDressLep2_Pt             = 149.999;
-  if (TDressLep2_E                >= 250)         TDressLep2_E              = 249.999;
-  if (TDressLep2_Eta              >= 2.4)         TDressLep2_Eta            = 2.39999;
-  if (TDressJet1_Pt               >= 300)         TDressJet1_Pt             = 299.999;
-  if (TDressJet1_E                >= 400)         TDressJet1_E              = 399.999;
-  if (TDressJet1_Eta              >= 2.4)         TDressJet1_Eta            = 2.39999;
-  if (TDressJet2_Pt               >= 300)         TDressJet2_Pt             = 299.999;
-  if (TDressJet2_E                >= 400)         TDressJet2_E              = 399.999;
-  if (TDressJet2_Eta              >= 2.4)         TDressJet2_Eta            = 2.39999;
-  if (TDressLep1Lep2_Pt           >= 200)         TDressLep1Lep2_Pt         = 199.999;
-  if (TDressLep1Lep2_M            >= 300)         TDressLep1Lep2_M          = 299.999;
+  if (TDressLep1_Pt               >= 300)         TDressLep1_Pt             = 299.99;
+  if (TDressLep1_E                >= 350)         TDressLep1_E              = 349.99;
+  if (TDressLep1_Eta              >= 2.4)         TDressLep1_Eta            = 2.39;
+  if (TDressLep2_Pt               >= 150)         TDressLep2_Pt             = 149.99;
+  if (TDressLep2_E                >= 250)         TDressLep2_E              = 249.99;
+  if (TDressLep2_Eta              >= 2.4)         TDressLep2_Eta            = 2.39;
+  if (TDressJet1_Pt               >= 300)         TDressJet1_Pt             = 299.99;
+  if (TDressJet1_E                >= 400)         TDressJet1_E              = 399.99;
+  if (TDressJet1_Eta              >= 2.4)         TDressJet1_Eta            = 2.39;
+  if (TDressJet2_Pt               >= 300)         TDressJet2_Pt             = 299.99;
+  if (TDressJet2_E                >= 400)         TDressJet2_E              = 399.99;
+  if (TDressJet2_Eta              >= 2.4)         TDressJet2_Eta            = 2.39;
+  if (TDressLep1Lep2_Pt           >= 200)         TDressLep1Lep2_Pt         = 199.99;
+  if (TDressLep1Lep2_M            >= 300)         TDressLep1Lep2_M          = 299.99;
   if (TDressLep1Lep2_DPhi         >= TMath::Pi()) TDressLep1Lep2_DPhi       = 3.14;
-  if (TDressLep1Jet1_M            >= 400)         TDressLep1Jet1_M          = 399.999;
+  if (TDressLep1Jet1_M            >= 400)         TDressLep1Jet1_M          = 399.99;
   if (TDressLep1Jet1_DPhi         >= TMath::Pi()) TDressLep1Jet1_DPhi       = 3.14;
-  if (TDressLep1Jet2_M            >= 400)         TDressLep1Jet2_M          = 399.999;
+  if (TDressLep1Jet2_M            >= 400)         TDressLep1Jet2_M          = 399.99;
   if (TDressLep1Jet2_DPhi         >= TMath::Pi()) TDressLep1Jet2_DPhi       = 3.14;
-  if (TDressLep2Jet1_M            >= 300)         TDressLep2Jet1_M          = 299.999;
+  if (TDressLep2Jet1_M            >= 300)         TDressLep2Jet1_M          = 299.99;
   if (TDressLep2Jet1_DPhi         >= TMath::Pi()) TDressLep2Jet1_DPhi       = 3.14;
-  if (TDressLep2Jet2_M            >= 300)         TDressLep2Jet2_M          = 299.999;
+  if (TDressLep2Jet2_M            >= 300)         TDressLep2Jet2_M          = 299.99;
   if (TDressLep2Jet2_DPhi         >= TMath::Pi()) TDressLep2Jet2_DPhi       = 3.14;
-  if (DressSys_Pt                 >= 700)         DressSys_Pt               = 699.999;
-  if (DressSys_E                  >= 700)         DressSys_E                = 699.999;
-  if (DressSys_Eta                >= 2.4)         DressSys_Eta              = 2.39999;
-  if (DressSys_M                  >= 700)         DressSys_M                = 699.999;
-  if (DressSys_Pz                 >= 450)         DressSys_Pz               = 449.999;
-  if (TDressMiniMax               >= 420)         TDressMiniMax             = 419.999;
-  if (TDressHT                    >= 600)         TDressHT                  = 599.999;
-  if (TDressMET                   >= 200)         TDressMET                 = 199.999;
+  if (DressSys_Pt                 >= 700)         DressSys_Pt               = 699.99;
+  if (DressSys_E                  >= 700)         DressSys_E                = 699.99;
+  if (DressSys_Eta                >= 2.4)         DressSys_Eta              = 2.39;
+  if (DressSys_M                  >= 700)         DressSys_M                = 699.99;
+  if (DressSys_Pz                 >= 450)         DressSys_Pz               = 449.99;
+  if (TDressMiniMax               >= 420)         TDressMiniMax             = 419.99;
+  if (TDressHT                    >= 600)         TDressHT                  = 599.99;
+  if (TDressMET                   >= 200)         TDressMET                 = 199.99;
   
   if (TDressLep1_Pt               < 0)         TDressLep1_Pt                = 0;
   if (TDressLep1_E                < 0)         TDressLep1_E                 = 0;
-  if (TDressLep1_Eta              <= -2.4)     TDressLep1_Eta               = -2.39999;
+  if (TDressLep1_Eta              <= -2.4)     TDressLep1_Eta               = -2.39;
   if (TDressLep2_Pt               < 0)         TDressLep2_Pt                = 0;
   if (TDressLep2_E                < 0)         TDressLep2_E                 = 0;
-  if (TDressLep2_Eta              <= -2.4)     TDressLep2_Eta               = -2.39999;
+  if (TDressLep2_Eta              <= -2.4)     TDressLep2_Eta               = -2.39;
   if (TDressJet1_Pt               < 0)         TDressJet1_Pt                = 0;
   if (TDressJet1_E                < 0)         TDressJet1_E                 = 0;
-  if (TDressJet1_Eta              <= -2.4)     TDressJet1_Eta               = -2.39999;
+  if (TDressJet1_Eta              <= -2.4)     TDressJet1_Eta               = -2.39;
   if (TDressJet2_Pt               < 0)         TDressJet2_Pt                = 0;
   if (TDressJet2_E                < 0)         TDressJet2_E                 = 0;
-  if (TDressJet2_Eta              <= -2.4)     TDressJet2_Eta               = -2.39999;
+  if (TDressJet2_Eta              <= -2.4)     TDressJet2_Eta               = -2.39;
   if (TDressLep1Lep2_Pt           < 0)         TDressLep1Lep2_Pt            = 0;
   if (TDressLep1Lep2_M            < 0)         TDressLep1Lep2_M             = 0;
   if (TDressLep1Lep2_DPhi         <= -TMath::Pi()) TDressLep1Lep2_DPhi      = -3.14;
@@ -1429,9 +1430,9 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
   if (TDressLep2Jet2_DPhi         <= -TMath::Pi()) TDressLep2Jet2_DPhi      = -3.14;
   if (DressSys_Pt                 < 0)         DressSys_Pt                  = 0;
   if (DressSys_E                  < 0)         DressSys_E                   = 0;
-  if (DressSys_Eta                <= -2.4)     DressSys_Eta                 = -2.39999;
+  if (DressSys_Eta                <= -2.4)     DressSys_Eta                 = -2.39;
   if (DressSys_M                  < 0)         DressSys_M                   = 0;
-  if (DressSys_Pz                 <= -450)     DressSys_Pz                  = -449.999;
+  if (DressSys_Pz                 <= -450)     DressSys_Pz                  = -449.99;
   if (TDressMiniMax               < 0)         TDressMiniMax                = 0;
   if (TDressHT                    < 0)         TDressHT                     = 0;
   if (TDressMET                   < 0)         TDressMET                    = 0;

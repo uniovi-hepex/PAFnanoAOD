@@ -156,21 +156,21 @@ class TWTTbarAnalysis : public PAFChainItemSelector{
 
     UShort_t TNJets, TNJetsJESUp, TNJetsJESDown, TNJetsJERUp;
 
-    Float_t ElecSF, MuonSF, ElecSFUp, ElecSFDo, MuonSFUp, MuonSFDo, lepSF;
-    Float_t TrigSF, TrigSFerr;
-    Float_t PUSF, PUSF_Up, PUSF_Down;
-    Float_t BtagSF;
-    Float_t BtagSFBtagUp, BtagSFBtagDown;
-    Float_t BtagSFMistagUp, BtagSFMistagDown;
-    Float_t TWeight, TWeight_normal;
-    Float_t TWeight_LepEffUp, TWeight_LepEffDown;
-    Float_t TWeight_ElecEffUp, TWeight_ElecEffDown;
-    Float_t TWeight_MuonEffUp, TWeight_MuonEffDown;
-    Float_t TWeight_TrigUp, TWeight_TrigDown;
-    Float_t TWeight_FSUp, TWeight_FSDown;
-    Float_t TWeight_PUDown, TWeight_PUUp;
-    Float_t TWeight_MistagUp, TWeight_MistagDown;
-    Float_t TWeight_BtagUp, TWeight_BtagDown;
+    Double_t ElecSF, MuonSF, ElecSFUp, ElecSFDo, MuonSFUp, MuonSFDo, lepSF;
+    Double_t TrigSF, TrigSFerr;
+    Double_t PUSF, PUSF_Up, PUSF_Down;
+    Double_t BtagSF;
+    Double_t BtagSFBtagUp, BtagSFBtagDown;
+    Double_t BtagSFMistagUp, BtagSFMistagDown;
+    Double_t TWeight, TWeight_normal;
+    Double_t TWeight_LepEffUp, TWeight_LepEffDown;
+    Double_t TWeight_ElecEffUp, TWeight_ElecEffDown;
+    Double_t TWeight_MuonEffUp, TWeight_MuonEffDown;
+    Double_t TWeight_TrigUp, TWeight_TrigDown;
+    Double_t TWeight_FSUp, TWeight_FSDown;
+    Double_t TWeight_PUDown, TWeight_PUUp;
+    Double_t TWeight_MistagUp, TWeight_MistagDown;
+    Double_t TWeight_BtagUp, TWeight_BtagDown;
     
   protected:
     // Parameters
@@ -183,7 +183,7 @@ class TWTTbarAnalysis : public PAFChainItemSelector{
     Bool_t   gPUWeight;
     Bool_t   passMETfilters;
     Bool_t   passTrigger;
-    Float_t NormWeight;
+    Double_t NormWeight;
     UShort_t year;
     
     ClassDef(TWTTbarAnalysis, 0);
