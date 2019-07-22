@@ -3,8 +3,8 @@
 #
 
 # TODO: copiar tolos plots
-plotspath="/nfs/fanae/user/ireneaj/www/TFG/results/"
-dos="MCData/"
+plotspath="/nfs/fanae/user/vrbouza/www/Proyectos/twttbar_run2/results/"
+mcdatastr="MCData/"
 indstr="index.php"
 cnstr="CondN/"
 covstr="CovMat/"
@@ -21,7 +21,7 @@ if [ "$1" == "p" ]; then
   cp -R results/. $plotspath
   #rsync -avzP results/. $plotspath
   cp $indexpath $plotspath$indstr
-  cp $indexpath $plotspath$dos$indstr
+  cp $indexpath $plotspath$mcdatastr$indstr
   #cp $indexpath $plotspath$covstr$indstr
   #cp $indexpath $plotspath$cnstr$indstr
   echo " "

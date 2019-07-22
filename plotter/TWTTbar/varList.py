@@ -102,8 +102,8 @@ varList['LCurve'] = {
 varList['Names'] = {
     #'Variables'   : ["E_LLB", "LeadingJetE", "MT_LLMETB", "M_LLB", "M_LeadingB", "M_SubLeadingB",
                      #"MET", "MET_Phi", "Jet1_Pt", "LeadingJetEta", "LeadingJetPhi",
-                     #"LeadingLepE", "Lep1_Pt", "LeadingLepPhi", "LeadingLepEta",
-                     #"SubLeadingLepE", "SubLeadingLepPt", "SubLeadingLepPhi", "SubLeadingLepEta",
+                     #"LeadingLepE", "Lep1_Pt", "LeadingLepPhi", "Lep1_Eta",
+                     #"SubLeadingLepE", "SubLeadingLepPt", "SubLeadingLepPhi", "SubLep1_Eta",
                      #"DilepPt", "DilepJetPt", "DilepMETJetPt", "HTtot",
                      #"DilepMETJet1Pz", "LLMETBEta", "MSys", "Mll", "DPhiLL", "DPhiLeadJet", "DPhiSubLeadJet"], # Nuevinas
     #'Variables'   : ["M_LeadingB", "M_SubLeadingB", "Lep1_Pt", "LLMETBEta", "DilepMETJet1Pz", "DPhiLL", "DPhiLeadJet", "DPhiSubLeadJet"], # Nuevinas
@@ -373,11 +373,12 @@ varList['MET_Phiuncertainties'] = {
     'yaxis'       : 'Relative uncertainty (adim.)'
 }
 
+
 varList['Jet1_Pt'] = {
-    'xaxis'       : 'Jet #it{p}_{T} (GeV)',
-    'yaxis'       : 'd#sigma/d(jet #it{p}_{T}) (GeV)',
-    'yaxisfid'    : '(1/#sigma_{fid.})d#sigma/d(jet #it{p}_{T}) (adim.)',
-    'yaxisfidbin' : '(1/#sigma_{fid.})d#sigma/d(jet #it{p}_{T}) (1/GeV)',
+    'xaxis'       : 'Leading jet #it{p}_{T} (GeV)',
+    'yaxis'       : 'd#sigma/d(leading jet #it{p}_{T}) (GeV)',
+    'yaxisfid'    : '(1/#sigma_{fid.})d#sigma/d(leading jet #it{p}_{T}) (adim.)',
+    'yaxisfidbin' : '(1/#sigma_{fid.})d#sigma/d(leading jet #it{p}_{T}) (1/GeV)',
     #'genbinning'  : [0, 75, 200, 300],
     #'recobinning' : [0., 50., 75., 110., 150., 200., 300.],
    #'genbinning'  : [0., 75., 140., 200., 300.],                            # binning presentado en singletop
@@ -429,28 +430,111 @@ varList['Jet1_Ptuncertainties'] = {
     'xaxis'       : varList['Jet1_Pt']['xaxis'],
     'yaxis'       : 'Relative uncertainty (adim.)'
 }
-varList['ResponseLeadingJetPt'] = {
-    'xaxis'       : 'Gen Jet #it{p}_{T} (GeV)',
-    'yaxis'       : 'Jet #it{p}_{T} (GeV)'
+varList['ResponseJet1_Pt'] = {
+    'xaxis'       : 'Gen leading jet #it{p}_{T} (GeV)',
+    'yaxis'       : 'Leading jet #it{p}_{T} (GeV)'
 }
 
-varList['LeadingJetEta'] = {
-    'xaxis'       : '|\\eta|(j)',
+
+varList['Jet2_Pt'] = {
+    'xaxis'       : 'Subleading jet #it{p}_{T} (GeV)',
+    'yaxis'       : 'd#sigma/d(subleading jet #it{p}_{T}) (GeV)',
+    'yaxisfid'    : '(1/#sigma_{fid.})d#sigma/d(subleading jet #it{p}_{T}) (adim.)',
+    'yaxisfidbin' : '(1/#sigma_{fid.})d#sigma/d(subleading jet #it{p}_{T}) (1/GeV)',
+    #'genbinning'  : [0, 75, 200, 300],
+    #'recobinning' : [0., 50., 75., 110., 150., 200., 300.],
+   #'genbinning'  : [0., 75., 140., 200., 300.],                            # binning presentado en singletop
+   #'recobinning' : [0., 60., 80., 105., 120., 140., 170., 210., 300.],
+#    'genbinning'  : [0., 60., 110., 150., 300.],
+#    'recobinning' : [0., 60., 75., 90., 110., 125., 150., 175., 300.],
+    #'genbinning'  : [0., 60., 90., 120., 150.],
+    #'recobinning' : [0., 60., 70., 80, 90., 100., 110., 120., 150.],
+    #'genbinning'  : [30., 60., 90., 120., 150.],                        # usado en drafts, en nota, etc. (4 bins)
+    #'recobinning' : [30., 60., 70., 80, 90., 100., 110., 120., 150.],   # usado en drafts, en nota, etc. (4 bins)
+
+    'genbinning'  : [30, 50, 70, 90, 125, 150], # propuesta (5 bins)
+    'recobinning' : [30, 40, 45, 50, 55, 60, 65, 70, 90, 125, 150], # propuesta (5 bins) SELECCTIONADA
+
+    #'genbinning'  : [30., 40., 50., 70., 90., 125., 150.], # propuesta (6 bins)
+    #'recobinning' : [30., 35., 40., 45., 50., 55., 60., 65., 70., 90., 105., 125., 150.], # propuesta (6 bins)
+
+    #'genbinning'  : [30., 40., 50., 60., 70., 90., 125., 150.], # propuesta (7 bins)
+    #'recobinning' : [30., 35., 37.5,40., 42.5, 45., 50., 55.,  60., 65., 70., 80., 105., 125., 150.], # propuesta (7 bins)
+
+    #'genbinning'  : [30., 50., 60., 70., 80., 90., 105., 125., 150.], # propuesta (8 bins)
+    #'recobinning' : [30., 40., 50., 55., 60., 65., 70., 75., 80., 85., 90., 95., 100., 105., 115., 125., 150.], # propuesta (8 bins)
+
+    #'genbinning'  : [30., 40., 45., 50., 55., 60., 70., 80., 125., 150.], # propuesta (9 bins)
+    #'recobinning' : [30., 37.5, 40.,42.5, 45.,47.5, 50.,52.5,  55., 57.5, 60., 65., 70., 75., 80., 90., 105., 125., 150.], # propuesta (9 bins)
+
+    #'genbinning'  : [30., 40., 45., 50., 55., 60., 70., 80., 90., 125., 150.], # propuesta (10 bins)
+    #'recobinning' : [30., 35.,37.5, 40.,42.5, 45.,47.5, 50.,52.5,  55., 57.5, 60., 65., 70., 75., 80., 85., 90., 105., 125., 150.], # propuesta (10 bins)
+
+    'descbinning' : [10., 150.],
+    'ndescbins'   : 14,
+    'legpos'      : (0.7, 0.55, 0.90, 0.93),
+    'legposdesc'  : (0.7, 0.55, 0.90, 0.93),
+    #"legpos_unf"  : "TC",
+    'var'         : 'min(TJet2_Pt, 149.)',
+    'var_response': 'Jet2_Pt',
+    'var_gen'     : 'min(TDressJet2_Pt, 149.)',
+    'uncleg_fold' : "TL",
+    'uncleg_unf'  : "TL",
+    'uncleg_fid'  : "TL",
+    'uncleg_fidbin':"TL",
+    'legpos_fidbin':"TC",
+    'resptxtsize' : 1.5,
+    'covtxtsizeunf': 2,
+    'covtxtsizefol': 1.25,
+    "covtxtsizefidnorm": 1.8,
+}
+varList['Jet2_Ptuncertainties'] = {
+    'xaxis'       : varList['Jet2_Pt']['xaxis'],
+    'yaxis'       : 'Relative uncertainty (adim.)'
+}
+varList['ResponseJet2_Pt'] = {
+    'xaxis'       : 'Gen subleading jet #it{p}_{T} (GeV)',
+    'yaxis'       : 'Subleading jet #it{p}_{T} (GeV)'
+}
+
+
+varList['Jet1_Eta'] = {
+    'xaxis'       : 'Leading jet |#eta| (adim.)',
     'yaxis'       : 'd#sigma (pb)',
     'genbinning'  : [0., 0.6, 1.2, 1.8, 2.4],
     'recobinning' : [0., 0.3, 0.6, 0.9, 1.2, 1.5, 1.8, 2.1, 2.4],
-    'var'         : 'abs(TLeadingJetEta)',
-    'var_response': 'LeadingJetEta',
-    'var_gen'     : 'abs(TGenLeadingJetEta)',
+    'var'         : 'abs(TJet1_Eta)',
+    'var_response': 'Jet1_Eta',
+    'var_gen'     : 'abs(TDressJet1_Eta)',
 }
-varList['LeadingJetEtauncertainties'] = {
-    'xaxis'       : varList['LeadingJetEta']['xaxis'],
+varList['Jet1_Etauncertainties'] = {
+    'xaxis'       : varList['Jet1_Eta']['xaxis'],
     'yaxis'       : 'Relative uncertainty (adim.)'
 }
-varList['ResponseLeadingJetEta'] = {
-    'xaxis'       : 'Gen Jet \\eta',
-    'yaxis'       : 'Jet \\eta'
+varList['ResponseJet1_Eta'] = {
+    'xaxis'       : 'Dressed leading jet |\\eta| (adim.)',
+    'yaxis'       : 'Leading jet |\\eta| (adim.)'
 }
+
+
+varList['Jet2_Eta'] = {
+    'xaxis'       : 'Subleading jet |#eta| (adim.)',
+    'yaxis'       : 'd#sigma (pb)',
+    'genbinning'  : [0., 0.6, 1.2, 1.8, 2.4],
+    'recobinning' : [0., 0.3, 0.6, 0.9, 1.2, 1.5, 1.8, 2.1, 2.4],
+    'var'         : 'abs(TJet2_Eta)',
+    'var_response': 'Jet2_Eta',
+    'var_gen'     : 'abs(TDressJet2_Eta)',
+}
+varList['Jet2_Etauncertainties'] = {
+    'xaxis'       : varList['Jet2_Eta']['xaxis'],
+    'yaxis'       : 'Relative uncertainty (adim.)'
+}
+varList['ResponseJet2_Eta'] = {
+    'xaxis'       : 'Dressed subleading jet |#eta| (adim.)',
+    'yaxis'       : 'Subleading jet |#eta| (adim.)'
+}
+
 
 varList['LeadingJetPhi'] = {
     'xaxis'       : '\\varphi(j) (GeV)',
@@ -543,6 +627,71 @@ varList['ResponseLeadingLepPt'] = {
     'yaxis'       : 'Leading lep #it{p}_{T} (GeV)'
 }
 
+
+varList['Lep2_Pt'] = {
+    #'xaxis'       : 'p_{T}(\\ell_{2}) (GeV)',
+    'xaxis'       : 'Subleading lepton #it{p}_{T} (GeV)',
+    'yaxis'       : 'd#sigma/d(subleading lepton #it{p}_{T}) (GeV)',
+    'yaxisfid'    : '(1/#sigma_{fid.})d#sigma/d(subleading lepton #it{p}_{T}) (adim.)',
+    'yaxisfidbin' : '(1/#sigma_{fid.})d#sigma/d(subleading lepton #it{p}_{T}) (1/GeV)',
+    #'genbinning'  : [0, 50, 120, 190, 250],
+    #'recobinning' : [0, 50, 65, 85, 97, 110, 145, 180, 250],
+   #'genbinning'  : [0, 50, 120, 160, 250],                            # binning presentado en singletop
+   #'recobinning' : [0, 50, 65, 85, 97, 110, 145, 180, 250],
+#    'genbinning'  : [0., 50., 90., 135., 250.],
+#    'recobinning' : [0., 50., 65., 80., 95., 110., 130., 150., 250.],
+    #'genbinning'  : [0., 50., 90., 135., 250.],
+    #'recobinning' : [0., 50., 60., 75., 90., 105., 115., 135., 250.],
+    #'genbinning'  : [0., 50., 90., 125., 150.],
+    #'recobinning' : [0., 50., 60., 70., 80., 90., 105., 125., 150.], # antes de 15-10-2018
+    #'genbinning'  : [25., 50., 90., 125., 150.],                      # usado en drafts, en nota, etc. (4 bins)
+    #'recobinning' : [25., 50., 60., 70., 80., 90., 105., 125., 150.], # usado en drafts, en nota, etc. (4 bins)
+
+    #'genbinning'  : [25., 45., 65., 90., 125., 150.], # propuesta (5 bins)
+    #'recobinning' : [25., 35., 45., 50.,  55., 60., 65., 75., 90., 125., 150.], # propuesta (5 bins)
+
+    #'genbinning'  : [25., 45., 65., 85., 100., 125., 150.], # propuesta (6 bins)
+    #'recobinning' : [25., 35., 45., 50., 55., 60., 65., 75., 85., 100., 115., 125., 150.], # propuesta (6 bins)
+
+    #'genbinning'  : [25., 45., 55., 65., 85., 100., 125., 150.], # propuesta (7 bins)
+    #'recobinning' : [25., 35., 45., 50., 55.,  60.,  65.,  70., 75., 80., 85., 100., 115., 125., 150.], # propuesta (7 bins)
+
+    'genbinning'  : [25, 50, 60, 70, 80, 90, 105, 125, 150], # propuesta (8 bins)
+    'recobinning' : [25, 35, 50, 55, 60, 65,  70,  75,  80, 85, 90, 95, 100, 105, 115, 125, 150], # propuesta (8 bins) SELECCIONADA
+
+    #'genbinning'  : [25., 45., 50., 55., 60., 65., 85., 100., 125., 150.], # propuesta (9 bins)
+    #'recobinning' : [25., 40., 42.5, 45.,47.5,50.,52.5,  55., 57.5,  60., 62.5, 65., 70., 75., 85., 100., 115., 125., 150.], # propuesta (9 bins)
+
+    #'genbinning'  : [25., 35., 45., 50., 55., 60., 65., 85., 100., 125., 150.], # propuesta (10 bins)
+    #'recobinning' : [25., 35., 40., 42.5, 45., 47.5, 50., 52.5, 55., 57.5, 60., 62.5, 65., 67.5, 70., 75., 85., 100., 115., 125., 150.], # propuesta (10 bins)
+
+    'descbinning' : [10., 150.],
+    'ndescbins'   : 14,
+    'legpos'      : (0.7, 0.55, 0.90, 0.93),
+    'legposdesc'  : (0.58, 0.55, 0.78, 0.93),
+    'var'         : 'min(TLep2_Pt, 149.)',
+    'var_response': 'Lep2_Pt',
+    'var_gen'     : 'min(TDressLep2_Pt, 149.)',
+    'uncleg_fold' : "TL",
+    'uncleg_fid'  : "TL",
+    "legpos_unf"   : (.18, .3, .32, .05),
+    'legpos_fidbin':"TC",
+    'uncleg_fidbin':"TL",
+    'resptxtsize' : 1.5,
+    'covtxtsizefol': 1.2,
+    'covtxtsizeunf': 2,
+    "covtxtsizefidnorm": 1.45,
+}
+varList['Lep1_Ptuncertainties'] = {
+    'xaxis'       : varList['Lep2_Pt']['xaxis'],
+    'yaxis'       : 'Relative uncertainty (adim.)'
+}
+varList['ResponseLeadingLepPt'] = {
+    'xaxis'       : 'Gen Subleading lep #it{p}_{T} (GeV)',
+    'yaxis'       : 'Subleading lep #it{p}_{T} (GeV)'
+}
+
+
 varList['Fiducial'] = {
     'xaxis'       : 'a.u.',
     'yaxis'       : 'd#sigma (pb)',
@@ -594,25 +743,27 @@ varList['LeadingLepPhiuncertainties'] = {
     'yaxis'       : 'Relative uncertainty (adim.)'
 }
 
-varList['LeadingLepEta'] = {
-    'xaxis'       : '|\\eta|(\\ell_{1})',
+
+varList['Lep1_Eta'] = {
+    'xaxis'       : 'Leading lepton |#eta|',
     'yaxis'       : 'd#sigma (pb)',
     'genbinning'  : [0., 0.6, 1.2, 1.8, 2.4],
     'recobinning' : [0., 0.3, 0.6, 0.9, 1.2, 1.5, 1.8, 2.1, 2.4],
     #'genbinning'  : [0., 0.5, 1., 1.6, 2.4],
     #'recobinning' : [0., 0.25, 0.5, 0.75, 1., 1.3, 1.6, 2., 2.4],
-    'var'         : 'abs(TLeadingLepEta)',
-    'var_response': 'LeadingLepEta',
-    'var_gen'     : 'abs(TGenLeadingLepEta)',
+    'var'         : 'abs(TLep1_Eta)',
+    'var_response': 'Lep1_Eta',
+    'var_gen'     : 'abs(TDressLep1_Eta)',
 }
-varList['LeadingLepEtauncertainties'] = {
-    'xaxis'       : varList['LeadingLepEta']['xaxis'],
+varList['Lep1_Etauncertainties'] = {
+    'xaxis'       : varList['Lep1_Eta']['xaxis'],
     'yaxis'       : 'Relative uncertainty (adim.)'
 }
-varList['ResponseLeadingLepEta'] = {
-    'xaxis'       : 'Gen Leading lep \\eta',
-    'yaxis'       : 'Leading lep \\eta'
+varList['ResponseLep1_Eta'] = {
+    'xaxis'       : 'Dressed leading lepton |#eta|',
+    'yaxis'       : 'Leading lepton |#eta|'
 }
+
 
 varList['SubLeadingLepE'] = {
     'xaxis'       : 'E(\\ell_{2}) (GeV)',
@@ -627,6 +778,7 @@ varList['SubLeadingLepEuncertainties'] = {
     'xaxis'       : varList['SubLeadingLepE']['xaxis'],
     'yaxis'       : 'Relative uncertainty (adim.)'
 }
+
 
 varList['SubLeadingLepPt'] = {
     'xaxis'       : 'p_{T}(\\ell_{2}) (GeV)',
@@ -656,33 +808,36 @@ varList['SubLeadingLepPhiuncertainties'] = {
     'yaxis'       : 'Relative uncertainty (adim.)'
 }
 
-varList['SubLeadingLepEta'] = {
-    'xaxis'       : '\\eta(\\ell_2)',
+
+varList['Lep2_Eta'] = {
+    'xaxis'       : 'Subleading lepton |#eta|',
     'yaxis'       : 'd#sigma (pb)',
     'genbinning'  : [0., 0.6, 1.2, 1.8, 2.4],
     'recobinning' : [0., 0.3, 0.6, 0.9, 1.2, 1.5, 1.8, 2.1, 2.4],
-    'var'         : 'abs(TSubLeadingLepEta)',
-    'var_response': 'SubLeadingLepEta',
-    'var_gen'     : 'abs(TGenSubLeadingLepEta)',
+    'var'         : 'abs(TLep2_Eta)',
+    'var_response': 'Lep2_Eta',
+    'var_gen'     : 'abs(TDressLep2_Eta)',
 }
-varList['SubLeadingLepEtauncertainties'] = {
-    'xaxis'       : varList['SubLeadingLepEta']['xaxis'],
+varList['Lep2_Etauncertainties'] = {
+    'xaxis'       : varList['Lep2_Eta']['xaxis'],
     'yaxis'       : 'Relative uncertainty (adim.)'
 }
 
-varList['DilepPt'] = {
+
+varList['Lep1Lep2_DPhi'] = {
     'xaxis'       : 'p_{T}(\\ell_{1}, \\ell_{2}) (GeV)',
     'yaxis'       : 'd#sigma (pb)',
     'genbinning'  : [0, 50, 100, 150, 200],
     'recobinning' : [0., 40., 60., 80., 90., 110., 130., 150., 200.],
-    'var'         : 'TDilepPt',
-    'var_response': 'DilepPt',
-    'var_gen'     : 'TGenDilepPt',
+    'var'         : 'TLep1Lep2_DPhi',
+    'var_response': 'Lep1Lep2_DPhi',
+    'var_gen'     : 'TDressLep1Lep2_DPhi',
 }
-varList['DilepPtuncertainties'] = {
-    'xaxis'       : varList['DilepPt']['xaxis'],
+varList['Lep1Lep2_DPhiuncertainties'] = {
+    'xaxis'       : varList['Lep1Lep2_DPhi']['xaxis'],
     'yaxis'       : 'Relative uncertainty (adim.)'
 }
+
 
 varList['DilepJetPt'] = {
     'xaxis'       : 'p_{T}(\\ell_{1}, \\ell_{2}, j) (GeV)',
@@ -791,6 +946,8 @@ varList['LLMETBEtauncertainties'] = {
     'yaxis'       : 'Relative uncertainty (adim.)'
 }
 
+
+
 varList['MSys'] = {
     'xaxis'       : 'm(\\ell_{1}, \\ell_{2}, j,\\slash{E}_{T})',
     'yaxis'       : 'd#sigma (pb)',
@@ -798,12 +955,14 @@ varList['MSys'] = {
     'recobinning' : [0., 225., 250., 275., 300., 325., 350., 425., 700.],
     'var'         : 'TMSys',
     'var_response': 'MSys',
-    'var_gen'     : 'TGenMSys',
+    'var_gen'     : 'TDressMSys',
 }
 varList['MSysuncertainties'] = {
     'xaxis'       : varList['MSys']['xaxis'],
     'yaxis'       : 'Relative uncertainty (adim.)'
 }
+
+
 
 varList['Mll'] = {
     'xaxis'       : 'm(\\ell_{1}, \\ell_{2})',
@@ -943,6 +1102,7 @@ varList['MiniMax'] = {
     'var_gen'     : 'TDressMiniMax',
     'doReg'       : False,
     'doArea'      : False,
+    'doLogY'      : True,
 }
 
 

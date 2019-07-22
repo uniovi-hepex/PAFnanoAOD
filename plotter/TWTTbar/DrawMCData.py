@@ -11,8 +11,10 @@ StandardCut = "TPassReco == 1";
 ControlCut  = "TIsSS == 0 && TNJets == 1  && TNBtags == 1 && TNLooseCentral > 1";
 #systlist    = vl.GiveMeTheExpNamesWOJER(vl.varList["Names"]["ExpSysts"])
 systlist    = ""
-labelsignal = "e^{#pm}#mu^{#mp}+1j1b+0j_{loose}"
-labelcontrol= "e^{#pm}#mu^{#mp}+1j1b+>0j_{loose}"
+#labelsignal = "e^{#pm}#mu^{#mp}+1j1b+0j_{loose}"
+#labelcontrol= "e^{#pm}#mu^{#mp}+1j1b+>0j_{loose}"
+labelsignal = ""
+labelcontrol= ""
 #legtxtsize  = 0.028
 legtxtsize  = 0.055
 labelpos    = (0.275, 0.89)
@@ -46,13 +48,13 @@ r.gROOT.LoadMacro('../PDFunc.C+')
 
 
 def plotvariable(tsk):
-    var, cut = tsk
+    var, cut, chan = tsk
     nbins    = int(20) if "ndescbins" not in vl.varList[var] else int(vl.varList[var]['ndescbins'])
     lowedge  = float(vl.varList[var]['recobinning'][0]) if "descbinning" not in vl.varList[var] else float(vl.varList[var]['descbinning'][0])
     highedge = float(vl.varList[var]['recobinning'][-1]) if "descbinning" not in vl.varList[var] else float(vl.varList[var]['descbinning'][1])
     width    = (highedge - lowedge)/nbins
     
-    p = r.PlotToPy(r.TString(vl.varList[var]['var']), r.TString(StandardCut) if cut == "signal" else r.TString(ControlCut), r.TString('ElMu'), nbins, lowedge, highedge, r.TString(var), r.TString(vl.varList[var]['xaxis']))
+    p = r.PlotToPy(r.TString(vl.varList[var]['var']), r.TString(StandardCut) if cut == "signal" else r.TString(ControlCut), r.TString(chan), nbins, lowedge, highedge, r.TString(var), r.TString(vl.varList[var]['xaxis']))
     p.SetPath(pathToTree); 
     p.SetTreeName(NameOfTree);
     p.SetPathSignal(pathToTree);
@@ -222,7 +224,7 @@ def plotvariable(tsk):
     #p.UseEnvelope("t#bar{t}", "GluonMoveCRTune,GluonMoveCRTune_erdON,Powheg_erdON,QCDbasedCRTune_erdON", "ColorReconnection");
     #p.AddSymmetricHisto("t#bar{t}",  "JERUp");
     
-    #pdf     = r.PDFToPy(r.TString(pathToTree), r.TString("TTbar_Powheg"), r.TString(NameOfTree), r.TString(StandardCut) if cut == "signal" else r.TString(ControlCut), r.TString("ElMu"), r.TString(vl.varList[var]['var']), nbins, lowedge, highedge);
+    #pdf     = r.PDFToPy(r.TString(pathToTree), r.TString("TTbar_Powheg"), r.TString(NameOfTree), r.TString(StandardCut) if cut == "signal" else r.TString(ControlCut), r.TString("All"), r.TString(vl.varList[var]['var']), nbins, lowedge, highedge);
     #pdf.verbose = False
     #pdf.SetLumi(vl.Lumi * 1000)
     #if doPrefChecks: pdf.SetWeight("TWeight * (1 - prefWeight)")
@@ -265,14 +267,15 @@ def plotvariable(tsk):
     p.SetLegendTextSize(legtxtsize)
     p.SetPlotFolder("./results/MCData/" if cut == 'signal' else "./results/MCData/control/");
     p.doYieldsInLeg = False;
-    p.doSetLogy     = False;
+    if "doLogY" in vl.varList[var]: p.doSetLogy = vl.varList[var]['doLogY']
+    else:                           p.doSetLogy = False
     #p.doData        = False;
     #p.doSignal      = False;
     p.doSignal      = True;
     
     if "abs" in vl.varList[var]['var'] or "min" in vl.varList[var]['var']:
         p.NoShowVarName = True;
-        p.SetOutputName(vl.varList[var]['var_response'] * ("ATLAS" not in var) + var * ("ATLAS" in var));
+        p.SetOutputName(vl.varList[var]['var_response'] * ("ATLAS" not in var) + var * ("ATLAS" in var) + "_" + chan);
     p.DrawStack();
     p.PrintSystematics()
     p.PrintYields("", "", "", "")
@@ -282,9 +285,9 @@ def plotvariable(tsk):
 
 
 def plotcustomvariable(tsk):
-    var, cut = tsk
+    var, cut, chan = tsk
     binning = array('f', vl.varList[var]['recobinning']) # For some reason, ROOT requires that you create FIRST this object, then put it inside the PlotToPyC.
-    p = r.PlotToPyC(r.TString(vl.varList[var]['var']), r.TString(StandardCut) if cut == "signal" else r.TString(ControlCut), r.TString('ElMu'), int(len(vl.varList[var]['recobinning']) - 1), binning, r.TString(var), r.TString(vl.varList[var]['xaxis']))
+    p = r.PlotToPyC(r.TString(vl.varList[var]['var']), r.TString(StandardCut) if cut == "signal" else r.TString(ControlCut), r.TString('All'), int(len(vl.varList[var]['recobinning']) - 1), binning, r.TString(var), r.TString(vl.varList[var]['xaxis']))
     p.SetPath(pathToTree);
     p.SetTreeName(NameOfTree);
     p.SetPathSignal(pathToTree);
@@ -449,7 +452,7 @@ def plotcustomvariable(tsk):
     p.UseEnvelope("t#bar{t}", "GluonMoveCRTune,GluonMoveCRTune_erdON,Powheg_erdON,QCDbasedCRTune_erdON", "ColorReconnection");
     p.AddSymmetricHisto("t#bar{t}",  "JERUp");
     
-    pdf     = r.PDFToPyC(r.TString(pathToTree), r.TString("TTbar_Powheg"), r.TString(NameOfTree), r.TString(StandardCut) if cut == "signal" else r.TString(ControlCut), r.TString("ElMu"), r.TString(vl.varList[var]['var']), len(vl.varList[var]['recobinning']) - 1, binning, r.TString(''));
+    pdf     = r.PDFToPyC(r.TString(pathToTree), r.TString("TTbar_Powheg"), r.TString(NameOfTree), r.TString(StandardCut) if cut == "signal" else r.TString(ControlCut), r.TString("All"), r.TString(vl.varList[var]['var']), len(vl.varList[var]['recobinning']) - 1, binning, r.TString(''));
     pdf.verbose = False
     #pdf.verbose = True
     pdf.SetLumi(vl.Lumi * 1000)
@@ -490,14 +493,15 @@ def plotcustomvariable(tsk):
     p.SetLegendTextSize(legtxtsize)
     p.SetPlotFolder("/nfs/fanae/user/vrbouza/www/TFM/1j1t/" if cut == 'signal' else "/nfs/fanae/user/vrbouza/www/TFM/1j1t/control/");
     p.doYieldsInLeg = False;
-    p.doSetLogy     = False;
+    if "doLogY" in vl.varList[var]: p.doSetLogy = vl.varList[var]['doLogY']
+    else:                           p.doSetLogy = False
     #p.doData        = False;
     p.doSignal      = False;
     #p.SetTitleY(r.TString(vl.varList[var]['yaxis']))
     p.SetOutputName("Custom");
     if "abs" in vl.varList[var]['var'] or "min" in vl.varList[var]['var']:
         p.NoShowVarName = True;
-        p.SetOutputName('Custom_' + vl.varList[var]['var_response'] * ("ATLAS" not in var) + var * ("ATLAS" in var));
+        p.SetOutputName('Custom_' + vl.varList[var]['var_response'] * ("ATLAS" not in var) + var * ("ATLAS" in var) + "_" + chan);
     print "JOJOJO"
     p.DrawStack();
     print "JEJEJE"
@@ -508,9 +512,9 @@ def plotcustomvariable(tsk):
 
 
 def plotthenumberofjets(tsk):
-    var, cut = tsk
+    var, cut, chan = tsk
     binning = array('f', vl.varList[var]['recobinning']) # For some reason, ROOT requires that you create FIRST this object, then put it inside the PlotToPyC.
-    p = r.PlotToPyC(r.TString(vl.varList[var]['var'] + "- 1"), r.TString("TIsSS == 0 && TNJets == 1  && TNBtags == 1"), r.TString('ElMu'), int(len(vl.varList[var]['recobinning']) - 1), binning, r.TString(var), r.TString(vl.varList[var]['xaxis']))
+    p = r.PlotToPyC(r.TString(vl.varList[var]['var'] + "- 1"), r.TString("TIsSS == 0 && TNJets == 1  && TNBtags == 1"), r.TString('All'), int(len(vl.varList[var]['recobinning']) - 1), binning, r.TString(var), r.TString(vl.varList[var]['xaxis']))
     p.SetPath(pathToTree);
     p.SetTreeName(NameOfTree);
     p.SetPathSignal(pathToTree);
@@ -675,7 +679,7 @@ def plotthenumberofjets(tsk):
     p.UseEnvelope("t#bar{t}", "GluonMoveCRTune,GluonMoveCRTune_erdON,Powheg_erdON,QCDbasedCRTune_erdON", "ColorReconnection");
     p.AddSymmetricHisto("t#bar{t}",  "JERUp");
     
-    pdf     = r.PDFToPyC(r.TString(pathToTree), r.TString("TTbar_Powheg"), r.TString(NameOfTree), r.TString("TIsSS == 0 && TNJets == 1  && TNBtags == 1"), r.TString("ElMu"), r.TString(vl.varList[var]['var'] + "- 1"), len(vl.varList[var]['recobinning']) - 1, binning, r.TString(''));
+    pdf     = r.PDFToPyC(r.TString(pathToTree), r.TString("TTbar_Powheg"), r.TString(NameOfTree), r.TString("TIsSS == 0 && TNJets == 1  && TNBtags == 1"), r.TString("All"), r.TString(vl.varList[var]['var'] + "- 1"), len(vl.varList[var]['recobinning']) - 1, binning, r.TString(''));
     pdf.verbose = False
     #pdf.verbose = True
     pdf.SetLumi(vl.Lumi * 1000)
@@ -720,13 +724,14 @@ def plotthenumberofjets(tsk):
     p.SetLegendTextSize(legtxtsize)
     p.SetPlotFolder("/nfs/fanae/user/vrbouza/www/TFM/1j1t/" if cut == 'signal' else "/nfs/fanae/user/vrbouza/www/TFM/1j1t/control/");
     p.doYieldsInLeg = False;
-    p.doSetLogy     = False;
+    if "doLogY" in vl.varList[var]: p.doSetLogy = vl.varList[var]['doLogY']
+    else:                           p.doSetLogy = False
     p.doSignal      = False;
     #p.SetTitleY(r.TString(vl.varList[var]['yaxis']))
     p.SetOutputName("Custom");
     if "abs" in vl.varList[var]['var'] or "min" in vl.varList[var]['var']:
         p.NoShowVarName = True;
-        p.SetOutputName('Custom_' + vl.varList[var]['var_response']);
+        p.SetOutputName('Custom_' + vl.varList[var]['var_response'] + "_" + chan);
     p.DrawStack();
     p.PrintSystematics()
     p.PrintYields("", "", "", "")
@@ -734,7 +739,7 @@ def plotthenumberofjets(tsk):
     del p
 
 def lazyoptimisation(tsk):
-    var, reg, bnng = tsk
+    var, reg, chn, bnng = tsk
     if var == "nLooseCentral": return plotthenumberofjets(tsk[:-1])
     elif bnng == "custom":     return plotcustomvariable(tsk[:-1])
     else:                      return plotvariable(tsk[:-1])
@@ -748,12 +753,20 @@ if __name__ == '__main__':
         #if "Fiducial" in v: continue
         #for ct in ['signal', 'control']:
             #for bnng in ['custom', 'descriptive']:
-                #tasks.append( (v, ct, bnng) )
-            #tasks.append( (v, ct, 'custom') )
-        #tasks.append( (v, "control", "custom") )
-        #tasks.append( (v, "signal", "descriptive") )
+                #for chn in ["ElMu", "Muon", "Elec", "All"]:
+                    #tasks.append( (v, ct, chn, bnng) )
     
-    tasks.append(("Lep1_Pt", "signal", "descriptive"))
+    for chn in ["ElMu", "Muon", "Elec", "All"]:
+        tasks.append(("Lep1_Pt",       "signal", chn, "descriptive"))
+        tasks.append(("Lep1_Eta",      "signal", chn, "descriptive"))
+        tasks.append(("Lep2_Pt",       "signal", chn, "descriptive"))
+        tasks.append(("Lep2_Eta",      "signal", chn, "descriptive"))
+        tasks.append(("Jet1_Pt",       "signal", chn, "descriptive"))
+        tasks.append(("Jet1_Eta",      "signal", chn, "descriptive"))
+        tasks.append(("Jet2_Pt",       "signal", chn, "descriptive"))
+        tasks.append(("Jet2_Eta",      "signal", chn, "descriptive"))
+        tasks.append(("MiniMax",       "signal", chn, "descriptive"))
+        tasks.append(("Lep1Lep2_DPhi", "signal", chn, "descriptive"))
     
     print "> Launching plotting processes..."
     pool = Pool(nCores)
