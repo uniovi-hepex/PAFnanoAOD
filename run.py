@@ -179,6 +179,7 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
     ExecOrder('cp run.py %s'     %pathjob, verbose)
     f = open(jobfile,'w')
     f.write('#!/bin/sh\n\n')
+    f.write("sleep 2s\n\n")
     f.write('cd %s\n\n'%pathjob)
     f.write(command + "\n\n")
     f.write("sleep 5s")
@@ -468,10 +469,9 @@ if __name__ == "__main__":
             tmpFirstEvent = tmpnEvents * ich
             if (ich == tmpnchs - 1): tmpnEvents = nTrueEntries - tmpFirstEvent
             RunSamplePAF(selection, path, sample, year, xsec, ncores, tmpoutname, outpath, options, tmpnEvents, tmpFirstEvent, prefix, verbose, pretend, dotest, sendJobs, queue)
-            ExecOrder("sleep 3s")
             if not sendJobs:
               ExecOrder("resetpaf")
-              ExecOrder("sleep 5s")
+              ExecOrder("sleep 3s")
         else:
           if verbose: print " >> We only are going to produce the chunk with index {chk}.".format(chk = str(fixedchunk))
           tmpoutname    = outname + "_{ch}".format(ch = fixedchunk)
