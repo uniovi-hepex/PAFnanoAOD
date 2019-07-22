@@ -17,7 +17,7 @@ class TWAnalysis : public PAFChainItemSelector{
     virtual void InsideLoop();
     virtual void Initialise();
     virtual void Summary();
-    
+
 
     // Other methods
     void SetTWVariables();
@@ -38,7 +38,6 @@ class TWAnalysis : public PAFChainItemSelector{
     void DoesItReallyPassReco();
 
     TLorentzVector getSysVector(const TString& sys = "");
-    Float_t getMiniMax(Float_t ml1j1, Float_t ml1j2, Float_t ml2j1, Float_t ml2j2);
     Float_t getTopPtRW();
 
 
@@ -61,7 +60,7 @@ class TWAnalysis : public PAFChainItemSelector{
     std::vector<Jet> LooseCentralJetsJESUp, LooseFwdJetsJESUp;
     std::vector<Jet> LooseCentralJetsJESDown, LooseFwdJetsJESDown;
     std::vector<Jet> LooseCentralJetsJERUp, LooseFwdJetsJERUp;
-    
+
     TTree* fMiniTree;
     TH1F* fhDummy;
     Float_t   TLHEWeight[254];
@@ -140,24 +139,24 @@ class TWAnalysis : public PAFChainItemSelector{
 
     UShort_t TNSelLeps, DressNLeps;
 
-//     UShort_t TNJets, TNJetsJESUp, TNJetsJESDown, TNJetsJERUp;
+    UShort_t TNJets, TNJetsJESUp, TNJetsJESDown, TNJetsJERUp;
 
-    Float_t ElecSF, MuonSF, ElecSFUp, ElecSFDo, MuonSFUp, MuonSFDo, lepSF;
-    Float_t TrigSF, TrigSFerr;
-    Float_t PUSF, PUSF_Up, PUSF_Down;
-    Float_t BtagSF;
-    Float_t BtagSFBtagUp, BtagSFBtagDown;
-    Float_t BtagSFMistagUp, BtagSFMistagDown;
-    Float_t TWeight, TWeight_normal;
-    Float_t TWeight_LepEffUp, TWeight_LepEffDown;
-    Float_t TWeight_ElecEffUp, TWeight_ElecEffDown;
-    Float_t TWeight_MuonEffUp, TWeight_MuonEffDown;
-    Float_t TWeight_TrigUp, TWeight_TrigDown;
-    Float_t TWeight_FSUp, TWeight_FSDown;
-    Float_t TWeight_PUDown, TWeight_PUUp;
-    Float_t TWeight_MistagUp, TWeight_MistagDown;
-    Float_t TWeight_BtagUp, TWeight_BtagDown;
-    
+    Double_t ElecSF, MuonSF, ElecSFUp, ElecSFDo, MuonSFUp, MuonSFDo, lepSF;
+    Double_t TrigSF, TrigSFerr;
+    Double_t PUSF, PUSF_Up, PUSF_Down;
+    Double_t BtagSF;
+    Double_t BtagSFBtagUp, BtagSFBtagDown;
+    Double_t BtagSFMistagUp, BtagSFMistagDown;
+    Double_t TWeight, TWeight_normal;
+    Double_t TWeight_LepEffUp, TWeight_LepEffDown;
+    Double_t TWeight_ElecEffUp, TWeight_ElecEffDown;
+    Double_t TWeight_MuonEffUp, TWeight_MuonEffDown;
+    Double_t TWeight_TrigUp, TWeight_TrigDown;
+    Double_t TWeight_FSUp, TWeight_FSDown;
+    Double_t TWeight_PUDown, TWeight_PUUp;
+    Double_t TWeight_MistagUp, TWeight_MistagDown;
+    Double_t TWeight_BtagUp, TWeight_BtagDown;
+
   protected:
     // Parameters
     Bool_t   gIsData;
@@ -169,8 +168,7 @@ class TWAnalysis : public PAFChainItemSelector{
     Bool_t   gPUWeight;
     Bool_t   passMETfilters;
     Bool_t   passTrigger;
-    Float_t NormWeight;
     UShort_t year;
-    
+
     ClassDef(TWAnalysis, 0);
 };
