@@ -181,7 +181,6 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
     f.write('#!/bin/sh\n\n')
     f.write("sleep 2s\n\n")
     f.write('cd %s\n\n'%pathjob)
-    f.write("sleep 5s")
     f.write(command + "\n\n")
     f.write("sleep 5s")
     f.close()
