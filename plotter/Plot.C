@@ -67,7 +67,7 @@ void Plot::AddSample(TString p, TString pr, Int_t type, Int_t color, TString sys
 
 
 
-void Plot::GetStack(){ // Sets the histogram hStack
+void Plot::GetStack() { // Sets the histogram hStack
   if(hStack) delete hStack;
   hStack = new THStack(varname, "");
   Int_t nBkgs = VBkgs.size();
@@ -82,7 +82,7 @@ void Plot::GetStack(){ // Sets the histogram hStack
   hAllBkg->SetStyle();
   hAllBkg->SetTag("Uncertainty");
   if(doSys && ((Int_t) VSystLabel.size() > 0)) GroupSystematics();
-  if(verbose) cout << Form(" Adding %i systematic to sum of bkg...\n", (Int_t) VSumHistoSystUp.size());
+  if(verbose) cout << Form("[Plot::GetStack] Adding %i systematic to the sum of background...\n", (Int_t) VSumHistoSystUp.size());
 
   for(Int_t i = 0; i < (Int_t) VSumHistoSystUp.size(); i++){
     hAllBkg->AddToSystematics(VSumHistoSystUp.at(i));
@@ -760,21 +760,17 @@ TLegend* Plot::SetLegend(){ // To be executed before using the legend
   return leg;
 }
 
-void Plot::SetLegendPosition(TString pos)
-{
+void Plot::SetLegendPosition(TString pos) {
   if (pos=="UR")
     SetLegendPosition(0.70, 0.65, 0.93, 0.93);
   else if (pos == "UL")
     SetLegendPosition(0.15, 0.65, 0.38, 0.85);
   else if (pos == "DL")
     SetLegendPosition(0.15, 0.25, 0.38, 0.45);
-  else{
-    cout << "[Plot::SetLegendPosition] Sorry, position " << pos
-  << " is not yet implemented. Fucking do it yourself" <<endl;
+  else {
+    cout << "[Plot::SetLegendPosition] Sorry, position " << pos << " is not yet implemented. Fucking do it yourself" << endl;
   }
-
 }
-
 
 
 
@@ -854,21 +850,21 @@ void Plot::DrawComp(TString tag, bool doNorm, TString options){
 
   //>>> Set maximum and drawing all samples
   Float_t max = VSignals.at(0)->GetMaximum();
-  for(Int_t  i = 1; i < nsamples; i++){
+  for (Int_t  i = 1; i < nsamples; i++) {
     yield = VSignals.at(i)->Integral();
-    if(doNorm) VSignals.at(i)->Scale(1/yield);
+    if (doNorm) VSignals.at(i)->Scale(1/yield);
     max = VSignals.at(i)->GetMaximum();
-    if(max > themax) themax = max;
+    if (max > themax) themax = max;
     VSignals.at(i)->Draw(drawstyle + "same");
   }
   signal->SetMaximum(themax*ScaleMax);
-  if(!doSetLogy){
+  if (!doSetLogy) {
     PlotMinimum = PlotMinimum == -999? 0 : PlotMinimum;
     plot->SetLogy(0);
   }
   signal->SetMinimum(PlotMinimum);
-  if(doSetLogy){
-    if(PlotMinimum == 0 || PlotMinimum == -999)  PlotMinimum = 1e-2;
+  if (doSetLogy) {
+    if (PlotMinimum == 0 || PlotMinimum == -999)  PlotMinimum = 1e-2;
     PlotMaximum = PlotMaximum == -999? themax*50 : PlotMaximum;
     signal->SetMaximum(PlotMaximum);
     signal->SetMinimum(PlotMinimum);
@@ -880,7 +876,7 @@ void Plot::DrawComp(TString tag, bool doNorm, TString options){
   texcms->Draw("same");     // CMS
   texlumi->Draw("same");    // In that case, you probably need only the sqrt(s)
   texPrelim->Draw("same");  // Preliminary
-  if (chlabel != ""){
+  if (chlabel != "") {
     SetTexChan();
     texchan->Draw("same");
   }
@@ -989,12 +985,12 @@ void Plot::DrawComp(TString tag, bool doNorm, TString options){
 void Plot::DrawStack(TString tag) {
   if (verbose) cout << "[Plot::DrawStack] Entering DrawStack." << endl;
   std::vector<Histo*> VStackedSignals;
-  if(verbose) cout << "[Plot::DrawStack] Setting Canvas..." << endl;
+  if (verbose) cout << "[Plot::DrawStack] Setting Canvas..." << endl;
   TCanvas* c = SetCanvas(); plot->cd();
   SetData();
   GetStack();
   if(dataStyle.Contains("l")  || dataStyle.Contains("L") || dataStyle.Contains("hist")){ hData->SetLineWidth(2); hData->SetLineColor(1);}
-  cout << "Integral of hAllBkg: " << hAllBkg->Integral() << endl;
+  if (verbose) cout << "[Plot::DrawStack] Integral of hAllBkg: " << hAllBkg->Integral() << endl;
 
   //--------- Plotting options for the signal
   if (verbose) cout << "[Plot::DrawStack] Adjusting signal settings." << endl;
@@ -1003,13 +999,12 @@ void Plot::DrawStack(TString tag) {
   Histo* hSignal = nullptr;
   if(doSignal){
     nSignals = VSignals.size();
-    cout << "nSignals = " << nSignals << endl;
-    if(verbose) cout << "[Plot::DrawStack] Drawing " << nSignals << " signals..." << endl;
-    for(Int_t i = 0; i < nSignals; i++) if(VSignals.at(i)->GetProcess() == SignalProcess) hSignal = VSignals.at(i);
-    cout << "Setting signal..." << endl; if((int) VSignals.size() >= 0) hSignal = VSignals.at(0);
+    if (verbose) cout << "[Plot::DrawStack] Drawing " << nSignals << " signals..." << endl;
+    for (Int_t i = 0; i < nSignals; i++) if(VSignals.at(i)->GetProcess() == SignalProcess) hSignal = VSignals.at(i);
+    cout << "[Plot::DrawStack] Setting signal..." << endl; if((int) VSignals.size() >= 0) hSignal = VSignals.at(0);
     hSignal->ReCalcValues();
-    if(verbose) cout << " Signal process: " << SignalProcess << endl;
-    if((SignalStyle == "SM" || SignalStyle == "H")){ // Only supports one signal
+    if (verbose) cout << "[Plot::DrawStack] Signal process: " << SignalProcess << endl;
+    if ((SignalStyle == "SM" || SignalStyle == "H")) { // Only supports one signal
       for(Int_t i = 0; i < nSignals; i++){
         //hStack->Add(hSignal);
         hSignal->SetFillColor(0);
@@ -1034,8 +1029,8 @@ void Plot::DrawStack(TString tag) {
   }*/
 
   hStack->Draw("hist");
-  cout << "Integral of hAllBkg: " << hAllBkg->Integral() << ", yield: " << hAllBkg->GetYield() << endl;
-  cout << ">>>>>>>>>>>>>>>> NUMBER OF SIGNALS: " << VSignalsStack.size() << endl;
+  cout << "[Plot::DrawStack] Integral of hAllBkg: " << hAllBkg->Integral() << ", yield: " << hAllBkg->GetYield() << endl;
+  cout << "[Plot::DrawStack] Number of signals from the stack: " << VSignalsStack.size() << endl;
   //for(int i = 0; i < (int) VSignalsStack.size(); i++) VSignalsStack.at(i)->Draw("hist,same");
 /*  if((SignalStyle == "SM" || SignalStyle == "H")){
     Histo* AddMe = hAllBkg->CloneHisto("AddMeToLegend");
@@ -1052,8 +1047,8 @@ void Plot::DrawStack(TString tag) {
   Float_t maxData = doData? hData->GetMax() : hAllBkg->GetMax();
   Float_t maxMC   = hAllBkg->GetMax();
   Float_t Max     = maxMC > maxData? maxMC : maxData;
-  if (verbose) cout << "maxMC   = " << maxMC   << endl;
-  if (verbose) cout << "maxData = " << maxData << endl;
+  if (verbose) cout << "[Plot::DrawStack] maxMC   = " << maxMC   << endl;
+  if (verbose) cout << "[Plot::DrawStack] maxData = " << maxData << endl;
 
   if (doSetLogy) {
     if (verbose) cout << "[Plot::DrawStack] Setting log scale in Y axis." << endl;
@@ -1078,9 +1073,9 @@ void Plot::DrawStack(TString tag) {
   //--------- Draw signal
   if (verbose) cout << "[Plot::DrawStack] Drawing signal(s).";
   if (doSignal && (SignalStyle == "scan" || SignalStyle == "BSM" || SignalStyle == "")) {
-   cout << "Signal style: scan ----> nSignals = " << nSignals << endl;
-   for (Int_t  i = 0; i < nSignals; i++) VSignals.at(i)->Draw(SignalDrawStyle + "same");
-   cout << "Drawn singals!!" << endl;
+    if (verbose) cout << "[Plot::DrawStack] Signal style: scan ----> nSignals = " << nSignals << endl;
+    for (Int_t  i = 0; i < nSignals; i++) VSignals.at(i)->Draw(SignalDrawStyle + "same");
+    if (verbose) cout << "[Plot::DrawStack] Drawn singals!!" << endl;
   }
 
   //---------  Draw systematic errors
@@ -1123,7 +1118,7 @@ void Plot::DrawStack(TString tag) {
   if(doSys){
     hAllBkg->SetFillStyle(StackErrorStyle);
     Int_t nbins = hAllBkg->GetNbinsX(); Float_t binval = 0; Float_t errbin = 0; Float_t totalerror = 0;
-    cout << "going through the doSys.." << endl;
+    cout << "[Plot::DrawStack] Going through the doSys.." << endl;
     for(int bin = 1; bin <= nbins; bin++){  // Set bin error
       totalerror = hAllBkg->GetBinError(bin);
       binval = hAllBkg->GetBinContent(bin);
@@ -1151,20 +1146,20 @@ void Plot::DrawStack(TString tag) {
   //---------- Set ratio... with Data, S/B, etc
   pratio->cd();
   TLine *hline = nullptr;
-  if(RatioYtitle == "S/B") {
-    cout << "Ratio: S/B!\n";
+  if (RatioYtitle == "S/B") {
+    cout << "[Plot::DrawStack] Drawing Ratio: S/B!\n";
     if (!doSignal) cout << "[Plot::DrawStack] WARNING: cannot print ratio Signal/Background without signal!!" << endl;
     else {
-      cout << "[Plot::DrawStack]Integral of hAllBkg: " << hAllBkg->Integral() << ", yield: " << hAllBkg->GetYield() << endl;
-      cout << "[Plot::DrawStack]Integral of hSignal: " << hSignal->Integral() << ", yield: " << hSignal->GetYield() << endl;
+      if (verbose) cout << "[Plot::DrawStack] Integral of hAllBkg: " << hAllBkg->Integral() << ", yield: " << hAllBkg->GetYield() << endl;
+      if (verbose) cout << "[Plot::DrawStack] Integral of hSignal: " << hSignal->Integral() << ", yield: " << hSignal->GetYield() << endl;
       Float_t StoBmean = hSignal->GetYield()/hAllBkg->GetYield();
-      cout << "StoBmean = " << StoBmean << endl;
+      if (verbose) cout << "[Plot::DrawStack] StoBmean = " << StoBmean << endl;
       hratio = (TH1F*)hSignal->Clone("hratio");
-      float xlow = hratio->GetBinLowEdge(1);
-      float xup  = hratio->GetBinLowEdge(nbins+1);
+      Float_t xlow = hratio->GetBinLowEdge(1);
+      Float_t xup  = hratio->GetBinLowEdge(nbins+1);
       hline = new TLine(xlow, StoBmean, xup, StoBmean); hline->SetLineColor(kOrange-2);
-      cout << "Dividing by hratio..." << endl;
-      cout << "xlow = " << xlow << ", xup = " << xup << ", StoBmean = " << StoBmean << endl;
+      if (verbose) cout << "[Plot::DrawStack] Dividing by hratio..." << endl;
+      if (verbose) cout << "[Plot::DrawStack] xlow = " << xlow << ", xup = " << xup << ", StoBmean = " << StoBmean << endl;
       hratio->Divide(hAllBkg);
       //Float_t rmax = hratio->GetMaximum()*1.15;
       //Float_t rmin = hratio->GetMinimum()*0.85;
@@ -1187,7 +1182,7 @@ void Plot::DrawStack(TString tag) {
     if (doData) hratio = (TH1F*)hData->Clone("hratio");
     else        hratio = (TH1F*)hAllBkg->Clone("hratio");
     // ratio by hand so systematic (background) errors don't get summed up to statistical ones (data)
-    for (int bin = 0; bin < hratio->GetNbinsX(); ++bin) {
+    for (Int_t bin = 0; bin < hratio->GetNbinsX(); ++bin) {
       if (hratio->GetBinContent(bin+1) > 0){
         hratio->SetBinContent( bin+1, hratio->GetBinContent(bin+1) / (hAllBkg->GetBinContent(bin+1) + hSignal->GetBinContent(bin+1)));
         hratio->SetBinError  ( bin+1, hratio->GetBinError  (bin+1) / (hAllBkg->GetBinContent(bin+1) + hSignal->GetBinContent(bin+1)));
@@ -1196,9 +1191,7 @@ void Plot::DrawStack(TString tag) {
     }
   }
     //}
-  else{ // ratio Data/MC
-    //if(!doData) cout << "[Plot::DrawStack] WARNING: cannot print ratio Data/MC without data!!" << endl;
-    //else{
+  else { // ratio Data/MC
       if(doData) hratio = (TH1F*)hData->Clone("hratio");
       else       hratio = (TH1F*)hAllBkg->Clone("hratio");
       // ratio by hand so systematic (background) errors don't get summed up to statistical ones (data)
@@ -1209,15 +1202,14 @@ void Plot::DrawStack(TString tag) {
         }
         else{ hratio->SetBinError  ( bin+1, 0.); }
       }
-    //}
   }
   SetHRatio(hratio);
   //if(!RatioYtitle.Contains("S")) hratio->SetLineWidth(0);
   hratio->Draw("sameE1X0");
 
-  cout << "Drawing hline...\n";
-  if(RatioStyle == "S/B") hline->Draw();
-  if(doSys){
+  if (verbose) cout << "[Plot::DrawStack] Drawing hline...\n";
+  if (RatioStyle == "S/B") hline->Draw();
+  if (doSys) {
     hratioerr->Draw("same,e2");
     hratio->Draw("same");
   }
@@ -1245,20 +1237,24 @@ void Plot::DrawStack(TString tag) {
   //VStackedSignals.clear();
 }
 
-void Plot::ScaleProcess(TString pr, Float_t SF){
-  for(Int_t i = 0; i < (Int_t) VBkgs.size(); i++) if(VBkgs.at(i)->GetProcess() == (pr)){
+
+
+void Plot::ScaleProcess(TString pr, Float_t SF) {
+  for(Int_t i = 0; i < (Int_t) VBkgs.size(); i++) if(VBkgs.at(i)->GetProcess() == (pr)) {
     VBkgs.at(i)->Scale(SF);
     VBkgs.at(i)->ReCalcValues();
   }
-  for(Int_t i = 0; i < (Int_t) VSignals.size(); i++) if(VSignals.at(i)->GetProcess() == (pr)){
+  for(Int_t i = 0; i < (Int_t) VSignals.size(); i++) if(VSignals.at(i)->GetProcess() == (pr)) {
     VSignals.at(i)->Scale(SF);
     VSignals.at(i)->ReCalcValues();
   }
-  for(Int_t i = 0; i < (Int_t) VSyst.size(); i++) if(VSyst.at(i)->GetTag().BeginsWith(pr+"_")){
+  for(Int_t i = 0; i < (Int_t) VSyst.size(); i++) if(VSyst.at(i)->GetTag().BeginsWith(pr+"_")) {
     VSyst.at(i)->Scale(SF);
     VSyst.at(i)->ReCalcValues();
   }
 }
+
+
 
 void Plot::ScaleProcessBin(TString pr, Float_t SF, Int_t ibin){
   float binContent;
@@ -1388,12 +1384,12 @@ void Plot::SetPad(TPad* pad, TString limits, TString margins, bool doGrid){
   if(doGrid) pad->SetGrid();
 }
 
-void Plot::SetHRatio(TH1F* h){
-  if(h == nullptr) h = hratio;
+void Plot::SetHRatio(TH1F* h) {
+  if (h == nullptr) h = hratio;
   h->SetTitle("");
-  if     (RatioYtitle == "S/B"    )   h->GetYaxis()->SetTitle("S/B");
-  else if(RatioYtitle == "S/sqrtB")   h->GetYaxis()->SetTitle("S/#sqrt{B}");
-  else if(RatioYtitle == "S/sqrtSpB") h->GetYaxis()->SetTitle("S/#sqrt{S+B}");
+  if      (RatioYtitle == "S/B"    )   h->GetYaxis()->SetTitle("S/B");
+  else if (RatioYtitle == "S/sqrtB")   h->GetYaxis()->SetTitle("S/#sqrt{B}");
+  else if (RatioYtitle == "S/sqrtSpB") h->GetYaxis()->SetTitle("S/#sqrt{S+B}");
   else                                 h->GetYaxis()->SetTitle(RatioYtitle);
 /*
   h->GetXaxis()->SetTitleSize(0.05);
@@ -1411,8 +1407,8 @@ void Plot::SetHRatio(TH1F* h){
   SetAxis(h->GetXaxis(), xtitle, xAxisTitleSize, xtitleOffset, xtitleDivisions, xAxisLabelSize);
   SetAxis(h->GetYaxis(), RatioYtitle , yRatioTitleSize, yRatioTitleOffset, 505, yRatioTitleLabelSize);
   h->GetYaxis()->CenterTitle();
-  int iBin = 1;
-  for (auto& label : VBinLabels){
+  Int_t iBin = 1;
+  for (auto& label : VBinLabels) {
     h->GetXaxis()->SetBinLabel( iBin, label );
     iBin++;
   }
@@ -1565,7 +1561,8 @@ Plot* Plot::NewPlot(TString newVar, TString newCut, TString newChan, Int_t newnb
   return p;
 }
 
-void Plot::PrintSamples(){
+
+void Plot::PrintSamples() {
   std::cout << "All the samples included in the plot: " << std::endl;
   for(Int_t i = 0; i < (Int_t) VTagSamples.size(); i++)
     cout << " >>> Sample " << VTagSamples.at(i) << " in process " << VTagProcesses.at(i) << std::endl;
@@ -1573,14 +1570,16 @@ void Plot::PrintSamples(){
     cout << " >>> Data sample " << VTagDataSamples.at(i) << std::endl;
 }
 
-void Plot::PrintSystematics(){
-  std::cout << "Systematics included: \n";
-  for(Int_t i = 0; i < (Int_t) VSystLabel.size(); i++)
+
+void Plot::PrintSystematics() {
+  if (verbose) cout << "[Plot::PrintSystematics] Systematics included: \n";
+  for (Int_t i = 0; i < (Int_t) VSystLabel.size(); i++)
     std::cout << " " << VSystLabel.at(i) << " ";
   std::cout << std::endl;
 }
 
-void Plot::PrintSystYields(){
+
+void Plot::PrintSystYields() {
   Int_t nBkgs = VBkgs.size();
   Int_t nSig  = VSignals.size();
   Int_t nSys  = VSystLabel.size();
@@ -1611,8 +1610,8 @@ Float_t Plot::GetTotalSystematic(TString pr){
   return TMath::Sqrt(sys2);
 }
 
-void Plot::PrintYields(TString cuts, TString labels, TString channels, TString options){
-  if(cuts == "") cuts = cut;
+void Plot::PrintYields(TString cuts, TString labels, TString channels, TString options) {
+  if (cuts == "") cuts = cut;
   //cuts.ReplaceAll(" ", "");
   std::vector<TString> VCuts = std::vector<TString>();
   std::vector<TString> VLCut = std::vector<TString>();
@@ -1692,11 +1691,12 @@ void Plot::PrintYields(TString cuts, TString labels, TString channels, TString o
 //      t[nBkgs+1+nSignals][k].SetStatError(TMath::Sqrt(np->hData->GetYield()));
     }
   }
+  if (verbose) cout << "[Plot::PrintSystYields] Printing table" << endl;
   t.SetDrawHLines(true); t.SetDrawVLines(true); t.Print();
   gSystem->mkdir(plotFolder, kTRUE);
-  if(options.Contains("tex"))  t.SaveAs(gSystem->ExpandPathName(plotFolder + "/" + YieldsTableName + ".tex"));
-  if(options.Contains("html")) t.SaveAs(gSystem->ExpandPathName(plotFolder + "/" + YieldsTableName + ".html"));
-  if(options.Contains("txt"))  t.SaveAs(gSystem->ExpandPathName(plotFolder + "/" + YieldsTableName + ".txt"));
+  if (options.Contains("tex"))  t.SaveAs(gSystem->ExpandPathName(plotFolder + "/" + YieldsTableName + ".tex"));
+  if (options.Contains("html")) t.SaveAs(gSystem->ExpandPathName(plotFolder + "/" + YieldsTableName + ".html"));
+  if (options.Contains("txt"))  t.SaveAs(gSystem->ExpandPathName(plotFolder + "/" + YieldsTableName + ".txt"));
 }
 
 
