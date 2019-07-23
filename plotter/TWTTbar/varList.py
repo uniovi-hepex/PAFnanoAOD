@@ -745,7 +745,7 @@ varList['LeadingLepPhiuncertainties'] = {
 
 
 varList['Lep1_Eta'] = {
-    'xaxis'       : 'Leading lepton |#eta|',
+    'xaxis'       : 'Leading lepton |#eta| (adim.)',
     'yaxis'       : 'd#sigma (pb)',
     'genbinning'  : [0., 0.6, 1.2, 1.8, 2.4],
     'recobinning' : [0., 0.3, 0.6, 0.9, 1.2, 1.5, 1.8, 2.1, 2.4],
@@ -760,8 +760,8 @@ varList['Lep1_Etauncertainties'] = {
     'yaxis'       : 'Relative uncertainty (adim.)'
 }
 varList['ResponseLep1_Eta'] = {
-    'xaxis'       : 'Dressed leading lepton |#eta|',
-    'yaxis'       : 'Leading lepton |#eta|'
+    'xaxis'       : 'Dressed leading lepton |#eta| (adim.)',
+    'yaxis'       : 'Leading lepton |#eta| (adim.)'
 }
 
 
