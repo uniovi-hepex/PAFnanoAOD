@@ -66,31 +66,45 @@ void Plot::AddSample(TString p, TString pr, Int_t type, Int_t color, TString sys
 }
 
 
-
-void Plot::GetStack() { // Sets the histogram hStack
-  if(hStack) delete hStack;
+void Plot::GetStack(Bool_t doNorm) {
+  if (verbose) cout << "[Plot::GetStack] Entering GetStack" << endl;
+  if (hStack) delete hStack;
   hStack = new THStack(varname, "");
-  Int_t nBkgs = VBkgs.size();
-  if (nBkgs == 0 && verbose){ std::cout << "Having no backgrounds was a mistake, you'll pay for that with a SegFault" << std::endl;}
-  for(Int_t i = 0; i < nBkgs; i++){
-    hStack->Add((TH1F*) VBkgs.at(i));
+
+  UShort_t nBkgs = VBkgs.size();
+  if (nBkgs == 0 && verbose) cout << "[Plot::GetStack] WARNING: having no backgrounds was a mistake, you'll pay for that with a SegFault" << endl;
+
+  if (doNorm) {
+    Double_t tmpint = 0;
+    for (UShort_t i = 0; i < nBkgs; i++) tmpint += VBkgs.at(i)->Integral();
+    for (UShort_t i = 0; i < nBkgs; i++) {
+      TH1F* tmphist = (TH1F*) VBkgs.at(i);
+      tmphist->Scale(1 / tmpint);
+      hStack->Add((TH1F*) tmphist);
+    }
   }
-  if(doExternalSyst) return;
-  if(hAllBkg) delete hAllBkg;
+  else {
+    for (UShort_t i = 0; i < nBkgs; i++) hStack->Add((TH1F*) VBkgs.at(i));
+  }
+
+  if (doExternalSyst) return;
+  if (hAllBkg) delete hAllBkg;
   hAllBkg = (new Histo(*(TH1F*) hStack->GetStack()->Last(), 3))->CloneHisto("AllBkg");
+  if (doNorm) hAllBkg->Scale(1 / hAllBkg->Integral());
   hAllBkg->doStackOverflow = doStackOverflow;
   hAllBkg->SetStyle();
   hAllBkg->SetTag("Uncertainty");
-  if(doSys && ((Int_t) VSystLabel.size() > 0)) GroupSystematics();
-  if(verbose) cout << Form("[Plot::GetStack] Adding %i systematic to the sum of background...\n", (Int_t) VSumHistoSystUp.size());
+  if (doSys && ((UShort_t) VSystLabel.size() > 0)) GroupSystematics();
+  if (verbose) cout << Form("[Plot::GetStack] Adding %i systematic to the sum of background...\n", (UShort_t) VSumHistoSystUp.size()) << endl;
 
-  for(Int_t i = 0; i < (Int_t) VSumHistoSystUp.size(); i++){
+  for (UShort_t i = 0; i < (UShort_t) VSumHistoSystUp.size(); i++) {
     hAllBkg->AddToSystematics(VSumHistoSystUp.at(i));
     hAllBkg->AddToSystematics(VSumHistoSystDown.at(i));
   }
-  if(doSys && ((Int_t) VSystLabel.size() > 0)) hAllBkg->SetBinsErrorFromSyst();
+  if (doSys && ((UShort_t) VSystLabel.size() > 0)) hAllBkg->SetBinsErrorFromSyst();
   hAllBkg->ReCalcValues();
 }
+
 
 Histo* Plot::GetAllBkgClone(TString newname){
   if(!hStack) GetStack();
@@ -100,13 +114,11 @@ Histo* Plot::GetAllBkgClone(TString newname){
 }
 
 
-
 Float_t Plot::GetAllBkg(Int_t ibin){
   if(!hStack) GetStack();
   Float_t val = ibin < 0 ? hAllBkg->GetYield() : hAllBkg->GetBinContent(ibin);
   return val;
 }
-
 
 
 void Plot::SetData(){  // Returns histogram for Data
@@ -997,7 +1009,7 @@ void Plot::DrawStack(TString tag, Bool_t doNorm) {
   if (verbose) cout << "[Plot::DrawStack] Setting Canvas..." << endl;
   TCanvas* c = SetCanvas(); plot->cd();
   SetData();
-  GetStack();
+  GetStack(doNorm);
   if (dataStyle.Contains("l")  || dataStyle.Contains("L") || dataStyle.Contains("hist")){ hData->SetLineWidth(2); hData->SetLineColor(1);}
   if (verbose) cout << "[Plot::DrawStack] Integral of hAllBkg: " << hAllBkg->Integral() << endl;
 
@@ -1006,7 +1018,7 @@ void Plot::DrawStack(TString tag, Bool_t doNorm) {
   Int_t nSignals = 0;
   VSignalsStack.clear();
   Histo* hSignal = nullptr;
-  if(doSignal){
+  if (doSignal) {
     nSignals = VSignals.size();
     if (verbose) cout << "[Plot::DrawStack] Drawing " << nSignals << " signals..." << endl;
     for (Int_t i = 0; i < nSignals; i++) if(VSignals.at(i)->GetProcess() == SignalProcess) hSignal = VSignals.at(i);
@@ -1029,6 +1041,7 @@ void Plot::DrawStack(TString tag, Bool_t doNorm) {
       hSignal->SetFillColor(hSignal->GetColor());
       //hStack->Add(hSignal);
     }
+    if (doNorm) hSignal->Scale(1 / hSignal->Integral());
   }
 /*  TH1F* hSigDraw;
   if(doSignal){
@@ -1079,12 +1092,19 @@ void Plot::DrawStack(TString tag, Bool_t doNorm) {
   if (centerYaxis) hStack->GetYaxis()->CenterTitle();
   hStack->GetXaxis()->SetLabelSize(0.0);
 
-  //--------- Draw signal
-  if (verbose) cout << "[Plot::DrawStack] Drawing signal(s).";
+  //--------- Draw signal(s)
+  if (verbose) cout << "[Plot::DrawStack] Drawing signal(s)." << endl;
   if (doSignal && (SignalStyle == "scan" || SignalStyle == "BSM" || SignalStyle == "")) {
     if (verbose) cout << "[Plot::DrawStack] Signal style: scan ----> nSignals = " << nSignals << endl;
-    for (Int_t  i = 0; i < nSignals; i++) VSignals.at(i)->Draw(SignalDrawStyle + "same");
-    if (verbose) cout << "[Plot::DrawStack] Drawn singals!!" << endl;
+    if (doNorm) {
+      for (Int_t  i = 0; i < nSignals; i++) {
+        TH1F* tmpSig = (TH1F*)VSignals.at(i)->Clone("tmpSig");
+        tmpSig->Scale(1 / VSignals.at(i)->Integral());
+        tmpSig->Draw(SignalDrawStyle + "same");
+      }
+    }
+    else for (Int_t  i = 0; i < nSignals; i++) VSignals.at(i)->Draw(SignalDrawStyle + "same");
+    if (verbose) cout << "[Plot::DrawStack] Signals drawn." << endl;
   }
 
   //---------  Draw systematic errors
@@ -1097,7 +1117,7 @@ void Plot::DrawStack(TString tag, Bool_t doNorm) {
     hAllBkg->SetMarkerSize(0);
   }
 
-  if(doSys && ((Int_t) VSystLabel.size() > 0 || doExternalSyst))  hAllBkg->Draw("same,e2");
+  if (doSys && ((Int_t) VSystLabel.size() > 0 || doExternalSyst)) hAllBkg->Draw("same,e2");
 
 //   for(Int_t  i = 0; i < nSignals; i++)
 //     VSignalsStack.at(i)->Draw("hist,same");
@@ -1122,13 +1142,14 @@ void Plot::DrawStack(TString tag, Bool_t doNorm) {
 
   //--------- Draw systematics ratio
   if (verbose) cout << "[Plot::DrawStack] Drawing systematics ratio." << endl;
+  if (verbose) cout << "[Plot::DrawStack] WARNING: ratio normalisation not implemented for uncertainties." << endl;
   Int_t nbins = hAllBkg->GetNbinsX(); Float_t binval = 0; Float_t errbin = 0; Float_t totalerror = 0;
   TH1F* hratioerr =  (TH1F*) hAllBkg->Clone("hratioerr");
   if (doSys) {
     hAllBkg->SetFillStyle(StackErrorStyle);
     Int_t nbins = hAllBkg->GetNbinsX(); Float_t binval = 0; Float_t errbin = 0; Float_t totalerror = 0;
     cout << "[Plot::DrawStack] Going through the doSys.." << endl;
-    for (int bin = 1; bin <= nbins; bin++){  // Set bin error
+    for (Int_t bin = 1; bin <= nbins; bin++){  // Set bin error
       totalerror = hAllBkg->GetBinError(bin);
       binval = hAllBkg->GetBinContent(bin);
       errbin = binval > 0 ? totalerror/binval : 0.0;
@@ -1187,36 +1208,35 @@ void Plot::DrawStack(TString tag, Bool_t doNorm) {
   }
   else if (RatioStyle == "S/sqrtB")   {cout << "Option not implemented yet!!!! Sorry!!!! [DO IT YOURSELF!]\n";}
   else if (RatioStyle == "S/sqrtSpB") {cout << "Option not implemented yet!!!! Sorry!!!! [DO IT YOURSELF!]\n";}
-  else if (RatioStyle == "S/SpB") {      if(doData) hratio = (TH1F*)hData->Clone("hratio");
+  else if (RatioStyle == "S/SpB")     {
     if (doData) hratio = (TH1F*)hData->Clone("hratio");
     else        hratio = (TH1F*)hAllBkg->Clone("hratio");
     // ratio by hand so systematic (background) errors don't get summed up to statistical ones (data)
     for (Int_t bin = 0; bin < hratio->GetNbinsX(); ++bin) {
-      if (hratio->GetBinContent(bin+1) > 0){
+      if (hratio->GetBinContent(bin+1) > 0) {
         hratio->SetBinContent( bin+1, hratio->GetBinContent(bin+1) / (hAllBkg->GetBinContent(bin+1) + hSignal->GetBinContent(bin+1)));
         hratio->SetBinError  ( bin+1, hratio->GetBinError  (bin+1) / (hAllBkg->GetBinContent(bin+1) + hSignal->GetBinContent(bin+1)));
       }
       else { hratio->SetBinError  ( bin+1, 0.); }
     }
   }
-    //}
   else { // ratio Data/MC
-      if(doData) hratio = (TH1F*)hData->Clone("hratio");
-      else       hratio = (TH1F*)hAllBkg->Clone("hratio");
+      if (doData) hratio = (TH1F*)hData->Clone("hratio");
+      else        hratio = (TH1F*)hAllBkg->Clone("hratio");
       // ratio by hand so systematic (background) errors don't get summed up to statistical ones (data)
-      for (Int_t bin = 0; bin < hratio->GetNbinsX(); ++bin){
+      for (Int_t bin = 0; bin < hratio->GetNbinsX(); ++bin) {
         if (hratio->GetBinContent(bin+1) > 0){
           hratio->SetBinContent( bin+1, hratio->GetBinContent(bin+1) / hAllBkg->GetBinContent(bin+1));
           hratio->SetBinError  ( bin+1, hratio->GetBinError  (bin+1) / hAllBkg->GetBinContent(bin+1));
         }
-        else{ hratio->SetBinError  ( bin+1, 0.); }
+        else { hratio->SetBinError  ( bin+1, 0.); }
       }
   }
   SetHRatio(hratio);
   //if(!RatioYtitle.Contains("S")) hratio->SetLineWidth(0);
   hratio->Draw("sameE1X0");
 
-  if (verbose) cout << "[Plot::DrawStack] Drawing hline...\n";
+  if (verbose) cout << "[Plot::DrawStack] Drawing hline...\n" << endl;
   if (RatioStyle == "S/B") hline->Draw();
   if (doSys) {
     hratioerr->Draw("same,e2");
