@@ -19,6 +19,7 @@ labelcontrol= ""
 legtxtsize  = 0.055
 labelpos    = (0.275, 0.89)
 doPrefChecks= False
+doNorm      = False
 pathToTree  = vl.minipath
 nCores      = 1
 
@@ -50,15 +51,15 @@ r.gROOT.LoadMacro('../PDFunc.C+')
 def plotvariable(tsk):
     var, cut, chan = tsk
     nbins    = int(20) if "ndescbins" not in vl.varList[var] else int(vl.varList[var]['ndescbins'])
-    lowedge  = float(vl.varList[var]['recobinning'][0]) if "descbinning" not in vl.varList[var] else float(vl.varList[var]['descbinning'][0])
+    lowedge  = float(vl.varList[var]['recobinning'][0])  if "descbinning" not in vl.varList[var] else float(vl.varList[var]['descbinning'][0])
     highedge = float(vl.varList[var]['recobinning'][-1]) if "descbinning" not in vl.varList[var] else float(vl.varList[var]['descbinning'][1])
     width    = (highedge - lowedge)/nbins
     
     p = r.PlotToPy(r.TString(vl.varList[var]['var']), r.TString(StandardCut) if cut == "signal" else r.TString(ControlCut), r.TString(chan), nbins, lowedge, highedge, r.TString(var), r.TString(vl.varList[var]['xaxis']))
-    p.SetPath(pathToTree); 
+    p.SetPath(pathToTree);
     p.SetTreeName(NameOfTree);
     p.SetPathSignal(pathToTree);
-    p.SetTitleY("Events / " + str(int(round(width, 0))) + " GeV" if var != "DPhiLL" else "Events / bin" )
+    p.SetTitleY("Events / " + str(int(round(width, 0))) + " GeV" if ("Eta" not in var and "DPhi" not in var) else "Events / bin" )
     p.SetLumi(vl.Lumi)
     p.verbose  = False;
     p.verbose  = True;
@@ -123,7 +124,7 @@ def plotvariable(tsk):
     #if doPrefChecks: p.SetWeight('TWeight * (1 - prefWeight)')   # FOR PREFIRING CHECKS
     #else:            p.SetWeight('TWeight')
     
-    p.AddSample("b_bbar_4l",            "tW+t#bar{t}",      r.itSignal, r.kBlue)
+    p.AddSample("b_bbar_4l",            "WWbb",      r.itSignal, r.kBlue)
     
     
     #p.AddSample("MuonEG",                       "Data",         r.itData);
@@ -251,10 +252,18 @@ def plotvariable(tsk):
     p.SetPadRatioMargins(vl.marginsratio)
     p.SetTexChanSize(0.06)
     p.SetTextLumiPosX(0.69)
-    p.SetYratioOffset(0.35)
-    p.SetRatioYtitle("S/B")
-    p.SetRatioMin(0)
-    p.SetRatioMax(0.5)
+
+    #p.SetYratioOffset(0.35)
+    p.SetYratioOffset(0.45)
+    p.SetRatioYtitle("WWbb/tW+t#bar{t}")
+    p.SetRatioStyle("S/B")
+    if doNorm:
+        p.SetRatioMin(0.7)
+        p.SetRatioMax(1.3)
+    else:
+        p.SetRatioMin(0)
+        p.SetRatioMax(0.2)
+
     p.SetCenterYAxis(False)
     p.SetXaxisOffset(1.1)
     p.ObliterateXErrorBars()
@@ -272,14 +281,15 @@ def plotvariable(tsk):
     p.doYieldsInLeg = False;
     if "doLogY" in vl.varList[var]: p.doSetLogy = vl.varList[var]['doLogY']
     else:                           p.doSetLogy = False
+    if doNorm:                      p.doSetLogy = False
     #p.doData        = False;
     #p.doSignal      = False;
     p.doSignal      = True;
     
-    if "abs" in vl.varList[var]['var'] or "min" in vl.varList[var]['var']:
-        p.NoShowVarName = True;
-        p.SetOutputName(vl.varList[var]['var_response'] * ("ATLAS" not in var) + var * ("ATLAS" in var) + "_" + chan);
-    p.DrawStack();
+    p.NoShowVarName = True;
+    p.SetOutputName(vl.varList[var]['var_response'] * ("ATLAS" not in var) + var * ("ATLAS" in var) + "_" + chan + "_norm" * doNorm);
+    #p.DrawStack();
+    p.DrawStack("", doNorm);
     p.PrintSystematics()
     p.PrintYields("", "", "", "")
     p.PrintSystYields()
@@ -740,6 +750,7 @@ def plotthenumberofjets(tsk):
     p.PrintYields("", "", "", "")
     p.PrintSystYields()
     del p
+
 
 def lazyoptimisation(tsk):
     var, reg, chn, bnng = tsk
