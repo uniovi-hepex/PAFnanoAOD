@@ -91,18 +91,11 @@ void TWTTbarAnalysis::InsideLoop() {
   // Event variables
   passMETfilters    = GetParam<Bool_t>("METfilters");
   passTrigger       = GetParam<Bool_t>("passTrigger");
-  year              = (UShort_t)GetParam<Int_t>("year");
+  year              = (UShort_t)GetParam<TString>("year").Atoi();
   
   // Leptons and Jets
   GetLeptonVariables();
   GetGenLepVariables();
-  
-//   if (gOptions.Contains("Semi")) {
-//     if (gIsTTbar && DressNLeps > 1 ) return;
-//   } else {
-//     if (gIsTTbar && DressNLeps < 2 ) return; // Dilepton selection for ttbar!
-//   }
-  
   GetJetVariables();
   GetGenJetVariables();
   GetMETandGenMET();
@@ -117,7 +110,7 @@ void TWTTbarAnalysis::InsideLoop() {
     CalculateDressTWTTbarVariables();
     DoesItReallyPassDress();
   }
-  
+
   // Detector level selection
   if ((TNSelLeps >= 2) && passTrigger && passMETfilters && ((selLeptons.at(0).p + selLeptons.at(1).p).M() > 20) &&
       (TLep1_Pt > 25) && (TLep2_Pt > 20) && (!TIsSS)) {
@@ -609,9 +602,11 @@ void TWTTbarAnalysis::GetMETandGenMET() {
     TMET        = Get<Float_t>("METFixEE2017_pt");
     TMET_Phi    = Get<Float_t>("METFixEE2017_phi");
   }
-  else if (year == 2018) { // CAMBIAR PA QUE SEA LISTO Y DETECTE EL NOM CUANDO LO HAYA
-    TMET        = Get<Float_t>("MET_pt_nom");
-    TMET_Phi    = Get<Float_t>("MET_phi_nom");
+  else if (year == 2018) {
+//     TMET        = Get<Float_t>("MET_pt_nom");
+//     TMET_Phi    = Get<Float_t>("MET_phi_nom");
+    TMET        = Get<Float_t>("MET_pt");
+    TMET_Phi    = Get<Float_t>("MET_phi");
   }
   
   if (gIsData) return;
@@ -1023,6 +1018,7 @@ void TWTTbarAnalysis::DoesItReallyPassDress() { // FINAL (not all) requirements 
 void TWTTbarAnalysis::DoesItReallyPassReco() { // FINAL (not all) requirements for detector level selection
   if ((TNJets == 2) && (TNBJets == 2) && (NLooseCentral == 2)) {
     if (TChannel == iMuon || TChannel == iElec) {
+      cout << "wololo. met: " << TMET << " ml1l2: " << TLep1Lep2_M << " el abs: " << abs(TLep1Lep2_M - Zm) << endl;
       if ((TMET > 20) && (abs(TLep1Lep2_M - Zm) > 15)) TPassReco = true;
     }
     else TPassReco = true;
