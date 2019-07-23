@@ -330,6 +330,9 @@ if __name__ == "__main__":
   queue       = args.queue
   fixedchunk  = int(args.fixedchunk)
   ncores      = nSlots
+  doCheck     = args.check
+  doReSubmit  = args.resubmit
+  if doReSubmit: doCheck = True
 
   # Check if a cfg file is given as first argument
   fname = selection
