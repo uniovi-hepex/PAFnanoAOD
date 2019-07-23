@@ -274,7 +274,7 @@ public:
   Histo* GetAllBkgClone(TString newname = "NewHisto_AllBkg");
   virtual void SetGoF(TString thegof="chi2");
   
-  virtual void DrawStack(TString tag = "");
+  virtual void DrawStack(TString tag = "", Bool_t doNorm = false);
   void DrawComp(TString tag = "", bool doNorm = 0, TString options = "");
   virtual void SaveHistograms();
 

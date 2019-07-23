@@ -424,25 +424,25 @@ void Plot::Group(Histo* h){
 }
 
 
+
 //================================================================================
 // Drawing
 //================================================================================
-// SetLegend()
-// TCanvas* SetCanvas()
-// void DrawStack(TString tag = "0")
-Float_t Plot::GetData(Int_t ibin){
-  if(!hData) SetData();
+Float_t Plot::GetData(Int_t ibin) {
+  if (!hData) SetData();
   Float_t y = hData->GetYield();
-  if(ibin >= 0) y = hData->GetBinContent(ibin);
+  if (ibin >= 0) y = hData->GetBinContent(ibin);
   return y;
 }
 
-Histo* Plot::GetHData(){
+
+Histo* Plot::GetHData() {
   if(!hData) SetData();
   return VData.at(0);
 }
 
-Histo* Plot::GetHisto(TString pr, TString systag){
+
+Histo* Plot::GetHisto(TString pr, TString systag) {
   if(pr == "Data") return GetHData();
   Float_t val = 0; Float_t sys = 0; TString ps;
   Int_t nSyst = VSyst.size();
@@ -473,6 +473,7 @@ Histo* Plot::GetHisto(TString pr, TString systag){
   return GetHisto(pr, "0");
 }
 
+
 Int_t Plot::GetProcessType(TString pr, TString systag){
   if(systag != "0" && systag != "") return itSys;
   Int_t nBkg = VBkgs.size();
@@ -484,6 +485,7 @@ Int_t Plot::GetProcessType(TString pr, TString systag){
   if(verbose) cout << "[Plot::GetProcessType]: Not found process " << pr << endl;
   return -1;
 }
+
 
 Int_t Plot::GetProcessIndex(TString pr, TString systag){
   Int_t type = GetProcessType(pr, systag);
@@ -503,6 +505,7 @@ Int_t Plot::GetProcessIndex(TString pr, TString systag){
   }
   return -1;
 }
+
 
 void Plot::RemoveProcess(TString pr, TString systag){
   Int_t type = GetProcessType(pr, systag);
@@ -527,10 +530,12 @@ void Plot::RemoveProcess(TString pr, TString systag){
   }
 }
 
+
 Bool_t Plot::Exists(TString pr, TString systag){
   if(GetProcessIndex(pr, systag) == -1) return false;
   else return true;
 }
+
 
 Bool_t Plot::RenameProcess(TString pr, TString newname, TString systag){
   if(Exists(newname, systag)) return false;
@@ -563,6 +568,7 @@ Bool_t Plot::RenameProcess(TString pr, TString newname, TString systag){
   }
   return true;
 }
+
 
 void Plot::GroupProcesses(TString pr, TString newProcess){
   if(pr.Contains(",")){
@@ -598,6 +604,7 @@ void Plot::GroupProcesses(TString pr, TString newProcess){
   RemoveProcess(pr);
 }
 
+
 Histo* Plot::GetHistoError(TString pr, TString syst){
   Histo *h = GetHisto(pr, syst)->CloneHisto("RelUnc_" + pr + "_" + syst);
   Histo* n = GetHisto(pr);
@@ -614,6 +621,7 @@ Histo* Plot::GetHistoError(TString pr, TString syst){
   h->SetDirectory(0);
   return h;
 }
+
 
 void Plot::AddUncToHisto(TString pr, TString sys, TString pr_new, TString sys_new){
   Histo* hnom = GetHisto(pr);
@@ -634,7 +642,6 @@ void Plot::AddUncToHisto(TString pr, TString sys, TString pr_new, TString sys_ne
     if(s > n) hsys->SetBinContent(i, n + a + v); else hsys->SetBinContent(i, n + a - v);
   }
 }
-
 
 
 Histo* Plot::GetSymmetricHisto(TString pr, TString systag){
@@ -660,10 +667,12 @@ Histo* Plot::GetSymmetricHisto(TString pr, TString systag){
   return sym;
 }
 
+
 void Plot::AddSymmetricHisto(TString pr, TString systag){
   Histo* h = GetSymmetricHisto(pr, systag);
   AddToHistos(h);
 }
+
 
 Float_t Plot::GetYield(TString pr, TString systag, Int_t ibin){
   if(pr == "Data" || pr == "data") return GetData(ibin);
@@ -707,6 +716,7 @@ Float_t Plot::GetYield(TString pr, TString systag, Int_t ibin){
   //cout << "[Plot::GetYield] WARNING: No systematic " << systag << " for process " << pr << "!!! ...... Returning nominal value... " << endl;
   return GetYield(pr, "", ibin);
 }
+
 
 TLegend* Plot::SetLegend(){ // To be executed before using the legend
   TLegend* leg = new TLegend(fLegX1, fLegY1, fLegX2, fLegY2);
@@ -773,7 +783,6 @@ void Plot::SetLegendPosition(TString pos) {
 }
 
 
-
 TCanvas* Plot::SetCanvas(){ // Returns the canvas
 //   TCanvas* c= new TCanvas("c", "c", 10, 10, 800, 600);
   TCanvas* c= new TCanvas("c", "c", 10, 10, widthcanvas, heightcanvas);
@@ -818,6 +827,7 @@ TCanvas* Plot::SetCanvas(){ // Returns the canvas
 
   return c;
 }
+
 
 void Plot::DrawComp(TString tag, bool doNorm, TString options){
   doUncInLegend = false;
@@ -981,15 +991,14 @@ void Plot::DrawComp(TString tag, bool doNorm, TString options){
 }
 
 
-
-void Plot::DrawStack(TString tag) {
+void Plot::DrawStack(TString tag, Bool_t doNorm) {
   if (verbose) cout << "[Plot::DrawStack] Entering DrawStack." << endl;
   std::vector<Histo*> VStackedSignals;
   if (verbose) cout << "[Plot::DrawStack] Setting Canvas..." << endl;
   TCanvas* c = SetCanvas(); plot->cd();
   SetData();
   GetStack();
-  if(dataStyle.Contains("l")  || dataStyle.Contains("L") || dataStyle.Contains("hist")){ hData->SetLineWidth(2); hData->SetLineColor(1);}
+  if (dataStyle.Contains("l")  || dataStyle.Contains("L") || dataStyle.Contains("hist")){ hData->SetLineWidth(2); hData->SetLineColor(1);}
   if (verbose) cout << "[Plot::DrawStack] Integral of hAllBkg: " << hAllBkg->Integral() << endl;
 
   //--------- Plotting options for the signal
@@ -1001,7 +1010,7 @@ void Plot::DrawStack(TString tag) {
     nSignals = VSignals.size();
     if (verbose) cout << "[Plot::DrawStack] Drawing " << nSignals << " signals..." << endl;
     for (Int_t i = 0; i < nSignals; i++) if(VSignals.at(i)->GetProcess() == SignalProcess) hSignal = VSignals.at(i);
-    cout << "[Plot::DrawStack] Setting signal..." << endl; if((int) VSignals.size() >= 0) hSignal = VSignals.at(0);
+    if (verbose) cout << "[Plot::DrawStack] Setting signal..." << endl; if((int) VSignals.size() >= 0) hSignal = VSignals.at(0);
     hSignal->ReCalcValues();
     if (verbose) cout << "[Plot::DrawStack] Signal process: " << SignalProcess << endl;
     if ((SignalStyle == "SM" || SignalStyle == "H")) { // Only supports one signal
@@ -1014,7 +1023,7 @@ void Plot::DrawStack(TString tag) {
         VSignalsStack.push_back(hSignal);
       }
     }
-    else if(SignalStyle == "CrossSection" || SignalStyle == "xsec" || SignalStyle == "Bkg" || SignalStyle == "Fill"){
+    else if (SignalStyle == "CrossSection" || SignalStyle == "xsec" || SignalStyle == "Bkg" || SignalStyle == "Fill"){
       hSignal->SetLineWidth(3);
       hSignal->SetLineColor(hSignal->GetColor());
       hSignal->SetFillColor(hSignal->GetColor());
@@ -1029,8 +1038,8 @@ void Plot::DrawStack(TString tag) {
   }*/
 
   hStack->Draw("hist");
-  cout << "[Plot::DrawStack] Integral of hAllBkg: " << hAllBkg->Integral() << ", yield: " << hAllBkg->GetYield() << endl;
-  cout << "[Plot::DrawStack] Number of signals from the stack: " << VSignalsStack.size() << endl;
+  if (verbose) cout << "[Plot::DrawStack] Integral of hAllBkg: " << hAllBkg->Integral() << ", yield: " << hAllBkg->GetYield() << endl;
+  if (verbose) cout << "[Plot::DrawStack] Number of signals from the stack: " << VSignalsStack.size() << endl;
   //for(int i = 0; i < (int) VSignalsStack.size(); i++) VSignalsStack.at(i)->Draw("hist,same");
 /*  if((SignalStyle == "SM" || SignalStyle == "H")){
     Histo* AddMe = hAllBkg->CloneHisto("AddMeToLegend");
@@ -1115,11 +1124,11 @@ void Plot::DrawStack(TString tag) {
   if (verbose) cout << "[Plot::DrawStack] Drawing systematics ratio." << endl;
   Int_t nbins = hAllBkg->GetNbinsX(); Float_t binval = 0; Float_t errbin = 0; Float_t totalerror = 0;
   TH1F* hratioerr =  (TH1F*) hAllBkg->Clone("hratioerr");
-  if(doSys){
+  if (doSys) {
     hAllBkg->SetFillStyle(StackErrorStyle);
     Int_t nbins = hAllBkg->GetNbinsX(); Float_t binval = 0; Float_t errbin = 0; Float_t totalerror = 0;
     cout << "[Plot::DrawStack] Going through the doSys.." << endl;
-    for(int bin = 1; bin <= nbins; bin++){  // Set bin error
+    for (int bin = 1; bin <= nbins; bin++){  // Set bin error
       totalerror = hAllBkg->GetBinError(bin);
       binval = hAllBkg->GetBinContent(bin);
       errbin = binval > 0 ? totalerror/binval : 0.0;
@@ -1134,11 +1143,11 @@ void Plot::DrawStack(TString tag) {
   //--------- Set legend and other texts
   if (verbose) cout << "[Plot::DrawStack] Setting legend and other texts." << endl;
   TLegend* leg = SetLegend();
-  if(doLegend) leg->Draw("same");
+  if (doLegend) leg->Draw("same");
   texcms->Draw("same");     // CMS
   texlumi->Draw("same");    // The luminosity
   texPrelim->Draw("same");  // Preliminary
-  if (chlabel != ""){
+  if (chlabel != "") {
     SetTexChan();
     texchan->Draw("same");
   }
@@ -1146,8 +1155,8 @@ void Plot::DrawStack(TString tag) {
   //---------- Set ratio... with Data, S/B, etc
   pratio->cd();
   TLine *hline = nullptr;
-  if (RatioYtitle == "S/B") {
-    cout << "[Plot::DrawStack] Drawing Ratio: S/B!\n";
+  if (RatioStyle == "S/B") {
+    if (verbose) cout << "[Plot::DrawStack] Drawing Ratio: S/B!\n";
     if (!doSignal) cout << "[Plot::DrawStack] WARNING: cannot print ratio Signal/Background without signal!!" << endl;
     else {
       if (verbose) cout << "[Plot::DrawStack] Integral of hAllBkg: " << hAllBkg->Integral() << ", yield: " << hAllBkg->GetYield() << endl;
@@ -1176,9 +1185,9 @@ void Plot::DrawStack(TString tag) {
       }*/
     }
   }
-  else if (RatioYtitle == "S/sqrtB")   {cout << "Option not implemented yet!!!! Sorry!!!! [DO IT YOURSELF!]\n";}
-  else if (RatioYtitle == "S/sqrtSpB") {cout << "Option not implemented yet!!!! Sorry!!!! [DO IT YOURSELF!]\n";}
-  else if (RatioYtitle == "S/SpB") {      if(doData) hratio = (TH1F*)hData->Clone("hratio");
+  else if (RatioStyle == "S/sqrtB")   {cout << "Option not implemented yet!!!! Sorry!!!! [DO IT YOURSELF!]\n";}
+  else if (RatioStyle == "S/sqrtSpB") {cout << "Option not implemented yet!!!! Sorry!!!! [DO IT YOURSELF!]\n";}
+  else if (RatioStyle == "S/SpB") {      if(doData) hratio = (TH1F*)hData->Clone("hratio");
     if (doData) hratio = (TH1F*)hData->Clone("hratio");
     else        hratio = (TH1F*)hAllBkg->Clone("hratio");
     // ratio by hand so systematic (background) errors don't get summed up to statistical ones (data)
