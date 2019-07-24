@@ -108,7 +108,7 @@ def GetTStringVectorSamples(path, samples):
   from ROOT import vector, TString, gSystem
   # Add the input data files
   v = vector(TString)()
-  for s in samples: 
+  for s in samples:
     t = TString(path+s)
     v.push_back(t)
   return v
@@ -120,19 +120,19 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
     sample.replace(' ', '')
     sample = sample.split(',')
   if not isinstance(sample, list): sample = [sample]
-  
+
   if not path.endswith('/'): path += '/'
-  
-  
+
+
   # Get dictionary with all files in the path directory
   samples = GetSampleList(path, sample)
-  
+
   nEventsInTree, nGenEvents, nSumOfWeights, isData = GetAllInfoFromFile([path + x for x in samples])
   xsec = GetXsec(xsec, outname, verbose, isData) if not dotest else 1
   isamcatnlo = True if nGenEvents != nSumOfWeights else False
   if isData: isamcatnlo = False
 
-  if verbose: 
+  if verbose:
     stipe = 'MC' if not isData else 'DATA'
     print '## Processing a %i %s sample...'%(year, stipe)
     print '## Files found in %s'%path
@@ -202,28 +202,28 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
 def RunPAF(samples, selection, xsec, nSumOfWeights, year, outname, nSlots = 1, outpath = '', options = '', isamcatnlo = False, isData = False, nEvents = 0, FirstEvent = 0, workingdir = ''):
   from ROOT import PAFProject, PAFIExecutionEnvironment ,PAFSequentialEnvironment, PAFPROOFLiteEnvironment, PAFPoDEnvironment
   from ROOT import vector, TString, gSystem
-  
+
   # PAF mode selection (based on number of slots)
   pafmode = PAFSequentialEnvironment();
   if   nSlots <=  1: pafmode = PAFSequentialEnvironment();
   else             : pafmode = PAFPROOFLiteEnvironment(nSlots);
-  
+
   myProject = PAFProject(pafmode);
-  
+
   myProject.AddDataFiles(samples);
   myProject.SetDefaultTreeName("Events");
-  
+
   # Deal with first and last event
   if nEvents > 0:      myProject.SetNEvents(nEvents);
   if FirstEvent > 0:   myProject.SetFirstEvent(FirstEvent);
   if workingdir == "": workingdir = os.getcwd()
-  
+
   # Set output file
   if outpath == '': outpath = workingdir + "/" + selection + "_temp"
   gSystem.mkdir(outpath, 1);
   myProject.SetOutputFile(outpath + "/" + outname + ".root");
   if verbose: print '## Output to: %s'%(outpath + "/" + outname + ".root")
-  
+
   # Parameters for the analysis
   myProject.SetInputParam("sampleName",        outname);
   myProject.SetInputParam("IsData",            isData    );
@@ -234,15 +234,15 @@ def RunPAF(samples, selection, xsec, nSumOfWeights, year, outname, nSlots = 1, o
   myProject.SetInputParam("xsec",              xsec);
   myProject.SetInputParam("_options",          options);
   myProject.SetInputParam("year",              str(year));
-  
+
   # Name of analysis class
   myProject.AddSelectorPackage("LeptonSelector");
   myProject.AddSelectorPackage("JetSelector");
   myProject.AddSelectorPackage("EventBuilder");
-  
+
   # Analysis selector
   if selection != "": myProject.AddSelectorPackage(selection)
-  
+
   # Additional packages
   myProject.AddPackage("Lepton");
   myProject.AddPackage("Jet");
@@ -250,11 +250,11 @@ def RunPAF(samples, selection, xsec, nSumOfWeights, year, outname, nSlots = 1, o
   myProject.AddPackage("Functions");
   myProject.AddPackage("LeptonSF");
   myProject.AddPackage("BTagSFUtil");
-  
+
   myProject.Run();
 
 
-def CheckFileEvents(snames, sfiles, path, outpath):
+def CheckFileEvents(snames, sfiles, path, outpath, chkdir = None):
   ''' Check events in mother file and output file, using the fhDummy histogram '''
   from ROOT import TFile
   outlist = []
