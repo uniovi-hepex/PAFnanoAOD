@@ -288,7 +288,7 @@ def CheckFileEvents(snames, sfiles, path, outpath, chkdir = None):
         trypath = '{op}/{nm}_{ch}.root'.format(op = outpath, nm = f, ch = ich)
         if not os.path.isfile(trypath):
           outlist.append((f, ich))
-          print '\033[0;31mSample \033[0;36m%s\033[0;31m not found\033[0m'%f
+          print '\033[0;31mSample \033[0;36m%s_%s\033[0;31m not found\033[0m'%(f, ich)
         else:
           tf = TFile.Open(trypath)
           if not hasattr(tf, 'fhDummy'):
@@ -456,7 +456,8 @@ if __name__ == "__main__":
         else:
           print 'Files to resubmit: '
           for f in spl:
-            print ' >> %s'%f
+            if not isinstance(f, tuple): print ' >> %s'%f
+            else:                        print ' >> %s'%(f[0])
       else:
         exit()
 
@@ -469,18 +470,20 @@ if __name__ == "__main__":
       outname = 'test'
 
     for sname in spl:
-      if not isinstance(sname, tuple): outname = sname
+      if not isinstance(sname, tuple): truesname = sname
       else:
-        outname    = sname[0]
+        truesname = sname[0]
         fixedchunk = sname[1]
-      sample  = samplefiles[sname]
-      ncores  = nslots[sname]
 
-      if sname in chunkdir:
+      outname = truesname
+      sample  = samplefiles[truesname]
+      ncores  = nslots[truesname]
+
+      if truesname in chunkdir:
         tmpsample = sample
         tmppath   = path
-        tmpnchs   = int(chunkdir[sname])
-        if verbose: print " >> The sample {smp} is going to be separated into {chs} chunks.".format(smp = sname, chs = str(chunkdir[sname]))
+        tmpnchs   = int(chunkdir[truesname])
+        if verbose: print " >> The sample {smp} is going to be separated into {chs} chunks.".format(smp = truesname, chs = str(chunkdir[truesname]))
         if ',' in tmpsample:
           tmpsample.replace(' ', '')
           tmpsample = tmpsample.split(',')
