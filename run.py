@@ -432,7 +432,7 @@ if __name__ == "__main__":
     if args.outpath    != ''     : outpath     = args.outpath
     if args.nEvents    != 0      : nEvents     = args.nEvents
     if args.firstEvent != 0      : FirstEvent  = args.firstEvent
-    if args.queue      != 0      : queue       = args.queue
+    if args.queue      != "short": queue       = args.queue
 
     if args.nSlots     != -1:
       nSlots      = int(args.nSlots)
