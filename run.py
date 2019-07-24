@@ -280,7 +280,11 @@ def CheckFileEvents(snames, sfiles, path, outpath, chkdir = None):
           print '\033[0;31mBAD \033[0;34m%s \033[0;33m(%1.2f %s)\033[0m'%(f, (nEventsInTree-dummy)/nEventsInTree*100, '%')
           outlist.append(f)
     else:
-      for ich in range(int(chunkdir[sname])):
+      samples      = GetSampleList(path, getlist(sfiles[f]))
+      nTrueEntries = GetAllInfoFromFile([path + x for x in samples])[0]
+      tmpnchs      = int(chunkdir[f])
+      tmpnEvents   = nTrueEntries / tmpnchs
+      for ich in range(tmpnchs):
         trypath = '{op}/{nm}_{ch}.root'.format(op = outpath, nm = f, ch = ich)
         if not os.path.isfile(trypath):
           outlist.append((f, ich))
@@ -292,13 +296,10 @@ def CheckFileEvents(snames, sfiles, path, outpath, chkdir = None):
             outlist.append((f, ich))
             continue
           dummy   = tf.fhDummy.GetEntries()
-          samples = GetSampleList(path, getlist(sfiles[f]) )
-          nEventsInTree, nGenEvents, nSumOfWeights, isData = GetAllInfoFromFile([path + x for x in samples])
-          tmpnEvents    = nTrueEntries / int(chunkdir[sname])
           tmpFirstEvent = tmpnEvents * ich
-          if (ich == int(chunkdir[sname]) - 1): tmpnEvents = nTrueEntries - tmpFirstEvent
+          if (ich == tmpnchs - 1): tmpnEvents = nTrueEntries - tmpFirstEvent
           if tmpnEvents == dummy:
-            print '\033[0;32mOK  \033[0;34m%s\033[0m'%f
+            print '\033[0;32mOK  \033[0;34m%s_%s\033[0m'%(f, ich)
           else:
             print '\033[0;31mBAD \033[0;34m%s \033[0;33m(%1.2f %s)\033[0m'%(f, (tmpnEvents - dummy) / tmpnEvents * 100, '%')
             outlist.append((f, ich))
@@ -448,7 +449,7 @@ if __name__ == "__main__":
       spl = [sample]
 
     if doCheck:
-      outlist = CheckFileEvents(spl, samplefiles, path, outpath, chkdir)
+      outlist = CheckFileEvents(spl, samplefiles, path, outpath, chunkdir)
       if doReSubmit:
         spl = outlist
         if len(spl) == 0: print 'Everything went fine!! :)'
@@ -485,7 +486,7 @@ if __name__ == "__main__":
           tmpsample = tmpsample.split(',')
         if not isinstance(tmpsample, list): tmpsample = [tmpsample]
         if not tmppath.endswith('/'): tmppath += '/'
-        tmpsamples      = GetSampleList(tmppath, tmpsample)
+        tmpsamples   = GetSampleList(tmppath, tmpsample)
         nTrueEntries = GetAllInfoFromFile([tmppath + x for x in tmpsamples])[0]
 
         if not sendJobs:
