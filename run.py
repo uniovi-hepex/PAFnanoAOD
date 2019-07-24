@@ -260,24 +260,49 @@ def CheckFileEvents(snames, sfiles, path, outpath, chkdir = None):
   outlist = []
   getlist = lambda x : [x] if not ',' in x else x.replace(' ', '').split(',')
   for f in snames:
-    trypath = '%s/%s.root'%(outpath, f)
-    if not os.path.isfile(trypath):
-      outlist.append(f)
-      print '\033[0;31mSample \033[0;36m%s\033[0;31m not found\033[0m'%f
-    else:
-      tf = TFile.Open(trypath)
-      if not hasattr(tf, 'fhDummy'):
-        print '\033[0;31mSample \033[0;36m%s\033[0;31m does not contain fhDummy\033[0m'%f
+    if f not in chkdir:
+      trypath = '%s/%s.root'%(outpath, f)
+      if not os.path.isfile(trypath):
         outlist.append(f)
-        continue
-      dummy = tf.fhDummy.GetEntries()
-      samples = GetSampleList(path, getlist(sfiles[f]) )
-      nEventsInTree, nGenEvents, nSumOfWeights, isData = GetAllInfoFromFile([path + x for x in samples])
-      if nEventsInTree == dummy:
-        print '\033[0;32mOK  \033[0;34m%s\033[0m'%f
+        print '\033[0;31mSample \033[0;36m%s\033[0;31m not found\033[0m'%f
       else:
-        print '\033[0;31mBAD \033[0;34m%s \033[0;33m(%1.2f %s)\033[0m'%(f, (nEventsInTree-dummy)/nEventsInTree*100, '%')
-        outlist.append(f)
+        tf = TFile.Open(trypath)
+        if not hasattr(tf, 'fhDummy'):
+          print '\033[0;31mSample \033[0;36m%s\033[0;31m does not contain fhDummy\033[0m'%f
+          outlist.append(f)
+          continue
+        dummy = tf.fhDummy.GetEntries()
+        samples = GetSampleList(path, getlist(sfiles[f]) )
+        nEventsInTree, nGenEvents, nSumOfWeights, isData = GetAllInfoFromFile([path + x for x in samples])
+        if nEventsInTree == dummy:
+          print '\033[0;32mOK  \033[0;34m%s\033[0m'%f
+        else:
+          print '\033[0;31mBAD \033[0;34m%s \033[0;33m(%1.2f %s)\033[0m'%(f, (nEventsInTree-dummy)/nEventsInTree*100, '%')
+          outlist.append(f)
+    else:
+      for ich in range(int(chunkdir[sname])):
+        trypath = '{op}/{nm}_{ch}.root'.format(op = outpath, nm = f, ch = ich)
+        if not os.path.isfile(trypath):
+          outlist.append((f, ich))
+          print '\033[0;31mSample \033[0;36m%s\033[0;31m not found\033[0m'%f
+        else:
+          tf = TFile.Open(trypath)
+          if not hasattr(tf, 'fhDummy'):
+            print '\033[0;31mSample \033[0;36m%s\033[0;31m does not contain fhDummy\033[0m'%f
+            outlist.append((f, ich))
+            continue
+          dummy   = tf.fhDummy.GetEntries()
+          samples = GetSampleList(path, getlist(sfiles[f]) )
+          nEventsInTree, nGenEvents, nSumOfWeights, isData = GetAllInfoFromFile([path + x for x in samples])
+          tmpnEvents    = nTrueEntries / int(chunkdir[sname])
+          tmpFirstEvent = tmpnEvents * ich
+          if (ich == int(chunkdir[sname]) - 1): tmpnEvents = nTrueEntries - tmpFirstEvent
+          if tmpnEvents == dummy:
+            print '\033[0;32mOK  \033[0;34m%s\033[0m'%f
+          else:
+            print '\033[0;31mBAD \033[0;34m%s \033[0;33m(%1.2f %s)\033[0m'%(f, (tmpnEvents - dummy) / tmpnEvents * 100, '%')
+            outlist.append((f, ich))
+
   return outlist
 
 
@@ -423,7 +448,7 @@ if __name__ == "__main__":
       spl = [sample]
 
     if doCheck:
-      outlist = CheckFileEvents(spl, samplefiles, path, outpath)
+      outlist = CheckFileEvents(spl, samplefiles, path, outpath, chkdir)
       if doReSubmit:
         spl = outlist
         if len(spl) == 0: print 'Everything went fine!! :)'
@@ -443,7 +468,10 @@ if __name__ == "__main__":
       outname = 'test'
 
     for sname in spl:
-      outname = sname
+      if not isinstance(sname, tuple): outname = sname
+      else:
+        outname    = sname[0]
+        fixedchunk = sname[1]
       sample  = samplefiles[sname]
       ncores  = nslots[sname]
 
