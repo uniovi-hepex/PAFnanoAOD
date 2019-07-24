@@ -9,27 +9,27 @@
 const Int_t nWeights = 248;
 
 
-class TWTTbarAnalysis : public PAFChainItemSelector{
+class TWAnalysis : public PAFChainItemSelector{
   public:
     // Main methods
-    TWTTbarAnalysis();
-    virtual ~TWTTbarAnalysis(){}
+    TWAnalysis();
+    virtual ~TWAnalysis(){}
     virtual void InsideLoop();
     virtual void Initialise();
     virtual void Summary();
-    
+
 
     // Other methods
-    void SetTWTTbarVariables();
-    void ResetTWTTbarVariables();
+    void SetTWVariables();
+    void ResetTWVariables();
     void GetLeptonVariables();
     void GetGenLepVariables();
     void GetJetVariables();
     void GetGenJetVariables();
     void GetMETandGenMET();
 
-    void CalculateDressTWTTbarVariables();
-    void CalculateTWTTbarVariables();
+    void CalculateDressTWVariables();
+    void CalculateTWVariables();
 
     void CalculateSFAndWeights();
     void SetMinimaAndMaxima();
@@ -38,7 +38,6 @@ class TWTTbarAnalysis : public PAFChainItemSelector{
     void DoesItReallyPassReco();
 
     TLorentzVector getSysVector(const TString& sys = "");
-    Float_t getMiniMax(Float_t ml1j1, Float_t ml1j2, Float_t ml2j1, Float_t ml2j2);
     Float_t getTopPtRW();
 
 
@@ -61,7 +60,7 @@ class TWTTbarAnalysis : public PAFChainItemSelector{
     std::vector<Jet> LooseCentralJetsJESUp, LooseFwdJetsJESUp;
     std::vector<Jet> LooseCentralJetsJESDown, LooseFwdJetsJESDown;
     std::vector<Jet> LooseCentralJetsJERUp, LooseFwdJetsJERUp;
-    
+
     TTree* fMiniTree;
     TH1F* fhDummy;
     Float_t   TLHEWeight[254];
@@ -78,40 +77,25 @@ class TWTTbarAnalysis : public PAFChainItemSelector{
     UShort_t NBLooseCentral, NBLooseCentralJESUp, NBLooseCentralJESDown, NBLooseCentralJERUp;
     UShort_t DressNJets, DressNLooseCentral, DressNLooseFwd, DressNBJets, DressNBLooseCentral;
 
-    Float_t TLep1_Pt,  TLep1_PtJESUp,  TLep1_PtJESDown,  TLep1_PtJERUp;
-    Float_t TLep1_E,   TLep1_EJESUp,   TLep1_EJESDown,   TLep1_EJERUp;
+    Float_t TLep1_Pt, TLep1_PtJESUp, TLep1_PtJESDown, TLep1_PtJERUp;
+    Float_t TLep1_E, TLep1_EJESUp, TLep1_EJESDown, TLep1_EJERUp;
     Float_t TLep1_Phi, TLep1_PhiJESUp, TLep1_PhiJESDown, TLep1_PhiJERUp;
     Float_t TLep1_Eta, TLep1_EtaJESUp, TLep1_EtaJESDown, TLep1_EtaJERUp;
-    Float_t TLep2_Pt,  TLep2_PtJESUp,  TLep2_PtJESDown,  TLep2_PtJERUp;
-    Float_t TLep2_E,   TLep2_EJESUp,   TLep2_EJESDown,   TLep2_EJERUp;
+    Float_t TLep2_Pt, TLep2_PtJESUp, TLep2_PtJESDown, TLep2_PtJERUp;
+    Float_t TLep2_E, TLep2_EJESUp, TLep2_EJESDown, TLep2_EJERUp;
     Float_t TLep2_Phi, TLep2_PhiJESUp, TLep2_PhiJESDown, TLep2_PhiJERUp;
     Float_t TLep2_Eta, TLep2_EtaJESUp, TLep2_EtaJESDown, TLep2_EtaJERUp;
-    Float_t TMuon_Pt,  TMuon_PtJESUp,  TMuon_PtJESDown,  TMuon_PtJERUp;
-    Float_t TMuon_E,   TMuon_EJESUp,   TMuon_EJESDown,   TMuon_EJERUp;
-    Float_t TMuon_Phi, TMuon_PhiJESUp, TMuon_PhiJESDown, TMuon_PhiJERUp;
-    Float_t TMuon_Eta, TMuon_EtaJESUp, TMuon_EtaJESDown, TMuon_EtaJERUp;
-    Float_t TElec_Pt,  TElec_PtJESUp,  TElec_PtJESDown,  TElec_PtJERUp;
-    Float_t TElec_E,   TElec_EJESUp,   TElec_EJESDown,   TElec_EJERUp;
-    Float_t TElec_Phi, TElec_PhiJESUp, TElec_PhiJESDown, TElec_PhiJERUp;
-    Float_t TElec_Eta, TElec_EtaJESUp, TElec_EtaJESDown, TElec_EtaJERUp;
-    Float_t TJet1_Pt,  TJet1_PtJESUp,  TJet1_PtJESDown,  TJet1_PtJERUp;
-    Float_t TJet1_E,   TJet1_EJESUp,   TJet1_EJESDown,   TJet1_EJERUp;
+    Float_t TJet1_Pt, TJet1_PtJESUp, TJet1_PtJESDown, TJet1_PtJERUp;
+    Float_t TJet1_E, TJet1_EJESUp, TJet1_EJESDown, TJet1_EJERUp;
     Float_t TJet1_Eta, TJet1_EtaJESUp, TJet1_EtaJESDown, TJet1_EtaJERUp;
     Float_t TJet1_Phi, TJet1_PhiJESUp, TJet1_PhiJESDown, TJet1_PhiJERUp;
-    Float_t TJet2_Pt,  TJet2_PtJESUp,  TJet2_PtJESDown,  TJet2_PtJERUp;
-    Float_t TJet2_E,   TJet2_EJESUp,   TJet2_EJESDown,   TJet2_EJERUp;
-    Float_t TJet2_Eta, TJet2_EtaJESUp, TJet2_EtaJESDown, TJet2_EtaJERUp;
     Float_t TLep1Lep2_Pt, TLep1Lep2_PtJESUp, TLep1Lep2_PtJESDown, TLep1Lep2_PtJERUp;
     Float_t TLep1Lep2_M, TLep1Lep2_MJESUp, TLep1Lep2_MJESDown, TLep1Lep2_MJERUp;
     Float_t TLep1Lep2_DPhi, TLep1Lep2_DPhiJESUp, TLep1Lep2_DPhiJESDown, TLep1Lep2_DPhiJERUp;
     Float_t TLep1Jet1_M, TLep1Jet1_MJESUp, TLep1Jet1_MJESDown, TLep1Jet1_MJERUp;
     Float_t TLep1Jet1_DPhi, TLep1Jet1_DPhiJESUp, TLep1Jet1_DPhiJESDown, TLep1Jet1_DPhiJERUp;
-    Float_t TLep1Jet2_M, TLep1Jet2_MJESUp, TLep1Jet2_MJESDown, TLep1Jet2_MJERUp;
-    Float_t TLep1Jet2_DPhi, TLep1Jet2_DPhiJESUp, TLep1Jet2_DPhiJESDown, TLep1Jet2_DPhiJERUp;
     Float_t TLep2Jet1_M, TLep2Jet1_MJESUp, TLep2Jet1_MJESDown, TLep2Jet1_MJERUp;
     Float_t TLep2Jet1_DPhi, TLep2Jet1_DPhiJESUp, TLep2Jet1_DPhiJESDown, TLep2Jet1_DPhiJERUp;
-    Float_t TLep2Jet2_M, TLep2Jet2_MJESUp, TLep2Jet2_MJESDown, TLep2Jet2_MJERUp;
-    Float_t TLep2Jet2_DPhi, TLep2Jet2_DPhiJESUp, TLep2Jet2_DPhiJESDown, TLep2Jet2_DPhiJERUp;
     Float_t Sys_Pt, Sys_PtJESUp, Sys_PtJESDown, Sys_PtJERUp;
     Float_t Sys_E, Sys_EJESUp, Sys_EJESDown, Sys_EJERUp;
     Float_t Sys_Eta, Sys_EtaJESUp, Sys_EtaJESDown, Sys_EtaJERUp;
@@ -130,32 +114,17 @@ class TWTTbarAnalysis : public PAFChainItemSelector{
     Float_t TDressLep2_E;
     Float_t TDressLep2_Phi;
     Float_t TDressLep2_Eta;
-    Float_t TDressMuon_Pt;
-    Float_t TDressMuon_E;
-    Float_t TDressMuon_Phi;
-    Float_t TDressMuon_Eta;
-    Float_t TDressElec_Pt;
-    Float_t TDressElec_E;
-    Float_t TDressElec_Phi;
-    Float_t TDressElec_Eta;
     Float_t TDressJet1_Pt;
     Float_t TDressJet1_E;
     Float_t TDressJet1_Eta;
     Float_t TDressJet1_Phi;
-    Float_t TDressJet2_Pt;
-    Float_t TDressJet2_E;
-    Float_t TDressJet2_Eta;
     Float_t TDressLep1Lep2_Pt;
     Float_t TDressLep1Lep2_M;
     Float_t TDressLep1Lep2_DPhi;
     Float_t TDressLep1Jet1_M;
     Float_t TDressLep1Jet1_DPhi;
-    Float_t TDressLep1Jet2_M;
-    Float_t TDressLep1Jet2_DPhi;
     Float_t TDressLep2Jet1_M;
     Float_t TDressLep2Jet1_DPhi;
-    Float_t TDressLep2Jet2_M;
-    Float_t TDressLep2Jet2_DPhi;
     Float_t DressSys_Pt;
     Float_t DressSys_E;
     Float_t DressSys_Eta;
@@ -187,7 +156,7 @@ class TWTTbarAnalysis : public PAFChainItemSelector{
     Double_t TWeight_PUDown, TWeight_PUUp;
     Double_t TWeight_MistagUp, TWeight_MistagDown;
     Double_t TWeight_BtagUp, TWeight_BtagDown;
-    
+
   protected:
     // Parameters
     Bool_t   gIsData;
@@ -199,8 +168,7 @@ class TWTTbarAnalysis : public PAFChainItemSelector{
     Bool_t   gPUWeight;
     Bool_t   passMETfilters;
     Bool_t   passTrigger;
-    Double_t NormWeight;
     UShort_t year;
-    
-    ClassDef(TWTTbarAnalysis, 0);
+
+    ClassDef(TWAnalysis, 0);
 };

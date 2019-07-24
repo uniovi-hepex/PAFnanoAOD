@@ -38,7 +38,7 @@ class Plot {
 public:
   bool verbose         = false;
   bool doSys           = true;
-  bool doData          = true; 
+  bool doData          = true;
   bool doYieldsInLeg   = true;
   bool doSingleLep     = false;
   bool doStackOverflow = true;
@@ -267,14 +267,14 @@ public:
   virtual void SetAxis(TAxis *a, TString tit = "", Float_t titSize = 0.07, Float_t titOffset = 0.5, Int_t nDiv = 510, Float_t labelSize = 0);
 
   void SetData();
-  void GetStack();
+  void GetStack(Bool_t doNorm = false);
   Float_t GetAllBkg(Int_t ibin = -1);
   void AllBkgSyst();
   
   Histo* GetAllBkgClone(TString newname = "NewHisto_AllBkg");
   virtual void SetGoF(TString thegof="chi2");
   
-  virtual void DrawStack(TString tag = "");
+  virtual void DrawStack(TString tag = "", Bool_t doNorm = false);
   void DrawComp(TString tag = "", bool doNorm = 0, TString options = "");
   virtual void SaveHistograms();
 
