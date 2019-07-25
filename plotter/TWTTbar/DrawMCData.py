@@ -11,15 +11,20 @@ StandardCut = "TPassReco == 1";
 ControlCut  = "TIsSS == 0 && TNJets == 1  && TNBtags == 1 && TNLooseCentral > 1";
 #systlist    = vl.GiveMeTheExpNamesWOJER(vl.varList["Names"]["ExpSysts"])
 systlist    = ""
-#labelsignal = "e^{#pm}#mu^{#mp}+1j1b+0j_{loose}"
-#labelcontrol= "e^{#pm}#mu^{#mp}+1j1b+>0j_{loose}"
-labelsignal = ""
-labelcontrol= ""
+labelsignal = "+2j2b+0j_{loose}"
+labelcontrol= "+2j2b+>0j_{loose}"
+#labelsignal = ""
+#labelcontrol= ""
+chandir        = {}
+chandir["All"] = "\\ell_{1}^{\\pm}\\ell_{2}^{\\mp}"
+chandir["ElMu"]= "e^{#pm}#mu^{#mp}"
+chandir["Elec"]= "e^{#pm}e^{#mp}"
+chandir["Muon"]= "#mu^{#pm}#mu^{#mp}"
 #legtxtsize  = 0.028
 legtxtsize  = 0.055
 labelpos    = (0.275, 0.89)
 doPrefChecks= False
-doNorm      = False
+doNorm      = True
 pathToTree  = vl.minipath
 nCores      = 1
 
@@ -63,7 +68,7 @@ def plotvariable(tsk):
     p.SetLumi(vl.Lumi)
     p.verbose  = False;
     p.verbose  = True;
-    p.SetChLabel(labelsignal if cut == "signal" else labelcontrol)
+    p.SetChLabel(chandir[chan] + (labelsignal if cut == "signal" else labelcontrol))
     p.SetChLabelPos(labelpos[0], labelpos[1], -1)
     
     p.SetCanvasHeight(600)
@@ -775,6 +780,10 @@ if __name__ == '__main__':
         tasks.append(("Lep1_Eta",      "signal", chn, "descriptive"))
         tasks.append(("Lep2_Pt",       "signal", chn, "descriptive"))
         tasks.append(("Lep2_Eta",      "signal", chn, "descriptive"))
+        tasks.append(("Muon_Pt",       "signal", chn, "descriptive"))
+        tasks.append(("Muon_Eta",      "signal", chn, "descriptive"))
+        tasks.append(("Elec_Pt",       "signal", chn, "descriptive"))
+        tasks.append(("Elec_Eta",      "signal", chn, "descriptive"))
         tasks.append(("Jet1_Pt",       "signal", chn, "descriptive"))
         tasks.append(("Jet1_Eta",      "signal", chn, "descriptive"))
         tasks.append(("Jet2_Pt",       "signal", chn, "descriptive"))
