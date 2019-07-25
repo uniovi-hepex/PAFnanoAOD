@@ -3,8 +3,8 @@
 #
 
 # TODO: copiar tolos plots
-plotspath="/nfs/fanae/user/vrbouza/www/Proyectos/twttbar_run2/results/"
-mcdatastr="MCData/"
+plotspath="/nfs/fanae/user/ireneaj/www/TFG/results/"
+dos="MCData/"
 indstr="index.php"
 cnstr="CondN/"
 covstr="CovMat/"
@@ -21,7 +21,7 @@ if [ "$1" == "p" ]; then
   cp -R results/. $plotspath
   #rsync -avzP results/. $plotspath
   cp $indexpath $plotspath$indstr
-  cp $indexpath $plotspath$mcdatastr$indstr
+  cp $indexpath $plotspath$dos$indstr
   #cp $indexpath $plotspath$covstr$indstr
   #cp $indexpath $plotspath$cnstr$indstr
   echo " "
@@ -48,7 +48,7 @@ fi
 lowerbar="_"
 slash="/"
 savefolder=$y$lowerbar$m$lowerbar$d
-storagepath="/pool/cienciasrw/userstorage/vrbouza/proyectos/TWTTbar/MiniTrees/"
+storagepath="/pool/cienciasrw/userstorage/vrbouza/proyectos/TW_inclusivo_run2/MiniTrees/"
 savepath=$storagepath$savefolder
 
 echo "===> Copying minitrees!"
@@ -61,7 +61,7 @@ echo " "
 echo "Copying files (note that this process can last even minutes depending on the size of the minitrees)..."
 savepath=$savepath$slash
 #cp -R ../../temp_TWTTbar/. $savepath
-rsync -avzP ../../temp_TWTTbar/ $savepath
+rsync -avzP ../../temp_TW/ $savepath
 
 echo " "
 echo "Done!"

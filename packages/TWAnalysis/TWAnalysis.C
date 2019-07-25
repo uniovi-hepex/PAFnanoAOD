@@ -1,11 +1,11 @@
-#include "TWTTbarAnalysis.h"
-ClassImp(TWTTbarAnalysis);
+#include "TWAnalysis.h"
+ClassImp(TWAnalysis);
 
 
 //#####################################################################
 // Core PAF methods
 //---------------------------------------------------------------------
-TWTTbarAnalysis::TWTTbarAnalysis() : PAFChainItemSelector() {
+TWAnalysis::TWAnalysis() : PAFChainItemSelector() {
   fhDummy        = 0;
   passMETfilters = 0;
   passTrigger    = 0;
@@ -14,30 +14,27 @@ TWTTbarAnalysis::TWTTbarAnalysis() : PAFChainItemSelector() {
 
 
 
-void TWTTbarAnalysis::Initialise() {
+void TWAnalysis::Initialise() {
   gIsData     = GetParam<Bool_t>("IsData");
   gSampleName = GetParam<TString>("sampleName");
   gOptions    = GetParam<TString>("_options");
-//   if (gOptions.Contains("Semi")) {
-//     cout << "> Running the semileptonic ttbar sample" << endl;
-//   }
   gPUWeight   = gOptions.Contains("PUweight")? true : false;
   gIsTTbar    = false;
   gIsLHE      = false;
 
   if (gSampleName.Contains("TTbar") || gSampleName.Contains("TTJets")) gIsTTbar = true;
   if (gSampleName == "TTbar_Powheg")   gIsLHE = true;
-  
+
   if (gSampleName.Contains("_")) {
     TObjArray *tx = gSampleName.Tokenize("_");
     if (((TObjString*) tx->Last())->GetString().IsDigit()) gIsLHE = true;
   }
-  
+
   fhDummy = CreateH1F("fhDummy", "fhDummy", 1, 0, 1);
-  
+
   fMiniTree = CreateTree("fMiniTree", "MiniTree");
-  SetTWTTbarVariables();
-  
+  SetTWVariables();
+
   DressLeptons          = std::vector<Lepton>();
   selLeptons            = std::vector<Lepton>();
   selJets               = std::vector<Jet>();
@@ -46,7 +43,7 @@ void TWTTbarAnalysis::Initialise() {
   selJetsJER            = std::vector<Jet>();
   genJets               = std::vector<Jet>();
   vetoJets              = std::vector<Jet>();
-  
+
   DressJets             = std::vector<Jet>();
   DressLooseCentralJets = std::vector<Jet>();
   DressLooseFwdJets     = std::vector<Jet>();
@@ -54,8 +51,8 @@ void TWTTbarAnalysis::Initialise() {
 
 
 
-void TWTTbarAnalysis::InsideLoop() {
-  ResetTWTTbarVariables();
+void TWAnalysis::InsideLoop() {
+  ResetTWVariables();
 
   TEvent = Get<ULong64_t>("event");
 
@@ -69,9 +66,9 @@ void TWTTbarAnalysis::InsideLoop() {
   TNBJets           = (UShort_t)GetParam<Int_t>("nSelBJets");
   vetoJets          = GetParam<vector<Jet>>("vetoJets");
   genJets           = GetParam<vector<Jet>>("genJets");
-  
+
   // Weights and SFs
-  NormWeight        = GetParam<Double_t>("NormWeight");
+  TWeight_normal    = GetParam<Double_t>("NormWeight");
   TrigSF            = (Double_t)GetParam<Float_t>("TriggerSF");
   TrigSFerr         = (Double_t)GetParam<Float_t>("TriggerSFerr");
 
@@ -91,8 +88,8 @@ void TWTTbarAnalysis::InsideLoop() {
   // Event variables
   passMETfilters    = GetParam<Bool_t>("METfilters");
   passTrigger       = GetParam<Bool_t>("passTrigger");
-  year              = (UShort_t)GetParam<TString>("year").Atoi();
-  
+  year              = (UShort_t)GetParam<Int_t>("year");
+
   // Leptons and Jets
   GetLeptonVariables();
   GetGenLepVariables();
@@ -100,26 +97,27 @@ void TWTTbarAnalysis::InsideLoop() {
   GetGenJetVariables();
   GetMETandGenMET();
 
-  TWeight_normal = NormWeight;
   fhDummy->Fill(0.5);
-  
-  // Particle level selection
-  if ((DressNLeps >= 2) && (DressNJets == 2) && (DressNBJets == 2) && (DressNLooseCentral == 2) &&
-      ((DressLeptons.at(0).p + DressLeptons.at(1).p).M() > 20) && (TDressLep1_Pt > 25) && (TDressLep2_Pt > 20) && !TDressIsSS) {
 
-    CalculateDressTWTTbarVariables();
-    DoesItReallyPassDress();
+  // Particle level selection
+  if ((DressNLeps >= 2) && (DressNJets == 2) && (DressNBJets == 2) && (DressNLooseCentral == 2) && !TDressIsSS && (GenChannel == iElMu)) {
+    if (((DressLeptons.at(0).p + DressLeptons.at(1).p).M() > 20) && (TDressLep1_Pt > 25) && (TDressLep2_Pt > 20)) {
+
+      CalculateDressTWVariables();
+      DoesItReallyPassDress();
+    }
   }
 
   // Detector level selection
-  if ((TNSelLeps >= 2) && passTrigger && passMETfilters && ((selLeptons.at(0).p + selLeptons.at(1).p).M() > 20) &&
-      (TLep1_Pt > 25) && (TLep2_Pt > 20) && (!TIsSS)) {
+  if ((TNSelLeps >= 2) && passTrigger && passMETfilters && (!TIsSS) && (TChannel == iElMu)) {
+    if (((selLeptons.at(0).p + selLeptons.at(1).p).M() > 20) && (TLep1_Pt > 25) && (TLep2_Pt > 20)) {
 
-    CalculateSFAndWeights();
-    CalculateTWTTbarVariables();
-    DoesItReallyPassReco();
+      CalculateSFAndWeights();
+      CalculateTWVariables();
+      DoesItReallyPassReco();
+    }
   }
-  
+
   // Filling choice
   if (TPassPart || TPassDress || TPassReco || TPassRecoJESUp || TPassRecoJESDown || TPassRecoJERUp) { // If needed, filling.
     SetMinimaAndMaxima();
@@ -129,7 +127,7 @@ void TWTTbarAnalysis::InsideLoop() {
 
 
 
-void TWTTbarAnalysis::Summary(){}
+void TWAnalysis::Summary(){}
 
 
 
@@ -137,7 +135,7 @@ void TWTTbarAnalysis::Summary(){}
 //#####################################################################
 // Functions
 //---------------------------------------------------------------------
-void TWTTbarAnalysis::SetTWTTbarVariables() {
+void TWAnalysis::SetTWVariables() {
   // Detector level variables
   fMiniTree->Branch("TEvent",                &TEvent,                "TEvent/l");
   fMiniTree->Branch("TChannel",              &TChannel,              "TChannel/S");
@@ -157,8 +155,8 @@ void TWTTbarAnalysis::SetTWTTbarVariables() {
   fMiniTree->Branch("TWeight_MistagDown",    &TWeight_MistagDown,    "TWeight_MistagDown/D");
   fMiniTree->Branch("TWeight_normal",        &TWeight_normal,        "TWeight_normal/D");
   fMiniTree->Branch("TLHEWeight",            TLHEWeight,             "TLHEWeight[254]/F");
-  
-  
+
+
   fMiniTree->Branch("TPassReco",             &TPassReco,             "TPassReco/O");
   fMiniTree->Branch("TPassRecoJESUp",        &TPassRecoJESUp,        "TPassRecoJESUp/O");
   fMiniTree->Branch("TPassRecoJESDown",      &TPassRecoJESDown,      "TPassRecoJESDown/O");
@@ -183,38 +181,25 @@ void TWTTbarAnalysis::SetTWTTbarVariables() {
   fMiniTree->Branch("TNLooseFwdJESUp"       ,&NLooseFwdJESUp        ,"TNLooseFwdJESUp/s");
   fMiniTree->Branch("TNLooseFwdJESDown"     ,&NLooseFwdJESDown      ,"TNLooseFwdJESDown/s");
   fMiniTree->Branch("TNLooseFwdJERUp"       ,&NLooseFwdJERUp        ,"TNLooseFwdJERUp/s");
-  
+
   fMiniTree->Branch("TLep1_Pt",              &TLep1_Pt,              "TLep1_Pt/F");
   fMiniTree->Branch("TLep1_E",               &TLep1_E,               "TLep1_E/F");
   fMiniTree->Branch("TLep1_Eta",             &TLep1_Eta,             "TLep1_Eta/F");
   fMiniTree->Branch("TLep2_Pt",              &TLep2_Pt,              "TLep2_Pt/F");
   fMiniTree->Branch("TLep2_E",               &TLep2_E,               "TLep2_E/F");
   fMiniTree->Branch("TLep2_Eta",             &TLep2_Eta,             "TLep2_Eta/F");
-  fMiniTree->Branch("TMuon_Pt",              &TMuon_Pt,              "TMuon_Pt/F");
-  fMiniTree->Branch("TMuon_E",               &TMuon_E,               "TMuon_E/F");
-  fMiniTree->Branch("TMuon_Eta",             &TMuon_Eta,             "TMuon_Eta/F");
-  fMiniTree->Branch("TElec_Pt",              &TElec_Pt,              "TElec_Pt/F");
-  fMiniTree->Branch("TElec_E",               &TElec_E,               "TElec_E/F");
-  fMiniTree->Branch("TElec_Eta",             &TElec_Eta,             "TElec_Eta/F");
   fMiniTree->Branch("TJet1_Pt",              &TJet1_Pt,              "TJet1_Pt/F");
   fMiniTree->Branch("TJet1_E",               &TJet1_E,               "TJet1_E/F");
   fMiniTree->Branch("TJet1_Eta",             &TJet1_Eta,             "TJet1_Eta/F");
-  fMiniTree->Branch("TJet2_Pt",              &TJet2_Pt,              "TJet2_Pt/F");
-  fMiniTree->Branch("TJet2_E",               &TJet2_E,               "TJet2_E/F");
-  fMiniTree->Branch("TJet2_Eta",             &TJet2_Eta,             "TJet2_Eta/F");
-  
+
   fMiniTree->Branch("TLep1Lep2_Pt",          &TLep1Lep2_Pt,          "TLep1Lep2_Pt/F");
   fMiniTree->Branch("TLep1Lep2_M",           &TLep1Lep2_M,           "TLep1Lep2_M/F");
   fMiniTree->Branch("TLep1Lep2_DPhi",        &TLep1Lep2_DPhi,        "TLep1Lep2_DPhi/F");
   fMiniTree->Branch("TLep1Jet1_M" ,          &TLep1Jet1_M,           "TLep1Jet1_M/F");
   fMiniTree->Branch("TLep1Jet1_DPhi",        &TLep1Jet1_DPhi,        "TLep1Jet1_DPhi/F");
-  fMiniTree->Branch("TLep1Jet2_M",           &TLep1Jet2_M,           "TLep1Jet2_M/F");
-  fMiniTree->Branch("TLep1Jet2_DPhi",        &TLep1Jet2_DPhi,        "TLep1Jet2_DPhi/F");
   fMiniTree->Branch("TLep2Jet1_M",           &TLep2Jet1_M,           "TLep2Jet1_M/F");
   fMiniTree->Branch("TLep2Jet1_DPhi",        &TLep2Jet1_DPhi,        "TLep2Jet1_DPhi/F");
-  fMiniTree->Branch("TLep2Jet2_M",           &TLep2Jet2_M,           "TLep2Jet2_M/F");
-  fMiniTree->Branch("TLep2Jet2_DPhi",        &TLep2Jet2_DPhi,        "TLep2Jet2_DPhi/F");
-  
+
   fMiniTree->Branch("TSys_Pt",               &Sys_Pt,                "TSys_Pt/F");
   fMiniTree->Branch("TSys_E",                &Sys_E,                 "TSys_E/F");
   fMiniTree->Branch("TSys_Eta",              &Sys_Eta,               "TSys_Eta/F");
@@ -223,8 +208,8 @@ void TWTTbarAnalysis::SetTWTTbarVariables() {
   fMiniTree->Branch("TMiniMax",              &TMiniMax,              "TMiniMax/F");
   fMiniTree->Branch("THT",                   &THT,                   "THT/F");
   fMiniTree->Branch("TMET",                  &TMET,                  "TMET/F");
-  
-  
+
+
   // JESUp
   fMiniTree->Branch("TLep1_PtJESUp",         &TLep1_PtJESUp,         "TLep1_PtJESUp/F");
   fMiniTree->Branch("TLep1_EJESUp",          &TLep1_EJESUp,          "TLep1_EJESUp/F");
@@ -232,31 +217,18 @@ void TWTTbarAnalysis::SetTWTTbarVariables() {
   fMiniTree->Branch("TLep2_PtJESUp",         &TLep2_PtJESUp,         "TLep2_PtJESUp/F");
   fMiniTree->Branch("TLep2_EJESUp",          &TLep2_EJESUp,          "TLep2_EJESUp/F");
   fMiniTree->Branch("TLep2_EtaJESUp",        &TLep2_EtaJESUp,        "TLep2_EtaJESUp/F");
-  fMiniTree->Branch("TMuon_PtJESUp",         &TMuon_PtJESUp,         "TMuon_PtJESUp/F");
-  fMiniTree->Branch("TMuon_EJESUp",          &TMuon_EJESUp,          "TMuon_EJESUp/F");
-  fMiniTree->Branch("TMuon_EtaJESUp",        &TMuon_EtaJESUp,        "TMuon_EtaJESUp/F");
-  fMiniTree->Branch("TElec_PtJESUp",         &TElec_PtJESUp,         "TElec_PtJESUp/F");
-  fMiniTree->Branch("TElec_EJESUp",          &TElec_EJESUp,          "TElec_EJESUp/F");
-  fMiniTree->Branch("TElec_EtaJESUp",        &TElec_EtaJESUp,        "TElec_EtaJESUp/F");
   fMiniTree->Branch("TJet1_PtJESUp",         &TJet1_PtJESUp,         "TJet1_PtJESUp/F");
   fMiniTree->Branch("TJet1_EJESUp",          &TJet1_EJESUp,          "TJet1_EJESUp/F");
   fMiniTree->Branch("TJet1_EtaJESUp",        &TJet1_EtaJESUp,        "TJet1_EtaJESUp/F");
-  fMiniTree->Branch("TJet2_PtJESUp",         &TJet2_PtJESUp,         "TJet2_PtJESUp/F");
-  fMiniTree->Branch("TJet2_EJESUp",          &TJet2_EJESUp,          "TJet2_EJESUp/F");
-  fMiniTree->Branch("TJet2_EtaJESUp",        &TJet2_EtaJESUp,        "TJet2_EtaJESUp/F");
-  
+
   fMiniTree->Branch("TLep1Lep2_PtJESUp",     &TLep1Lep2_PtJESUp,     "TLep1Lep2_PtJESUp/F");
   fMiniTree->Branch("TLep1Lep2_MJESUp",      &TLep1Lep2_MJESUp,      "TLep1Lep2_MJESUp/F");
   fMiniTree->Branch("TLep1Lep2_DPhiJESUp",   &TLep1Lep2_DPhiJESUp,   "TLep1Lep2_DPhiJESUp/F");
   fMiniTree->Branch("TLep1Jet1_MJESUp" ,     &TLep1Jet1_MJESUp,      "TLep1Jet1_MJESUp/F");
   fMiniTree->Branch("TLep1Jet1_DPhiJESUp",   &TLep1Jet1_DPhiJESUp,   "TLep1Jet1_DPhiJESUp/F");
-  fMiniTree->Branch("TLep1Jet2_MJESUp",      &TLep1Jet2_MJESUp,      "TLep1Jet2_MJESUp/F");
-  fMiniTree->Branch("TLep1Jet2_DPhiJESUp",   &TLep1Jet2_DPhiJESUp,   "TLep1Jet2_DPhiJESUp/F");
   fMiniTree->Branch("TLep2Jet1_MJESUp",      &TLep2Jet1_MJESUp,      "TLep2Jet1_MJESUp/F");
   fMiniTree->Branch("TLep2Jet1_DPhiJESUp",   &TLep2Jet1_DPhiJESUp,   "TLep2Jet1_DPhiJESUp/F");
-  fMiniTree->Branch("TLep2Jet2_MJESUp",      &TLep2Jet2_MJESUp,      "TLep2Jet2_MJESUp/F");
-  fMiniTree->Branch("TLep2Jet2_DPhiJESUp",   &TLep2Jet2_DPhiJESUp,   "TLep2Jet2_DPhiJESUp/F");
-  
+
   fMiniTree->Branch("TSys_PtJESUp",          &Sys_PtJESUp,           "TSys_PtJESUp/F");
   fMiniTree->Branch("TSys_EJESUp",           &Sys_EJESUp,            "TSys_EJESUp/F");
   fMiniTree->Branch("TSys_EtaJESUp",         &Sys_EtaJESUp,          "TSys_EtaJESUp/F");
@@ -265,8 +237,8 @@ void TWTTbarAnalysis::SetTWTTbarVariables() {
   fMiniTree->Branch("TMiniMaxJESUp",         &TMiniMaxJESUp,         "TMiniMaxJESUp/F");
   fMiniTree->Branch("THTJESUp",              &THTJESUp,              "THTJESUp/F");
   fMiniTree->Branch("TMETJESUp",             &TMETJESUp,             "TMETJESUp/F");
-  
-  
+
+
   // JESDown
   fMiniTree->Branch("TLep1_PtJESDown",       &TLep1_PtJESDown,       "TLep1_PtJESDown/F");
   fMiniTree->Branch("TLep1_EJESDown",        &TLep1_EJESDown,        "TLep1_EJESDown/F");
@@ -274,31 +246,18 @@ void TWTTbarAnalysis::SetTWTTbarVariables() {
   fMiniTree->Branch("TLep2_PtJESDown",       &TLep2_PtJESDown,       "TLep2_PtJESDown/F");
   fMiniTree->Branch("TLep2_EJESDown",        &TLep2_EJESDown,        "TLep2_EJESDown/F");
   fMiniTree->Branch("TLep2_EtaJESDown",      &TLep2_EtaJESDown,      "TLep2_EtaJESDown/F");
-  fMiniTree->Branch("TMuon_PtJESDown",       &TMuon_PtJESDown,       "TMuon_PtJESDown/F");
-  fMiniTree->Branch("TMuon_EJESDown",        &TMuon_EJESDown,        "TMuon_EJESDown/F");
-  fMiniTree->Branch("TMuon_EtaJESDown",      &TMuon_EtaJESDown,      "TMuon_EtaJESDown/F");
-  fMiniTree->Branch("TElec_PtJESDown",       &TElec_PtJESDown,       "TElec_PtJESDown/F");
-  fMiniTree->Branch("TElec_EJESDown",        &TElec_EJESDown,        "TElec_EJESDown/F");
-  fMiniTree->Branch("TElec_EtaJESDown",      &TElec_EtaJESDown,      "TElec_EtaJESDown/F");
   fMiniTree->Branch("TJet1_PtJESDown",       &TJet1_PtJESDown,       "TJet1_PtJESDown/F");
   fMiniTree->Branch("TJet1_EJESDown",        &TJet1_EJESDown,        "TJet1_EJESDown/F");
   fMiniTree->Branch("TJet1_EtaJESDown",      &TJet1_EtaJESDown,      "TJet1_EtaJESDown/F");
-  fMiniTree->Branch("TJet2_PtJESDown",       &TJet2_PtJESDown,       "TJet2_PtJESDown/F");
-  fMiniTree->Branch("TJet2_EJESDown",        &TJet2_EJESDown,        "TJet2_EJESDown/F");
-  fMiniTree->Branch("TJet2_EtaJESDown",      &TJet2_EtaJESDown,      "TJet2_EtaJESDown/F");
-  
+
   fMiniTree->Branch("TLep1Lep2_PtJESDown",   &TLep1Lep2_PtJESDown,   "TLep1Lep2_PtJESDown/F");
   fMiniTree->Branch("TLep1Lep2_MJESDown",    &TLep1Lep2_MJESDown,    "TLep1Lep2_MJESDown/F");
   fMiniTree->Branch("TLep1Lep2_DPhiJESDown", &TLep1Lep2_DPhiJESDown, "TLep1Lep2_DPhiJESDown/F");
   fMiniTree->Branch("TLep1Jet1_MJESDown" ,   &TLep1Jet1_MJESDown,    "TLep1Jet1_MJESDown/F");
   fMiniTree->Branch("TLep1Jet1_DPhiJESDown", &TLep1Jet1_DPhiJESDown, "TLep1Jet1_DPhiJESDown/F");
-  fMiniTree->Branch("TLep1Jet2_MJESDown",    &TLep1Jet2_MJESDown,    "TLep1Jet2_MJESDown/F");
-  fMiniTree->Branch("TLep1Jet2_DPhiJESDown", &TLep1Jet2_DPhiJESDown, "TLep1Jet2_DPhiJESDown/F");
   fMiniTree->Branch("TLep2Jet1_MJESDown",    &TLep2Jet1_MJESDown,    "TLep2Jet1_MJESDown/F");
   fMiniTree->Branch("TLep2Jet1_DPhiJESDown", &TLep2Jet1_DPhiJESDown, "TLep2Jet1_DPhiJESDown/F");
-  fMiniTree->Branch("TLep2Jet2_MJESDown",    &TLep2Jet2_MJESDown,    "TLep2Jet2_MJESDown/F");
-  fMiniTree->Branch("TLep2Jet2_DPhiJESDown", &TLep2Jet2_DPhiJESDown, "TLep2Jet2_DPhiJESDown/F");
-  
+
   fMiniTree->Branch("TSys_PtJESDown",        &Sys_PtJESDown,         "TSys_PtJESDown/F");
   fMiniTree->Branch("TSys_EJESDown",         &Sys_EJESDown,          "TSys_EJESDown/F");
   fMiniTree->Branch("TSys_EtaJESDown",       &Sys_EtaJESDown,        "TSys_EtaJESDown/F");
@@ -307,8 +266,8 @@ void TWTTbarAnalysis::SetTWTTbarVariables() {
   fMiniTree->Branch("TMiniMaxJESDown",       &TMiniMaxJESDown,       "TMiniMaxJESDown/F");
   fMiniTree->Branch("THTJESDown",            &THTJESDown,            "THTJESDown/F");
   fMiniTree->Branch("TMETJESDown",           &TMETJESDown,           "TMETJESDown/F");
-  
-  
+
+
   // JERUp
   fMiniTree->Branch("TLep1_PtJERUp",         &TLep1_PtJERUp,         "TLep1_PtJERUp/F");
   fMiniTree->Branch("TLep1_EJERUp",          &TLep1_EJERUp,          "TLep1_EJERUp/F");
@@ -316,31 +275,18 @@ void TWTTbarAnalysis::SetTWTTbarVariables() {
   fMiniTree->Branch("TLep2_PtJERUp",         &TLep2_PtJERUp,         "TLep2_PtJERUp/F");
   fMiniTree->Branch("TLep2_EJERUp",          &TLep2_EJERUp,          "TLep2_EJERUp/F");
   fMiniTree->Branch("TLep2_EtaJERUp",        &TLep2_EtaJERUp,        "TLep2_EtaJERUp/F");
-  fMiniTree->Branch("TMuon_PtJERUp",         &TMuon_PtJERUp,         "TMuon_PtJERUp/F");
-  fMiniTree->Branch("TMuon_EJERUp",          &TMuon_EJERUp,          "TMuon_EJERUp/F");
-  fMiniTree->Branch("TMuon_EtaJERUp",        &TMuon_EtaJERUp,        "TMuon_EtaJERUp/F");
-  fMiniTree->Branch("TElec_PtJERUp",         &TElec_PtJERUp,         "TElec_PtJERUp/F");
-  fMiniTree->Branch("TElec_EJERUp",          &TElec_EJERUp,          "TElec_EJERUp/F");
-  fMiniTree->Branch("TElec_EtaJERUp",        &TElec_EtaJERUp,        "TElec_EtaJERUp/F");
   fMiniTree->Branch("TJet1_PtJERUp",         &TJet1_PtJERUp,         "TJet1_PtJERUp/F");
   fMiniTree->Branch("TJet1_EJERUp",          &TJet1_EJERUp,          "TJet1_EJERUp/F");
   fMiniTree->Branch("TJet1_EtaJERUp",        &TJet1_EtaJERUp,        "TJet1_EtaJERUp/F");
-  fMiniTree->Branch("TJet2_PtJERUp",         &TJet2_PtJERUp,         "TJet2_PtJERUp/F");
-  fMiniTree->Branch("TJet2_EJERUp",          &TJet2_EJERUp,          "TJet2_EJERUp/F");
-  fMiniTree->Branch("TJet2_EtaJERUp",        &TJet2_EtaJERUp,        "TJet2_EtaJERUp/F");
-  
+
   fMiniTree->Branch("TLep1Lep2_PtJERUp",     &TLep1Lep2_PtJERUp,     "TLep1Lep2_PtJERUp/F");
   fMiniTree->Branch("TLep1Lep2_MJERUp",      &TLep1Lep2_MJERUp,      "TLep1Lep2_MJERUp/F");
   fMiniTree->Branch("TLep1Lep2_DPhiJERUp",   &TLep1Lep2_DPhiJERUp,   "TLep1Lep2_DPhiJERUp/F");
   fMiniTree->Branch("TLep1Jet1_MJERUp" ,     &TLep1Jet1_MJERUp,      "TLep1Jet1_MJERUp/F");
   fMiniTree->Branch("TLep1Jet1_DPhiJERUp",   &TLep1Jet1_DPhiJERUp,   "TLep1Jet1_DPhiJERUp/F");
-  fMiniTree->Branch("TLep1Jet2_MJERUp",      &TLep1Jet2_MJERUp,      "TLep1Jet2_MJERUp/F");
-  fMiniTree->Branch("TLep1Jet2_DPhiJERUp",   &TLep1Jet2_DPhiJERUp,   "TLep1Jet2_DPhiJERUp/F");
   fMiniTree->Branch("TLep2Jet1_MJERUp",      &TLep2Jet1_MJERUp,      "TLep2Jet1_MJERUp/F");
   fMiniTree->Branch("TLep2Jet1_DPhiJERUp",   &TLep2Jet1_DPhiJERUp,   "TLep2Jet1_DPhiJERUp/F");
-  fMiniTree->Branch("TLep2Jet2_MJERUp",      &TLep2Jet2_MJERUp,      "TLep2Jet2_MJERUp/F");
-  fMiniTree->Branch("TLep2Jet2_DPhiJERUp",   &TLep2Jet2_DPhiJERUp,   "TLep2Jet2_DPhiJERUp/F");
-  
+
   fMiniTree->Branch("TSys_PtJERUp",          &Sys_PtJERUp,           "TSys_PtJERUp/F");
   fMiniTree->Branch("TSys_EJERUp",           &Sys_EJERUp,            "TSys_EJERUp/F");
   fMiniTree->Branch("TSys_EtaJERUp",         &Sys_EtaJERUp,          "TSys_EtaJERUp/F");
@@ -349,14 +295,14 @@ void TWTTbarAnalysis::SetTWTTbarVariables() {
   fMiniTree->Branch("TMiniMaxJERUp",         &TMiniMaxJERUp,         "TMiniMaxJERUp/F");
   fMiniTree->Branch("THTJERUp",              &THTJERUp,              "THTJERUp/F");
   fMiniTree->Branch("TMETJERUp",             &TMETJERUp,             "TMETJERUp/F");
-  
-  
+
+
   // VAINAS DE GENERACION
   // PARTICLE LEVEL: DRESS
   // PARTON LEVEL: PART
   // SHARED: GEN
   fMiniTree->Branch("TGenChannel",           &GenChannel,            "GenChannel/S");
-  
+
   // Particle level variables
   fMiniTree->Branch("TPassDress",            &TPassDress,            "TPassDress/O");
   fMiniTree->Branch("TDressIsSS",            &TDressIsSS,            "TDressIsSS/O");
@@ -365,38 +311,25 @@ void TWTTbarAnalysis::SetTWTTbarVariables() {
   fMiniTree->Branch("TDressNLooseCentral",   &DressNLooseCentral,    "TDressNLooseCentral/s");
   fMiniTree->Branch("TDressNBLooseCentral",  &DressNBLooseCentral,   "TDressNBLooseCentral/s");
   fMiniTree->Branch("TDressNLooseFwd",       &DressNLooseFwd,        "TDressNLooseFwd/s");
-  
+
   fMiniTree->Branch("TDressLep1_Pt",         &TDressLep1_Pt,         "TDressLep1_Pt/F");
   fMiniTree->Branch("TDressLep1_E",          &TDressLep1_E,          "TDressLep1_E/F");
   fMiniTree->Branch("TDressLep1_Eta",        &TDressLep1_Eta,        "TDressLep1_Eta/F");
   fMiniTree->Branch("TDressLep2_Pt",         &TDressLep2_Pt,         "TDressLep2_Pt/F");
   fMiniTree->Branch("TDressLep2_E",          &TDressLep2_E,          "TDressLep2_E/F");
   fMiniTree->Branch("TDressLep2_Eta",        &TDressLep2_Eta,        "TDressLep2_Eta/F");
-  fMiniTree->Branch("TDressMuon_Pt",         &TDressMuon_Pt,         "TDressMuon_Pt/F");
-  fMiniTree->Branch("TDressMuon_E",          &TDressMuon_E,          "TDressMuon_E/F");
-  fMiniTree->Branch("TDressMuon_Eta",        &TDressMuon_Eta,        "TDressMuon_Eta/F");
-  fMiniTree->Branch("TDressElec_Pt",         &TDressElec_Pt,         "TDressElec_Pt/F");
-  fMiniTree->Branch("TDressElec_E",          &TDressElec_E,          "TDressElec_E/F");
-  fMiniTree->Branch("TDressElec_Eta",        &TDressElec_Eta,        "TDressElec_Eta/F");
   fMiniTree->Branch("TDressJet1_Pt",         &TDressJet1_Pt,         "TDressJet1_Pt/F");
   fMiniTree->Branch("TDressJet1_E",          &TDressJet1_E,          "TDressJet1_E/F");
   fMiniTree->Branch("TDressJet1_Eta",        &TDressJet1_Eta,        "TDressJet1_Eta/F");
-  fMiniTree->Branch("TDressJet2_Pt",         &TDressJet2_Pt,         "TDressJet2_Pt/F");
-  fMiniTree->Branch("TDressJet2_E",          &TDressJet2_E,          "TDressJet2_E/F");
-  fMiniTree->Branch("TDressJet2_Eta",        &TDressJet2_Eta,        "TDressJet2_Eta/F");
-  
+
   fMiniTree->Branch("TDressLep1Lep2_Pt",     &TDressLep1Lep2_Pt,     "TDressLep1Lep2_Pt/F");
   fMiniTree->Branch("TDressLep1Lep2_M",      &TDressLep1Lep2_M,      "TDressLep1Lep2_M/F");
   fMiniTree->Branch("TDressLep1Lep2_DPhi",   &TDressLep1Lep2_DPhi,   "TDressLep1Lep2_DPhi/F");
   fMiniTree->Branch("TDressLep1Jet1_M" ,     &TDressLep1Jet1_M,      "TDressLep1Jet1_M/F");
   fMiniTree->Branch("TDressLep1Jet1_DPhi",   &TDressLep1Jet1_DPhi,   "TDressLep1Jet1_DPhi/F");
-  fMiniTree->Branch("TDressLep1Jet2_M",      &TDressLep1Jet2_M,      "TDressLep1Jet2_M/F");
-  fMiniTree->Branch("TDressLep1Jet2_DPhi",   &TDressLep1Jet2_DPhi,   "TDressLep1Jet2_DPhi/F");
   fMiniTree->Branch("TDressLep2Jet1_M",      &TDressLep2Jet1_M,      "TDressLep2Jet1_M/F");
   fMiniTree->Branch("TDressLep2Jet1_DPhi",   &TDressLep2Jet1_DPhi,   "TDressLep2Jet1_DPhi/F");
-  fMiniTree->Branch("TDressLep2Jet2_M",      &TDressLep2Jet2_M,      "TDressLep2Jet2_M/F");
-  fMiniTree->Branch("TDressLep2Jet2_DPhi",   &TDressLep2Jet2_DPhi,   "TDressLep2Jet2_DPhi/F");
-  
+
   fMiniTree->Branch("TDressSys_Pt",          &DressSys_Pt,           "TDressSys_Pt/F");
   fMiniTree->Branch("TDressSys_E",           &DressSys_E,            "TDressSys_E/F");
   fMiniTree->Branch("TDressSys_Eta",         &DressSys_Eta,          "TDressSys_Eta/F");
@@ -405,14 +338,14 @@ void TWTTbarAnalysis::SetTWTTbarVariables() {
   fMiniTree->Branch("TDressMiniMax",         &TDressMiniMax,         "TDressMiniMax/F");
   fMiniTree->Branch("TDressHT",              &TDressHT,              "TDressHT/F");
   fMiniTree->Branch("TDressMET",             &TDressMET,             "TDressMET/F");
-  
+
   // Parton level variables
   fMiniTree->Branch("TPassPart",             &TPassPart,             "TPassPart/O");
   fMiniTree->Branch("TPartMET",              &TPartMET,              "TPartMET/F");
 }
 
 
-void TWTTbarAnalysis::GetLeptonVariables() {
+void TWAnalysis::GetLeptonVariables() {
   TNSelLeps = selLeptons.size();
 
   if (TNSelLeps >= 1) {
@@ -432,44 +365,6 @@ void TWTTbarAnalysis::GetLeptonVariables() {
     TLep1_EJERUp      = selLeptons.at(0).E();
     TLep1_PhiJERUp    = selLeptons.at(0).Phi();
     TLep1_EtaJERUp    = selLeptons.at(0).Eta();
-
-    if (selLeptons.at(0).isMuon) {
-      TMuon_Pt          = selLeptons.at(0).Pt();
-      TMuon_E           = selLeptons.at(0).E();
-      TMuon_Phi         = selLeptons.at(0).Phi();
-      TMuon_Eta         = selLeptons.at(0).Eta();
-      TMuon_PtJESUp     = selLeptons.at(0).Pt();
-      TMuon_EJESUp      = selLeptons.at(0).E();
-      TMuon_PhiJESUp    = selLeptons.at(0).Phi();
-      TMuon_EtaJESUp    = selLeptons.at(0).Eta();
-      TMuon_PtJESDown   = selLeptons.at(0).Pt();
-      TMuon_EJESDown    = selLeptons.at(0).E();
-      TMuon_PhiJESDown  = selLeptons.at(0).Phi();
-      TMuon_EtaJESDown  = selLeptons.at(0).Eta();
-      TMuon_PtJERUp     = selLeptons.at(0).Pt();
-      TMuon_EJERUp      = selLeptons.at(0).E();
-      TMuon_PhiJERUp    = selLeptons.at(0).Phi();
-      TMuon_EtaJERUp    = selLeptons.at(0).Eta();
-    }
-    else {
-      TElec_Pt          = selLeptons.at(0).Pt();
-      TElec_E           = selLeptons.at(0).E();
-      TElec_Phi         = selLeptons.at(0).Phi();
-      TElec_Eta         = selLeptons.at(0).Eta();
-      TElec_PtJESUp     = selLeptons.at(0).Pt();
-      TElec_EJESUp      = selLeptons.at(0).E();
-      TElec_PhiJESUp    = selLeptons.at(0).Phi();
-      TElec_EtaJESUp    = selLeptons.at(0).Eta();
-      TElec_PtJESDown   = selLeptons.at(0).Pt();
-      TElec_EJESDown    = selLeptons.at(0).E();
-      TElec_PhiJESDown  = selLeptons.at(0).Phi();
-      TElec_EtaJESDown  = selLeptons.at(0).Eta();
-      TElec_PtJERUp     = selLeptons.at(0).Pt();
-      TElec_EJERUp      = selLeptons.at(0).E();
-      TElec_PhiJERUp    = selLeptons.at(0).Phi();
-      TElec_EtaJERUp    = selLeptons.at(0).Eta();
-    }
-
     if (TNSelLeps >= 2) {
       TLep2_Pt          = selLeptons.at(1).Pt();
       TLep2_E           = selLeptons.at(1).E();
@@ -488,43 +383,6 @@ void TWTTbarAnalysis::GetLeptonVariables() {
       TLep2_PhiJERUp    = selLeptons.at(1).Phi();
       TLep2_EtaJERUp    = selLeptons.at(1).Eta();
 
-    if (selLeptons.at(1).isMuon) {
-      TMuon_Pt          = selLeptons.at(1).Pt();
-      TMuon_E           = selLeptons.at(1).E();
-      TMuon_Phi         = selLeptons.at(1).Phi();
-      TMuon_Eta         = selLeptons.at(1).Eta();
-      TMuon_PtJESUp     = selLeptons.at(1).Pt();
-      TMuon_EJESUp      = selLeptons.at(1).E();
-      TMuon_PhiJESUp    = selLeptons.at(1).Phi();
-      TMuon_EtaJESUp    = selLeptons.at(1).Eta();
-      TMuon_PtJESDown   = selLeptons.at(1).Pt();
-      TMuon_EJESDown    = selLeptons.at(1).E();
-      TMuon_PhiJESDown  = selLeptons.at(1).Phi();
-      TMuon_EtaJESDown  = selLeptons.at(1).Eta();
-      TMuon_PtJERUp     = selLeptons.at(1).Pt();
-      TMuon_EJERUp      = selLeptons.at(1).E();
-      TMuon_PhiJERUp    = selLeptons.at(1).Phi();
-      TMuon_EtaJERUp    = selLeptons.at(1).Eta();
-    }
-    else {
-      TElec_Pt          = selLeptons.at(1).Pt();
-      TElec_E           = selLeptons.at(1).E();
-      TElec_Phi         = selLeptons.at(1).Phi();
-      TElec_Eta         = selLeptons.at(1).Eta();
-      TElec_PtJESUp     = selLeptons.at(1).Pt();
-      TElec_EJESUp      = selLeptons.at(1).E();
-      TElec_PhiJESUp    = selLeptons.at(1).Phi();
-      TElec_EtaJESUp    = selLeptons.at(1).Eta();
-      TElec_PtJESDown   = selLeptons.at(1).Pt();
-      TElec_EJESDown    = selLeptons.at(1).E();
-      TElec_PhiJESDown  = selLeptons.at(1).Phi();
-      TElec_EtaJESDown  = selLeptons.at(1).Eta();
-      TElec_PtJERUp     = selLeptons.at(1).Pt();
-      TElec_EJERUp      = selLeptons.at(1).E();
-      TElec_PhiJERUp    = selLeptons.at(1).Phi();
-      TElec_EtaJERUp    = selLeptons.at(1).Eta();
-    }
-
       if      (selLeptons.at(0).isMuon && selLeptons.at(1).isElec) TChannel = iElMu;
       else if (selLeptons.at(0).isElec && selLeptons.at(1).isMuon) TChannel = iElMu;
       else if (selLeptons.at(0).isMuon && selLeptons.at(1).isMuon) TChannel = iMuon;
@@ -539,47 +397,20 @@ void TWTTbarAnalysis::GetLeptonVariables() {
 }
 
 
-void TWTTbarAnalysis::GetGenLepVariables() {
+void TWAnalysis::GetGenLepVariables() {
   if (gIsData) return;
   DressNLeps = DressLeptons.size();
-  
+
   if (DressNLeps >= 1) {
     TDressLep1_Pt   = DressLeptons.at(0).Pt();
     TDressLep1_E    = DressLeptons.at(0).E();
     TDressLep1_Phi  = DressLeptons.at(0).Phi();
     TDressLep1_Eta  = DressLeptons.at(0).Eta();
-
-    if (DressLeptons.at(0).isMuon) {
-      TDressMuon_Pt   = DressLeptons.at(0).Pt();
-      TDressMuon_E    = DressLeptons.at(0).E();
-      TDressMuon_Phi  = DressLeptons.at(0).Phi();
-      TDressMuon_Eta  = DressLeptons.at(0).Eta();
-    }
-    else {
-      TDressElec_Pt   = DressLeptons.at(0).Pt();
-      TDressElec_E    = DressLeptons.at(0).E();
-      TDressElec_Phi  = DressLeptons.at(0).Phi();
-      TDressElec_Eta  = DressLeptons.at(0).Eta();
-    }
-
     if (DressNLeps >= 2) {
       TDressLep2_Pt   = DressLeptons.at(1).Pt();
       TDressLep2_E    = DressLeptons.at(1).E();
       TDressLep2_Phi  = DressLeptons.at(1).Phi();
       TDressLep2_Eta  = DressLeptons.at(1).Eta();
-      
-      if (DressLeptons.at(1).isMuon) {
-        TDressMuon_Pt   = DressLeptons.at(1).Pt();
-        TDressMuon_E    = DressLeptons.at(1).E();
-        TDressMuon_Phi  = DressLeptons.at(1).Phi();
-        TDressMuon_Eta  = DressLeptons.at(1).Eta();
-      }
-      else {
-        TDressElec_Pt   = DressLeptons.at(1).Pt();
-        TDressElec_E    = DressLeptons.at(1).E();
-        TDressElec_Phi  = DressLeptons.at(1).Phi();
-        TDressElec_Eta  = DressLeptons.at(1).Eta();
-      }
 
       if      (DressLeptons.at(0).isElec && DressLeptons.at(1).isMuon) GenChannel = iElMu;
       else if (DressLeptons.at(0).isMuon && DressLeptons.at(1).isElec) GenChannel = iElMu;
@@ -591,26 +422,21 @@ void TWTTbarAnalysis::GetGenLepVariables() {
 }
 
 
-void TWTTbarAnalysis::GetJetVariables() {
+void TWAnalysis::GetJetVariables() {
   TNJets        = selJets.size();
   TNJetsJESUp   = selJetsJecUp.size();
   TNJetsJESDown = selJetsJecDown.size();
   TNJetsJERUp   = selJetsJER.size();
-  
+
   for (UShort_t i = 0; i < TNJets; i++) THT += selJets.at(i).Pt();
-  
+
   if (TNJets > 0) {
     TJet1_Pt  = selJets.at(0).Pt();
     TJet1_E   = selJets.at(0).E();
     TJet1_Phi = selJets.at(0).Phi();
     TJet1_Eta = selJets.at(0).Eta();
-    if (TNJets > 1) {
-      TJet2_Pt  = selJets.at(1).Pt();
-      TJet2_E   = selJets.at(1).E();
-      TJet2_Eta = selJets.at(1).Eta();
-    }
   }
-  
+
   for (UShort_t j = 0; j < vetoJets.size(); ++j) {
     if (TMath::Abs(vetoJets.at(j).Eta()) < 2.4) {
       LooseCentralJets.push_back(vetoJets.at(j));
@@ -618,14 +444,14 @@ void TWTTbarAnalysis::GetJetVariables() {
     }
     else LooseFwdJets.push_back(vetoJets.at(j));
   }
-  
+
   NLooseCentral = LooseCentralJets.size();
   NLooseFwd     = LooseFwdJets.size();
-  
-  
+
+
   // For systematics
   if (gIsData) return;
-  
+
   for (auto& jet : selJetsJecUp) {
     THTJESUp += jet.pTJESUp;
     if (jet.isBtag) TNBJetsJESUp++;
@@ -637,7 +463,7 @@ void TWTTbarAnalysis::GetJetVariables() {
   for (auto& jet : selJetsJER) {
     if (jet.isBtag) TNBJetsJERUp++;
   }
-  
+
   if (TNJetsJESUp >= 1) {
     TJet1_PtJESUp  = selJetsJecUp.at(0).Pt();
     TJet1_EJESUp   = selJetsJecUp.at(0).E();
@@ -656,8 +482,8 @@ void TWTTbarAnalysis::GetJetVariables() {
     TJet1_PhiJERUp = selJetsJER.at(0).Phi();
     TJet1_EtaJERUp = selJetsJER.at(0).Eta();
   }
-  
-  
+
+
   for (UShort_t j = 0; j < vetoJets.size(); ++j) {
     if (vetoJets.at(j).pTJESUp > 20.) {
       if (TMath::Abs(vetoJets.at(j).Eta()) < 2.4) {
@@ -692,10 +518,10 @@ void TWTTbarAnalysis::GetJetVariables() {
 }
 
 
-void TWTTbarAnalysis::GetGenJetVariables() {
+void TWAnalysis::GetGenJetVariables() {
   if (gIsData) return;
   DressNJets = genJets.size();
-  
+
   for (UShort_t i = 0; i < (UShort_t)DressNJets; i++) {
     if (TMath::Abs(genJets.at(i).Eta()) < 2.4 && Cleaning(genJets.at(i), DressLeptons, 0.4)) {
       DressLooseCentralJets.push_back(genJets.at(i));
@@ -710,37 +536,30 @@ void TWTTbarAnalysis::GetGenJetVariables() {
       DressLooseFwdJets.push_back(genJets.at(i));
     }
   }
-  
+
   DressNJets          = DressJets.size();
   DressNLooseCentral  = DressLooseCentralJets.size();
   DressNLooseFwd      = DressLooseFwdJets.size();
-  
+
   if (DressNJets >= 1) {
     TDressJet1_Pt   = DressJets.at(0).Pt();
     TDressJet1_E    = DressJets.at(0).E();
     TDressJet1_Phi  = DressJets.at(0).Phi();
     TDressJet1_Eta  = DressJets.at(0).Eta();
-    if (DressNJets >= 2) {
-      TDressJet2_Pt   = DressJets.at(1).Pt();
-      TDressJet2_E    = DressJets.at(1).E();
-      TDressJet2_Eta  = DressJets.at(1).Eta();
-    }
   }
 }
 
 
-void TWTTbarAnalysis::GetMETandGenMET() {
+void TWAnalysis::GetMETandGenMET() {
   if      (year == 2017) {
     TMET        = Get<Float_t>("METFixEE2017_pt");
     TMET_Phi    = Get<Float_t>("METFixEE2017_phi");
   }
-  else if (year == 2018) {
-//     TMET        = Get<Float_t>("MET_pt_nom");
-//     TMET_Phi    = Get<Float_t>("MET_phi_nom");
-    TMET        = Get<Float_t>("MET_pt");
-    TMET_Phi    = Get<Float_t>("MET_phi");
+  else if (year == 2018) { // CAMBIAR PA QUE SEA LISTO Y DETECTE EL NOM CUANDO LO HAYA
+    TMET        = Get<Float_t>("MET_pt_nom");
+    TMET_Phi    = Get<Float_t>("MET_phi_nom");
   }
-  
+
   if (gIsData) return;
 //   TMETJESUp   = Get<Float_t>("met_jecUp_pt"  );
 //   TMETJESDown = Get<Float_t>("met_jecDown_pt");
@@ -748,10 +567,10 @@ void TWTTbarAnalysis::GetMETandGenMET() {
 //   TMET_PhiJESDown = Get<Float_t>("met_jecDown_phi");
 //   Float_t  diff_MET_JER_phi = GetParam<Float_t>("diff_MET_JER_phi");
 //   Float_t  diff_MET_JER_pt  = GetParam<Float_t>("diff_MET_JER_pt");
-// 
+//
 //   TLorentzVector diff_MET_JER; diff_MET_JER.SetPtEtaPhiM(diff_MET_JER_pt, 0.,diff_MET_JER_phi, 0.);
 //   TLorentzVector vMET; vMET.SetPtEtaPhiM(TMET, 0., TMET_Phi, 0);
-// 
+//
 //   TMET_PhiJERUp     = (vMET + diff_MET_JER).Phi();
 //   TMETJERUp         = (vMET + diff_MET_JER).Pt();
 
@@ -763,9 +582,9 @@ void TWTTbarAnalysis::GetMETandGenMET() {
 }
 
 
-void TWTTbarAnalysis::ResetTWTTbarVariables() {
+void TWAnalysis::ResetTWVariables() {
   ElecSF    = 1;  MuonSF   = 1; ElecSFUp  = 1;  ElecSFDo = 1;  MuonSFUp = 1;  MuonSFDo = 1; lepSF = 1;
-  
+
   TPassReco              = false;
   TPassRecoJESUp         = false;
   TPassRecoJESDown       = false;
@@ -776,19 +595,19 @@ void TWTTbarAnalysis::ResetTWTTbarVariables() {
   TIsSS                  = false;
   GenChannel             = -1;
   TChannel               = -1;
-  
+
   TNBJetsJESUp = 0; TNBJetsJESDown = 0; TNBJetsJERUp = 0;
   NBLooseCentral = 0; NBLooseCentralJESUp = 0; NBLooseCentralJESDown = 0; NBLooseCentralJERUp = 0;
   LooseCentralJets.clear(); LooseFwdJets.clear();
   LooseCentralJetsJESUp.clear(); LooseFwdJetsJESUp.clear();
   LooseCentralJetsJESDown.clear(); LooseFwdJetsJESDown.clear();
   LooseCentralJetsJERUp.clear(); LooseFwdJetsJERUp.clear();
-  
+
   DressNBJets = 0; DressNBLooseCentral = 0;
   DressJets.clear();
   DressLooseCentralJets.clear();
   DressLooseFwdJets.clear();
-  
+
   TLep1_Pt               = -99;
   TLep1_E                = -99;
   TLep1_Phi              = -99;
@@ -797,31 +616,16 @@ void TWTTbarAnalysis::ResetTWTTbarVariables() {
   TLep2_E                = -99;
   TLep2_Phi              = -99;
   TLep2_Eta              = -99;
-  TMuon_Pt               = -99;
-  TMuon_E                = -99;
-  TMuon_Phi              = -99;
-  TMuon_Eta              = -99;
-  TElec_Pt               = -99;
-  TElec_E                = -99;
-  TElec_Phi              = -99;
-  TElec_Eta              = -99;
   TJet1_Pt               = -99;
   TJet1_E                = -99;
   TJet1_Eta              = -99;
-  TJet2_Pt               = -99;
-  TJet2_E                = -99;
-  TJet2_Eta              = -99;
   TLep1Lep2_Pt           = -99;
   TLep1Lep2_M            = -99;
   TLep1Lep2_DPhi         = -99;
   TLep1Jet1_M            = -99;
   TLep1Jet1_DPhi         = -99;
-  TLep1Jet2_M            = -99;
-  TLep1Jet2_DPhi         = -99;
   TLep2Jet1_M            = -99;
   TLep2Jet1_DPhi         = -99;
-  TLep2Jet2_M            = -99;
-  TLep2Jet2_DPhi         = -99;
   Sys_Pt                 = -99;
   Sys_E                  = -99;
   Sys_Eta                = -99;
@@ -831,7 +635,7 @@ void TWTTbarAnalysis::ResetTWTTbarVariables() {
   THT                    = -99;
   TMET                   = -99;
   TMET_Phi               = -99;
-  
+
   TLep1_PtJESUp          = -99;
   TLep1_EJESUp           = -99;
   TLep1_PhiJESUp         = -99;
@@ -840,31 +644,16 @@ void TWTTbarAnalysis::ResetTWTTbarVariables() {
   TLep2_EJESUp           = -99;
   TLep2_PhiJESUp         = -99;
   TLep2_EtaJESUp         = -99;
-  TMuon_PtJESUp          = -99;
-  TMuon_EJESUp           = -99;
-  TMuon_PhiJESUp         = -99;
-  TMuon_EtaJESUp         = -99;
-  TElec_PtJESUp          = -99;
-  TElec_EJESUp           = -99;
-  TElec_PhiJESUp         = -99;
-  TElec_EtaJESUp         = -99;
   TJet1_PtJESUp          = -99;
   TJet1_EJESUp           = -99;
   TJet1_EtaJESUp         = -99;
-  TJet2_PtJESUp          = -99;
-  TJet2_EJESUp           = -99;
-  TJet2_EtaJESUp         = -99;
   TLep1Lep2_PtJESUp      = -99;
   TLep1Lep2_MJESUp       = -99;
   TLep1Lep2_DPhiJESUp    = -99;
   TLep1Jet1_MJESUp       = -99;
   TLep1Jet1_DPhiJESUp    = -99;
-  TLep1Jet2_MJESUp       = -99;
-  TLep1Jet2_DPhiJESUp    = -99;
   TLep2Jet1_MJESUp       = -99;
   TLep2Jet1_DPhiJESUp    = -99;
-  TLep2Jet2_MJESUp       = -99;
-  TLep2Jet2_DPhiJESUp    = -99;
   Sys_PtJESUp            = -99;
   Sys_EJESUp             = -99;
   Sys_EtaJESUp           = -99;
@@ -874,7 +663,7 @@ void TWTTbarAnalysis::ResetTWTTbarVariables() {
   THTJESUp               = -99;
   TMETJESUp              = -99;
   TMET_PhiJESUp          = -99;
-  
+
   TLep1_PtJESDown        = -99;
   TLep1_EJESDown         = -99;
   TLep1_PhiJESDown       = -99;
@@ -883,31 +672,16 @@ void TWTTbarAnalysis::ResetTWTTbarVariables() {
   TLep2_EJESDown         = -99;
   TLep2_PhiJESDown       = -99;
   TLep2_EtaJESDown       = -99;
-  TMuon_PtJESDown        = -99;
-  TMuon_EJESDown         = -99;
-  TMuon_PhiJESDown       = -99;
-  TMuon_EtaJESDown       = -99;
-  TElec_PtJESDown        = -99;
-  TElec_EJESDown         = -99;
-  TElec_PhiJESDown       = -99;
-  TElec_EtaJESDown       = -99;
   TJet1_PtJESDown        = -99;
   TJet1_EJESDown         = -99;
   TJet1_EtaJESDown       = -99;
-  TJet2_PtJESDown        = -99;
-  TJet2_EJESDown         = -99;
-  TJet2_EtaJESDown       = -99;
   TLep1Lep2_PtJESDown    = -99;
   TLep1Lep2_MJESDown     = -99;
   TLep1Lep2_DPhiJESDown  = -99;
   TLep1Jet1_MJESDown     = -99;
   TLep1Jet1_DPhiJESDown  = -99;
-  TLep1Jet2_MJESDown     = -99;
-  TLep1Jet2_DPhiJESDown  = -99;
   TLep2Jet1_MJESDown     = -99;
   TLep2Jet1_DPhiJESDown  = -99;
-  TLep2Jet2_MJESDown     = -99;
-  TLep2Jet2_DPhiJESDown  = -99;
   Sys_PtJESDown          = -99;
   Sys_EJESDown           = -99;
   Sys_EtaJESDown         = -99;
@@ -917,7 +691,7 @@ void TWTTbarAnalysis::ResetTWTTbarVariables() {
   THTJESDown             = -99;
   TMETJESDown            = -99;
   TMET_PhiJESDown        = -99;
-  
+
   TLep1_PtJERUp          = -99;
   TLep1_EJERUp           = -99;
   TLep1_PhiJERUp         = -99;
@@ -926,31 +700,16 @@ void TWTTbarAnalysis::ResetTWTTbarVariables() {
   TLep2_EJERUp           = -99;
   TLep2_PhiJERUp         = -99;
   TLep2_EtaJERUp         = -99;
-  TMuon_PtJERUp          = -99;
-  TMuon_EJERUp           = -99;
-  TMuon_PhiJERUp         = -99;
-  TMuon_EtaJERUp         = -99;
-  TElec_PtJERUp          = -99;
-  TElec_EJERUp           = -99;
-  TElec_PhiJERUp         = -99;
-  TElec_EtaJERUp         = -99;
   TJet1_PtJERUp          = -99;
   TJet1_EJERUp           = -99;
   TJet1_EtaJERUp         = -99;
-  TJet2_PtJERUp          = -99;
-  TJet2_EJERUp           = -99;
-  TJet2_EtaJERUp         = -99;
   TLep1Lep2_PtJERUp      = -99;
   TLep1Lep2_MJERUp       = -99;
   TLep1Lep2_DPhiJERUp    = -99;
   TLep1Jet1_MJERUp       = -99;
   TLep1Jet1_DPhiJERUp    = -99;
-  TLep1Jet2_MJERUp       = -99;
-  TLep1Jet2_DPhiJERUp    = -99;
   TLep2Jet1_MJERUp       = -99;
   TLep2Jet1_DPhiJERUp    = -99;
-  TLep2Jet2_MJERUp       = -99;
-  TLep2Jet2_DPhiJERUp    = -99;
   Sys_PtJERUp            = -99;
   Sys_EJERUp             = -99;
   Sys_EtaJERUp           = -99;
@@ -960,7 +719,7 @@ void TWTTbarAnalysis::ResetTWTTbarVariables() {
   THTJERUp               = -99;
   TMETJERUp              = -99;
   TMET_PhiJERUp          = -99;
-  
+
   TDressLep1_Pt          = -99;
   TDressLep1_E           = -99;
   TDressLep1_Phi         = -99;
@@ -969,31 +728,16 @@ void TWTTbarAnalysis::ResetTWTTbarVariables() {
   TDressLep2_E           = -99;
   TDressLep2_Phi         = -99;
   TDressLep2_Eta         = -99;
-  TDressMuon_Pt          = -99;
-  TDressMuon_E           = -99;
-  TDressMuon_Phi         = -99;
-  TDressMuon_Eta         = -99;
-  TDressElec_Pt          = -99;
-  TDressElec_E           = -99;
-  TDressElec_Phi         = -99;
-  TDressElec_Eta         = -99;
   TDressJet1_Pt          = -99;
   TDressJet1_E           = -99;
   TDressJet1_Eta         = -99;
-  TDressJet2_Pt          = -99;
-  TDressJet2_E           = -99;
-  TDressJet2_Eta         = -99;
   TDressLep1Lep2_Pt      = -99;
   TDressLep1Lep2_M       = -99;
   TDressLep1Lep2_DPhi    = -99;
   TDressLep1Jet1_M       = -99;
   TDressLep1Jet1_DPhi    = -99;
-  TDressLep1Jet2_M       = -99;
-  TDressLep1Jet2_DPhi    = -99;
   TDressLep2Jet1_M       = -99;
   TDressLep2Jet1_DPhi    = -99;
-  TDressLep2Jet2_M       = -99;
-  TDressLep2Jet2_DPhi    = -99;
   DressSys_Pt            = -99;
   DressSys_E             = -99;
   DressSys_Eta           = -99;
@@ -1003,14 +747,14 @@ void TWTTbarAnalysis::ResetTWTTbarVariables() {
   TDressHT               = -99;
   TDressMET              = -99;
   TDressMET_Phi          = -99;
-  
-  
+
+
   TPartMET               = -99;
   TPartMET_Phi           = -99;
 }
 
 
-void TWTTbarAnalysis::CalculateTWTTbarVariables() {  // VERY IMPORTAAAAAAAANT        Now ONLY for 2j2b
+void TWAnalysis::CalculateTWVariables() {  // VERY IMPORTAAAAAAAANT        Now ONLY for 2j2b
   TLorentzVector tmpsys;
   if (TNJets == 2 && TNBJets == 2) {
     TLep1Lep2_Pt   = (selLeptons.at(0).p + selLeptons.at(1).p).Pt();
@@ -1018,21 +762,16 @@ void TWTTbarAnalysis::CalculateTWTTbarVariables() {  // VERY IMPORTAAAAAAAANT   
     TLep1Lep2_DPhi = selLeptons.at(0).p.DeltaPhi(selLeptons.at(1).p);
     TLep1Jet1_M    = (selLeptons.at(0).p + selJets.at(0).p).M();
     TLep1Jet1_DPhi = selLeptons.at(0).p.DeltaPhi(selJets.at(0).p);
-    TLep1Jet2_M    = (selLeptons.at(0).p + selJets.at(1).p).M();
-    TLep1Jet2_DPhi = selLeptons.at(0).p.DeltaPhi(selJets.at(1).p);
     TLep2Jet1_M    = (selLeptons.at(1).p + selJets.at(0).p).M();
     TLep2Jet1_DPhi = selLeptons.at(1).p.DeltaPhi(selJets.at(0).p);
-    TLep2Jet2_M    = (selLeptons.at(1).p + selJets.at(1).p).M();
-    TLep2Jet2_DPhi = selLeptons.at(1).p.DeltaPhi(selJets.at(1).p);
     tmpsys         = getSysVector();
     Sys_Pt         = tmpsys.Pt();
     Sys_E          = tmpsys.E();
     Sys_Eta        = tmpsys.Eta();
     Sys_M          = tmpsys.M();
     Sys_Pz         = tmpsys.Pz();
-    TMiniMax       = getMiniMax(TLep1Jet1_M, TLep1Jet2_M, TLep2Jet1_M, TLep2Jet2_M);
   }
-  
+
   // For systematic calculations
   if (!gIsData) {
     if (TNJetsJESUp == 2 && TNBJetsJESUp == 2) {
@@ -1041,67 +780,52 @@ void TWTTbarAnalysis::CalculateTWTTbarVariables() {  // VERY IMPORTAAAAAAAANT   
       TLep1Lep2_DPhiJESUp = selLeptons.at(0).p.DeltaPhi(selLeptons.at(1).p);
       TLep1Jet1_MJESUp    = (selLeptons.at(0).p + selJetsJecUp.at(0).p).M();
       TLep1Jet1_DPhiJESUp = selLeptons.at(0).p.DeltaPhi(selJetsJecUp.at(0).p);
-      TLep1Jet2_MJESUp    = (selLeptons.at(0).p + selJetsJecUp.at(1).p).M();
-      TLep1Jet2_DPhiJESUp = selLeptons.at(0).p.DeltaPhi(selJetsJecUp.at(1).p);
       TLep2Jet1_MJESUp    = (selLeptons.at(1).p + selJetsJecUp.at(0).p).M();
       TLep2Jet1_DPhiJESUp = selLeptons.at(1).p.DeltaPhi(selJetsJecUp.at(0).p);
-      TLep2Jet2_MJESUp    = (selLeptons.at(1).p + selJetsJecUp.at(1).p).M();
-      TLep2Jet2_DPhiJESUp = selLeptons.at(1).p.DeltaPhi(selJetsJecUp.at(1).p);
       tmpsys              = getSysVector("JESUp");
       Sys_PtJESUp         = tmpsys.Pt();
       Sys_EJESUp          = tmpsys.E();
       Sys_EtaJESUp        = tmpsys.Eta();
       Sys_MJESUp          = tmpsys.M();
       Sys_PzJESUp         = tmpsys.Pz();
-      TMiniMaxJESUp       = getMiniMax(TLep1Jet1_M, TLep1Jet2_M, TLep2Jet1_M, TLep2Jet2_M);
     }
-    
+
     if (TNJetsJESDown == 2 && TNBJetsJESDown == 2) {
       TLep1Lep2_PtJESDown   = (selLeptons.at(0).p + selLeptons.at(1).p).Pt();
       TLep1Lep2_MJESDown    = (selLeptons.at(0).p + selLeptons.at(1).p).M();
       TLep1Lep2_DPhiJESDown = selLeptons.at(0).p.DeltaPhi(selLeptons.at(1).p);
       TLep1Jet1_MJESDown    = (selLeptons.at(0).p + selJetsJecDown.at(0).p).M();
       TLep1Jet1_DPhiJESDown = selLeptons.at(0).p.DeltaPhi(selJetsJecDown.at(0).p);
-      TLep1Jet2_MJESDown    = (selLeptons.at(0).p + selJetsJecDown.at(1).p).M();
-      TLep1Jet2_DPhiJESDown = selLeptons.at(0).p.DeltaPhi(selJetsJecDown.at(1).p);
       TLep2Jet1_MJESDown    = (selLeptons.at(1).p + selJetsJecDown.at(0).p).M();
       TLep2Jet1_DPhiJESDown = selLeptons.at(1).p.DeltaPhi(selJetsJecDown.at(0).p);
-      TLep2Jet2_MJESDown    = (selLeptons.at(1).p + selJetsJecDown.at(1).p).M();
-      TLep2Jet2_DPhiJESDown = selLeptons.at(1).p.DeltaPhi(selJetsJecDown.at(1).p);
       tmpsys                = getSysVector("JESDown");
       Sys_PtJESDown         = tmpsys.Pt();
       Sys_EJESDown          = tmpsys.E();
       Sys_EtaJESDown        = tmpsys.Eta();
       Sys_MJESDown          = tmpsys.M();
       Sys_PzJESDown         = tmpsys.Pz();
-      TMiniMaxJESDown       = getMiniMax(TLep1Jet1_M, TLep1Jet2_M, TLep2Jet1_M, TLep2Jet2_M);
     }
-    
+
     if (TNJetsJERUp == 2 && TNBJetsJERUp == 2) {
       TLep1Lep2_PtJERUp   = (selLeptons.at(0).p + selLeptons.at(1).p).Pt();
       TLep1Lep2_MJERUp    = (selLeptons.at(0).p + selLeptons.at(1).p).M();
       TLep1Lep2_DPhiJERUp = selLeptons.at(0).p.DeltaPhi(selLeptons.at(1).p);
       TLep1Jet1_MJERUp    = (selLeptons.at(0).p + selJetsJER.at(0).p).M();
       TLep1Jet1_DPhiJERUp = selLeptons.at(0).p.DeltaPhi(selJetsJER.at(0).p);
-      TLep1Jet2_MJERUp    = (selLeptons.at(0).p + selJetsJER.at(1).p).M();
-      TLep1Jet2_DPhiJERUp = selLeptons.at(0).p.DeltaPhi(selJetsJER.at(1).p);
       TLep2Jet1_MJERUp    = (selLeptons.at(1).p + selJetsJER.at(0).p).M();
       TLep2Jet1_DPhiJERUp = selLeptons.at(1).p.DeltaPhi(selJetsJER.at(0).p);
-      TLep2Jet2_MJERUp    = (selLeptons.at(1).p + selJetsJER.at(1).p).M();
-      TLep2Jet2_DPhiJERUp = selLeptons.at(1).p.DeltaPhi(selJetsJER.at(1).p);
       tmpsys              = getSysVector("JERUp");
       Sys_PtJERUp         = tmpsys.Pt();
       Sys_EJERUp          = tmpsys.E();
       Sys_EtaJERUp        = tmpsys.Eta();
       Sys_MJERUp          = tmpsys.M();
       Sys_PzJERUp         = tmpsys.Pz();
-      TMiniMaxJERUp       = getMiniMax(TLep1Jet1_M, TLep1Jet2_M, TLep2Jet1_M, TLep2Jet2_M);
     }
   }
 }
 
 
-void TWTTbarAnalysis::CalculateDressTWTTbarVariables() {  // VERY IMPORTAAAAAAAANT        Now ONLY for 2j2b
+void TWAnalysis::CalculateDressTWVariables() {  // VERY IMPORTAAAAAAAANT        Now ONLY for 2j2b
   TLorentzVector tmpsys;
   if (DressNJets == 2 && DressNBJets == 2) {
     TDressLep1Lep2_Pt   = (DressLeptons.at(0).p + DressLeptons.at(1).p).Pt();
@@ -1109,32 +833,22 @@ void TWTTbarAnalysis::CalculateDressTWTTbarVariables() {  // VERY IMPORTAAAAAAAA
     TDressLep1Lep2_DPhi = DressLeptons.at(0).p.DeltaPhi(DressLeptons.at(1).p);
     TDressLep1Jet1_M    = (DressLeptons.at(0).p + DressJets.at(0).p).M();
     TDressLep1Jet1_DPhi = DressLeptons.at(0).p.DeltaPhi(DressJets.at(0).p);
-    TDressLep1Jet2_M    = (DressLeptons.at(0).p + DressJets.at(1).p).M();
-    TDressLep1Jet2_DPhi = DressLeptons.at(0).p.DeltaPhi(DressJets.at(1).p);
     TDressLep2Jet1_M    = (DressLeptons.at(1).p + DressJets.at(0).p).M();
     TDressLep2Jet1_DPhi = DressLeptons.at(1).p.DeltaPhi(DressJets.at(0).p);
-    TDressLep2Jet2_M    = (DressLeptons.at(1).p + DressJets.at(1).p).M();
-    TDressLep2Jet2_DPhi = DressLeptons.at(1).p.DeltaPhi(DressJets.at(1).p);
     tmpsys              = getSysVector("Dress");
     DressSys_Pt         = tmpsys.Pt();
     DressSys_E          = tmpsys.E();
     DressSys_Eta        = tmpsys.Eta();
     DressSys_M          = tmpsys.M();
     DressSys_Pz         = tmpsys.Pz();
-    TDressMiniMax       = getMiniMax(TDressLep1Jet1_M, TDressLep1Jet2_M, TDressLep2Jet1_M, TDressLep2Jet2_M);
   }
 }
 
 
-Float_t TWTTbarAnalysis::getMiniMax(Float_t ml1j1, Float_t ml1j2, Float_t ml2j1, Float_t ml2j2) {
-  return min(max(ml1j1, ml2j2), max(ml1j2, ml2j1));
-}
-
-
-TLorentzVector TWTTbarAnalysis::getSysVector(const TString& sys) {
+TLorentzVector TWAnalysis::getSysVector(const TString& sys) {
   vector<TLorentzVector> col;
   TLorentzVector met;
-  
+
   if (sys == "Norm" || sys == "") {
     met.SetPtEtaPhiE(TMET, 0, TMET_Phi, TMET);
     col.push_back(met);
@@ -1179,7 +893,7 @@ TLorentzVector TWTTbarAnalysis::getSysVector(const TString& sys) {
 }
 
 
-void TWTTbarAnalysis::DoesItReallyPassDress() { // FINAL (not all) requirements for particle level selection
+void TWAnalysis::DoesItReallyPassDress() { // FINAL (not all) requirements for particle level selection
   if (GenChannel == iMuon || GenChannel == iElec) {
     if ((TDressMET > 20) && (abs(TDressLep1Lep2_M - Zm) > 15)) TPassDress = true;
   }
@@ -1187,10 +901,9 @@ void TWTTbarAnalysis::DoesItReallyPassDress() { // FINAL (not all) requirements 
 }
 
 
-void TWTTbarAnalysis::DoesItReallyPassReco() { // FINAL (not all) requirements for detector level selection
+void TWAnalysis::DoesItReallyPassReco() { // FINAL (not all) requirements for detector level selection
   if ((TNJets == 2) && (TNBJets == 2) && (NLooseCentral == 2)) {
     if (TChannel == iMuon || TChannel == iElec) {
-      cout << "wololo. met: " << TMET << " ml1l2: " << TLep1Lep2_M << " el abs: " << abs(TLep1Lep2_M - Zm) << endl;
       if ((TMET > 20) && (abs(TLep1Lep2_M - Zm) > 15)) TPassReco = true;
     }
     else TPassReco = true;
@@ -1217,7 +930,7 @@ void TWTTbarAnalysis::DoesItReallyPassReco() { // FINAL (not all) requirements f
 }
 
 
-void TWTTbarAnalysis::CalculateSFAndWeights() {
+void TWAnalysis::CalculateSFAndWeights() {
   if (gIsData) {
     TWeight = 1;
     TWeight_ElecEffUp = 1; TWeight_ElecEffDown = 1;
@@ -1263,24 +976,24 @@ void TWTTbarAnalysis::CalculateSFAndWeights() {
       }
     }
     // Weight calculations
-    TWeight               = NormWeight * ElecSF   * MuonSF * TrigSF * PUSF * BtagSF;
-    TWeight_ElecEffUp     = NormWeight * ElecSFUp * MuonSF * TrigSF * PUSF * BtagSF;
-    TWeight_ElecEffDown   = NormWeight * ElecSFDo * MuonSF * TrigSF * PUSF * BtagSF;
-    TWeight_MuonEffUp     = NormWeight * ElecSF   * (MuonSF+TMath::Sqrt(TMath::Power(MuonSFUp-MuonSF,2)+TMath::Power(MuonSF*0.0122,2)))*TrigSF*PUSF*BtagSF;
-    TWeight_MuonEffDown   = NormWeight * ElecSF   * (MuonSF-TMath::Sqrt(TMath::Power(MuonSFDo-MuonSF,2)+TMath::Power(MuonSF*0.0122,2)))*TrigSF*PUSF*BtagSF;
-    TWeight_TrigUp        = NormWeight * lepSF    * (TrigSF+TrigSFerr) * PUSF   * BtagSF;
-    TWeight_TrigDown      = NormWeight * lepSF    * (TrigSF-TrigSFerr) * PUSF   * BtagSF;
-    TWeight_PUDown        = NormWeight * lepSF    * TrigSF * PUSF_Up   * BtagSF;
-    TWeight_PUUp          = NormWeight * lepSF    * TrigSF * PUSF_Down * BtagSF;
-    TWeight_BtagUp        = NormWeight * ElecSF   * MuonSF * TrigSF * PUSF * BtagSFBtagUp    ;
-    TWeight_BtagDown      = NormWeight * ElecSF   * MuonSF * TrigSF * PUSF * BtagSFBtagDown  ;
-    TWeight_MistagUp      = NormWeight * ElecSF   * MuonSF * TrigSF * PUSF * BtagSFMistagUp  ;
-    TWeight_MistagDown    = NormWeight * ElecSF   * MuonSF * TrigSF * PUSF * BtagSFMistagDown;
+    TWeight               = TWeight_normal * ElecSF   * MuonSF * TrigSF * PUSF * BtagSF;
+    TWeight_ElecEffUp     = TWeight_normal * ElecSFUp * MuonSF * TrigSF * PUSF * BtagSF;
+    TWeight_ElecEffDown   = TWeight_normal * ElecSFDo * MuonSF * TrigSF * PUSF * BtagSF;
+    TWeight_MuonEffUp     = TWeight_normal * ElecSF   * (MuonSF+TMath::Sqrt(TMath::Power(MuonSFUp-MuonSF,2)+TMath::Power(MuonSF*0.0122,2)))*TrigSF*PUSF*BtagSF;
+    TWeight_MuonEffDown   = TWeight_normal * ElecSF   * (MuonSF-TMath::Sqrt(TMath::Power(MuonSFDo-MuonSF,2)+TMath::Power(MuonSF*0.0122,2)))*TrigSF*PUSF*BtagSF;
+    TWeight_TrigUp        = TWeight_normal * lepSF    * (TrigSF+TrigSFerr) * PUSF   * BtagSF;
+    TWeight_TrigDown      = TWeight_normal * lepSF    * (TrigSF-TrigSFerr) * PUSF   * BtagSF;
+    TWeight_PUDown        = TWeight_normal * lepSF    * TrigSF * PUSF_Up   * BtagSF;
+    TWeight_PUUp          = TWeight_normal * lepSF    * TrigSF * PUSF_Down * BtagSF;
+    TWeight_BtagUp        = TWeight_normal * ElecSF   * MuonSF * TrigSF * PUSF * BtagSFBtagUp    ;
+    TWeight_BtagDown      = TWeight_normal * ElecSF   * MuonSF * TrigSF * PUSF * BtagSFBtagDown  ;
+    TWeight_MistagUp      = TWeight_normal * ElecSF   * MuonSF * TrigSF * PUSF * BtagSFMistagUp  ;
+    TWeight_MistagDown    = TWeight_normal * ElecSF   * MuonSF * TrigSF * PUSF * BtagSFMistagDown;
   }
 }
 
 
-void TWTTbarAnalysis::SetMinimaAndMaxima() {
+void TWAnalysis::SetMinimaAndMaxima() {
   //   Setting maximum value of the unfolding candidate variables.
   if (TLep1_Pt               >= 300)         TLep1_Pt             = 299.99;
   if (TLep1_E                >= 350)         TLep1_E              = 349.99;
@@ -1291,20 +1004,13 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
   if (TJet1_Pt               >= 300)         TJet1_Pt             = 299.99;
   if (TJet1_E                >= 400)         TJet1_E              = 399.99;
   if (TJet1_Eta              >= 2.4)         TJet1_Eta            = 2.39;
-  if (TJet2_Pt               >= 300)         TJet2_Pt             = 299.99;
-  if (TJet2_E                >= 400)         TJet2_E              = 399.99;
-  if (TJet2_Eta              >= 2.4)         TJet2_Eta            = 2.39;
   if (TLep1Lep2_Pt           >= 200)         TLep1Lep2_Pt         = 199.99;
   if (TLep1Lep2_M            >= 300)         TLep1Lep2_M          = 299.99;
   if (TLep1Lep2_DPhi         >= TMath::Pi()) TLep1Lep2_DPhi       = 3.14;
   if (TLep1Jet1_M            >= 400)         TLep1Jet1_M          = 399.99;
   if (TLep1Jet1_DPhi         >= TMath::Pi()) TLep1Jet1_DPhi       = 3.14;
-  if (TLep1Jet2_M            >= 400)         TLep1Jet2_M          = 399.99;
-  if (TLep1Jet2_DPhi         >= TMath::Pi()) TLep1Jet2_DPhi       = 3.14;
   if (TLep2Jet1_M            >= 300)         TLep2Jet1_M          = 299.99;
   if (TLep2Jet1_DPhi         >= TMath::Pi()) TLep2Jet1_DPhi       = 3.14;
-  if (TLep2Jet2_M            >= 300)         TLep2Jet2_M          = 299.99;
-  if (TLep2Jet2_DPhi         >= TMath::Pi()) TLep2Jet2_DPhi       = 3.14;
   if (Sys_Pt                 >= 700)         Sys_Pt               = 699.99;
   if (Sys_E                  >= 700)         Sys_E                = 699.99;
   if (Sys_Eta                >= 2.4)         Sys_Eta              = 2.39;
@@ -1313,7 +1019,7 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
   if (TMiniMax               >= 420)         TMiniMax             = 419.99;
   if (THT                    >= 600)         THT                  = 599.99;
   if (TMET                   >= 200)         TMET                 = 199.99;
-  
+
   if (TLep1_Pt               < 0)         TLep1_Pt                = 0;
   if (TLep1_E                < 0)         TLep1_E                 = 0;
   if (TLep1_Eta              <= -2.4)     TLep1_Eta               = -2.39;
@@ -1323,20 +1029,13 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
   if (TJet1_Pt               < 0)         TJet1_Pt                = 0;
   if (TJet1_E                < 0)         TJet1_E                 = 0;
   if (TJet1_Eta              <= -2.4)     TJet1_Eta               = -2.39;
-  if (TJet2_Pt               < 0)         TJet2_Pt                = 0;
-  if (TJet2_E                < 0)         TJet2_E                 = 0;
-  if (TJet2_Eta              <= -2.4)     TJet2_Eta               = -2.39;
   if (TLep1Lep2_Pt           < 0)         TLep1Lep2_Pt            = 0;
   if (TLep1Lep2_M            < 0)         TLep1Lep2_M             = 0;
   if (TLep1Lep2_DPhi         <= -TMath::Pi()) TLep1Lep2_DPhi      = -3.14;
   if (TLep1Jet1_M            < 0)         TLep1Jet1_M             = 0;
   if (TLep1Jet1_DPhi         <= -TMath::Pi())  TLep1Jet1_DPhi     = -3.14;
-  if (TLep1Jet2_M            < 0)         TLep1Jet2_M             = 0;
-  if (TLep1Jet2_DPhi         <= -TMath::Pi())  TLep1Jet2_DPhi     = -3.14;
   if (TLep2Jet1_M            < 0)         TLep2Jet1_M             = 0;
   if (TLep2Jet1_DPhi         <= -TMath::Pi()) TLep2Jet1_DPhi      = -3.14;
-  if (TLep2Jet2_M            < 0)         TLep2Jet2_M             = 0;
-  if (TLep2Jet2_DPhi         <= -TMath::Pi()) TLep2Jet2_DPhi      = -3.14;
   if (Sys_Pt                 < 0)         Sys_Pt                  = 0;
   if (Sys_E                  < 0)         Sys_E                   = 0;
   if (Sys_Eta                <= -2.4)     Sys_Eta                 = -2.39;
@@ -1345,8 +1044,8 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
   if (TMiniMax               < 0)         TMiniMax                = 0;
   if (THT                    < 0)         THT                     = 0;
   if (TMET                   < 0)         TMET                    = 0;
-  
-  
+
+
   if (TLep1_PtJESUp          >= 300)      TLep1_PtJESUp           = 299.99;
   if (TLep1_EJESUp           >= 350)      TLep1_EJESUp            = 349.99;
   if (TLep1_EtaJESUp         >= 2.4)      TLep1_EtaJESUp          = 2.39;
@@ -1356,20 +1055,13 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
   if (TJet1_PtJESUp          >= 300)      TJet1_PtJESUp           = 299.99;
   if (TJet1_EJESUp           >= 400)      TJet1_EJESUp            = 399.99;
   if (TJet1_EtaJESUp         >= 2.4)      TJet1_EtaJESUp          = 2.39;
-  if (TJet2_PtJESUp          >= 300)      TJet2_PtJESUp           = 299.99;
-  if (TJet2_EJESUp           >= 400)      TJet2_EJESUp            = 399.99;
-  if (TJet2_EtaJESUp         >= 2.4)      TJet2_EtaJESUp          = 2.39;
   if (TLep1Lep2_PtJESUp      >= 200)      TLep1Lep2_PtJESUp       = 199.99;
   if (TLep1Lep2_MJESUp       >= 300)      TLep1Lep2_MJESUp        = 299.99;
   if (TLep1Lep2_DPhiJESUp    >= TMath::Pi()) TLep1Lep2_DPhiJESUp  = 3.14;
   if (TLep1Jet1_MJESUp       >= 400)      TLep1Jet1_MJESUp        = 399.99;
   if (TLep1Jet1_DPhiJESUp    >= TMath::Pi()) TLep1Jet1_DPhiJESUp  = 3.14;
-  if (TLep1Jet2_MJESUp       >= 400)      TLep1Jet2_MJESUp        = 399.99;
-  if (TLep1Jet2_DPhiJESUp    >= TMath::Pi()) TLep1Jet2_DPhiJESUp  = 3.14;
   if (TLep2Jet1_MJESUp       >= 300)      TLep2Jet1_MJESUp        = 299.99;
   if (TLep2Jet1_DPhiJESUp    >= TMath::Pi()) TLep2Jet1_DPhiJESUp  = 3.14;
-  if (TLep2Jet2_MJESUp       >= 300)      TLep2Jet2_MJESUp        = 299.99;
-  if (TLep2Jet2_DPhiJESUp    >= TMath::Pi()) TLep2Jet2_DPhiJESUp  = 3.14;
   if (Sys_PtJESUp            >= 700)      Sys_PtJESUp             = 699.99;
   if (Sys_EJESUp             >= 700)      Sys_EJESUp              = 699.99;
   if (Sys_EtaJESUp           >= 2.4)      Sys_EtaJESUp            = 2.39;
@@ -1378,7 +1070,7 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
   if (TMiniMaxJESUp          >= 420)      TMiniMaxJESUp           = 419.99;
   if (THTJESUp               >= 600)      THTJESUp                = 599.99;
   if (TMETJESUp              >= 200)      TMETJESUp               = 199.99;
-  
+
   if (TLep1_PtJESUp          < 0)          TLep1_PtJESUp          = 0;
   if (TLep1_EJESUp           < 0)          TLep1_EJESUp           = 0;
   if (TLep1_EtaJESUp         <= -2.4)      TLep1_EtaJESUp         = -2.39;
@@ -1388,20 +1080,13 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
   if (TJet1_PtJESUp          < 0)          TJet1_PtJESUp          = 0;
   if (TJet1_EJESUp           < 0)          TJet1_EJESUp           = 0;
   if (TJet1_EtaJESUp         <= -2.4)      TJet1_EtaJESUp         = -2.39;
-  if (TJet2_PtJESUp          < 0)          TJet2_PtJESUp          = 0;
-  if (TJet2_EJESUp           < 0)          TJet2_EJESUp           = 0;
-  if (TJet2_EtaJESUp         <= -2.4)      TJet2_EtaJESUp         = -2.39;
   if (TLep1Lep2_PtJESUp      < 0)          TLep1Lep2_PtJESUp      = 0;
   if (TLep1Lep2_MJESUp       < 0)          TLep1Lep2_MJESUp       = 0;
   if (TLep1Lep2_DPhiJESUp    <= -TMath::Pi()) TLep1Lep2_DPhiJESUp = -3.14;
   if (TLep1Jet1_MJESUp       < 0)          TLep1Jet1_MJESUp       = 0;
   if (TLep1Jet1_DPhiJESUp    <= -TMath::Pi())  TLep1Jet1_DPhiJESUp= -3.14;
-  if (TLep1Jet2_MJESUp       < 0)          TLep1Jet2_MJESUp       = 0;
-  if (TLep1Jet2_DPhiJESUp    <= -TMath::Pi())  TLep1Jet2_DPhiJESUp= -3.14;
   if (TLep2Jet1_MJESUp       < 0)          TLep2Jet1_MJESUp       = 0;
   if (TLep2Jet1_DPhiJESUp    <= -TMath::Pi()) TLep2Jet1_DPhiJESUp = -3.14;
-  if (TLep2Jet2_MJESUp       < 0)          TLep2Jet2_MJESUp       = 0;
-  if (TLep2Jet2_DPhiJESUp    <= -TMath::Pi()) TLep2Jet2_DPhiJESUp = -3.14;
   if (Sys_PtJESUp            < 0)          Sys_PtJESUp            = 0;
   if (Sys_EJESUp             < 0)          Sys_EJESUp             = 0;
   if (Sys_EtaJESUp           <= -2.4)      Sys_EtaJESUp           = -2.39;
@@ -1410,8 +1095,8 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
   if (TMiniMaxJESUp          < 0)          TMiniMaxJESUp          = 0;
   if (THTJESUp               < 0)          THTJESUp               = 0;
   if (TMETJESUp              < 0)          TMETJESUp              = 0;
-  
-  
+
+
   if (TLep1_PtJESDown        >= 300)       TLep1_PtJESDown        = 299.99;
   if (TLep1_EJESDown         >= 350)       TLep1_EJESDown         = 349.99;
   if (TLep1_EtaJESDown       >= 2.4)       TLep1_EtaJESDown       = 2.39;
@@ -1421,20 +1106,13 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
   if (TJet1_PtJESDown        >= 300)       TJet1_PtJESDown        = 299.99;
   if (TJet1_EJESDown         >= 400)       TJet1_EJESDown         = 399.99;
   if (TJet1_EtaJESDown       >= 2.4)       TJet1_EtaJESDown       = 2.39;
-  if (TJet2_PtJESDown        >= 300)       TJet2_PtJESDown        = 299.99;
-  if (TJet2_EJESDown         >= 400)       TJet2_EJESDown         = 399.99;
-  if (TJet2_EtaJESDown       >= 2.4)       TJet2_EtaJESDown       = 2.39;
   if (TLep1Lep2_PtJESDown    >= 200)       TLep1Lep2_PtJESDown    = 199.99;
   if (TLep1Lep2_MJESDown     >= 300)       TLep1Lep2_MJESDown     = 299.99;
   if (TLep1Lep2_DPhiJESDown  >= TMath::Pi()) TLep1Lep2_DPhiJESDown= 3.14;
   if (TLep1Jet1_MJESDown     >= 400)       TLep1Jet1_MJESDown     = 399.99;
   if (TLep1Jet1_DPhiJESDown  >= TMath::Pi()) TLep1Jet1_DPhiJESDown= 3.14;
-  if (TLep1Jet2_MJESDown     >= 400)       TLep1Jet2_MJESDown     = 399.99;
-  if (TLep1Jet2_DPhiJESDown  >= TMath::Pi()) TLep1Jet2_DPhiJESDown= 3.14;
   if (TLep2Jet1_MJESDown     >= 300)       TLep2Jet1_MJESDown     = 299.99;
   if (TLep2Jet1_DPhiJESDown  >= TMath::Pi()) TLep2Jet1_DPhiJESDown= 3.14;
-  if (TLep2Jet2_MJESDown     >= 300)       TLep2Jet2_MJESDown     = 299.99;
-  if (TLep2Jet2_DPhiJESDown  >= TMath::Pi()) TLep2Jet2_DPhiJESDown= 3.14;
   if (Sys_PtJESDown          >= 700)       Sys_PtJESDown          = 699.99;
   if (Sys_EJESDown           >= 700)       Sys_EJESDown           = 699.99;
   if (Sys_EtaJESDown         >= 2.4)       Sys_EtaJESDown         = 2.39;
@@ -1443,7 +1121,7 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
   if (TMiniMaxJESDown        >= 420)       TMiniMaxJESDown        = 419.99;
   if (THTJESDown             >= 600)       THTJESDown             = 599.99;
   if (TMETJESDown            >= 200)       TMETJESDown            = 199.99;
-  
+
   if (TLep1_PtJESDown        < 0)          TLep1_PtJESDown        = 0;
   if (TLep1_EJESDown         < 0)          TLep1_EJESDown         = 0;
   if (TLep1_EtaJESDown       <= -2.4)      TLep1_EtaJESDown       = -2.39;
@@ -1453,20 +1131,13 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
   if (TJet1_PtJESDown        < 0)          TJet1_PtJESDown        = 0;
   if (TJet1_EJESDown         < 0)          TJet1_EJESDown         = 0;
   if (TJet1_EtaJESDown       <= -2.4)      TJet1_EtaJESDown       = -2.39;
-  if (TJet2_PtJESDown        < 0)          TJet2_PtJESDown        = 0;
-  if (TJet2_EJESDown         < 0)          TJet2_EJESDown         = 0;
-  if (TJet2_EtaJESDown       <= -2.4)      TJet2_EtaJESDown       = -2.39;
   if (TLep1Lep2_PtJESDown    < 0)          TLep1Lep2_PtJESDown    = 0;
   if (TLep1Lep2_MJESDown     < 0)          TLep1Lep2_MJESDown     = 0;
   if (TLep1Lep2_DPhiJESDown  <= -TMath::Pi()) TLep1Lep2_DPhiJESDown = -3.14;
   if (TLep1Jet1_MJESDown     < 0)          TLep1Jet1_MJESDown       = 0;
   if (TLep1Jet1_DPhiJESDown  <= -TMath::Pi())  TLep1Jet1_DPhiJESDown= -3.14;
-  if (TLep1Jet2_MJESDown     < 0)          TLep1Jet2_MJESDown       = 0;
-  if (TLep1Jet2_DPhiJESDown  <= -TMath::Pi())  TLep1Jet2_DPhiJESDown= -3.14;
   if (TLep2Jet1_MJESDown     < 0)          TLep2Jet1_MJESDown       = 0;
   if (TLep2Jet1_DPhiJESDown  <= -TMath::Pi()) TLep2Jet1_DPhiJESDown = -3.14;
-  if (TLep2Jet2_MJESDown     < 0)          TLep2Jet2_MJESDown       = 0;
-  if (TLep2Jet2_DPhiJESDown  <= -TMath::Pi()) TLep2Jet2_DPhiJESDown = -3.14;
   if (Sys_PtJESDown          < 0)          Sys_PtJESDown         = 0;
   if (Sys_EJESDown           < 0)          Sys_EJESDown          = 0;
   if (Sys_EtaJESDown         <= -2.4)      Sys_EtaJESDown        = -2.39;
@@ -1475,7 +1146,7 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
   if (TMiniMaxJESDown        < 0)          TMiniMaxJESDown       = 0;
   if (THTJESDown             < 0)          THTJESDown            = 0;
   if (TMETJESDown            < 0)          TMETJESDown           = 0;
-  
+
   if (TLep1_PtJERUp          >= 300)       TLep1_PtJERUp         = 299.99;
   if (TLep1_EJERUp           >= 350)       TLep1_EJERUp          = 349.99;
   if (TLep1_EtaJERUp         >= 2.4)       TLep1_EtaJERUp        = 2.39;
@@ -1485,20 +1156,13 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
   if (TJet1_PtJERUp          >= 300)       TJet1_PtJERUp         = 299.99;
   if (TJet1_EJERUp           >= 400)       TJet1_EJERUp          = 399.99;
   if (TJet1_EtaJERUp         >= 2.4)       TJet1_EtaJERUp        = 2.39;
-  if (TJet2_PtJERUp          >= 300)       TJet2_PtJERUp         = 299.99;
-  if (TJet2_EJERUp           >= 400)       TJet2_EJERUp          = 399.99;
-  if (TJet2_EtaJERUp         >= 2.4)       TJet2_EtaJERUp        = 2.39;
   if (TLep1Lep2_PtJERUp      >= 200)       TLep1Lep2_PtJERUp     = 199.99;
   if (TLep1Lep2_MJERUp       >= 300)       TLep1Lep2_MJERUp      = 299.99;
   if (TLep1Lep2_DPhiJERUp    >= TMath::Pi()) TLep1Lep2_DPhiJERUp = 3.14;
   if (TLep1Jet1_MJERUp       >= 400)       TLep1Jet1_MJERUp      = 399.99;
   if (TLep1Jet1_DPhiJERUp    >= TMath::Pi()) TLep1Jet1_DPhiJERUp = 3.14;
-  if (TLep1Jet2_MJERUp       >= 400)       TLep1Jet2_MJERUp      = 399.99;
-  if (TLep1Jet2_DPhiJERUp    >= TMath::Pi()) TLep1Jet2_DPhiJERUp = 3.14;
   if (TLep2Jet1_MJERUp       >= 300)       TLep2Jet1_MJERUp      = 299.99;
   if (TLep2Jet1_DPhiJERUp    >= TMath::Pi()) TLep2Jet1_DPhiJERUp = 3.14;
-  if (TLep2Jet2_MJERUp       >= 300)       TLep2Jet2_MJERUp      = 299.99;
-  if (TLep2Jet2_DPhiJERUp    >= TMath::Pi()) TLep2Jet2_DPhiJERUp = 3.14;
   if (Sys_PtJERUp            >= 700)       Sys_PtJERUp           = 699.99;
   if (Sys_EJERUp             >= 700)       Sys_EJERUp            = 699.99;
   if (Sys_EtaJERUp           >= 2.4)       Sys_EtaJERUp          = 2.39;
@@ -1507,7 +1171,7 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
   if (TMiniMaxJERUp          >= 420)       TMiniMaxJERUp         = 419.99;
   if (THTJERUp               >= 600)       THTJERUp              = 599.99;
   if (TMETJERUp              >= 200)       TMETJERUp             = 199.99;
-  
+
   if (TLep1_PtJERUp          < 0)          TLep1_PtJERUp         = 0;
   if (TLep1_EJERUp           < 0)          TLep1_EJERUp          = 0;
   if (TLep1_EtaJERUp         <= -2.4)      TLep1_EtaJERUp        = -2.39;
@@ -1517,20 +1181,13 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
   if (TJet1_PtJERUp          < 0)          TJet1_PtJERUp         = 0;
   if (TJet1_EJERUp           < 0)          TJet1_EJERUp          = 0;
   if (TJet1_EtaJERUp         <= -2.4)      TJet1_EtaJERUp        = -2.39;
-  if (TJet2_PtJERUp          < 0)          TJet2_PtJERUp         = 0;
-  if (TJet2_EJERUp           < 0)          TJet2_EJERUp          = 0;
-  if (TJet2_EtaJERUp         <= -2.4)      TJet2_EtaJERUp        = -2.39;
   if (TLep1Lep2_PtJERUp      < 0)          TLep1Lep2_PtJERUp     = 0;
   if (TLep1Lep2_MJERUp       < 0)          TLep1Lep2_MJERUp      = 0;
   if (TLep1Lep2_DPhiJERUp    <= -TMath::Pi()) TLep1Lep2_DPhiJERUp = -3.14;
   if (TLep1Jet1_MJERUp       < 0)          TLep1Jet1_MJERUp       = 0;
   if (TLep1Jet1_DPhiJERUp    <= -TMath::Pi())  TLep1Jet1_DPhiJERUp= -3.14;
-  if (TLep1Jet2_MJERUp       < 0)          TLep1Jet2_MJERUp       = 0;
-  if (TLep1Jet2_DPhiJERUp    <= -TMath::Pi())  TLep1Jet2_DPhiJERUp= -3.14;
   if (TLep2Jet1_MJERUp       < 0)          TLep2Jet1_MJERUp       = 0;
   if (TLep2Jet1_DPhiJERUp    <= -TMath::Pi()) TLep2Jet1_DPhiJERUp = -3.14;
-  if (TLep2Jet2_MJERUp       < 0)          TLep2Jet2_MJERUp       = 0;
-  if (TLep2Jet2_DPhiJERUp    <= -TMath::Pi()) TLep2Jet2_DPhiJERUp = -3.14;
   if (Sys_PtJERUp            < 0)          Sys_PtJERUp           = 0;
   if (Sys_EJERUp             < 0)          Sys_EJERUp            = 0;
   if (Sys_EtaJERUp           <= -2.4)      Sys_EtaJERUp          = -2.39;
@@ -1539,7 +1196,7 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
   if (TMiniMaxJERUp          < 0)          TMiniMaxJERUp         = 0;
   if (THTJERUp               < 0)          THTJERUp              = 0;
   if (TMETJERUp              < 0)          TMETJERUp             = 0;
-  
+
   // Particle level variables
   if (TDressLep1_Pt               >= 300)         TDressLep1_Pt             = 299.99;
   if (TDressLep1_E                >= 350)         TDressLep1_E              = 349.99;
@@ -1550,20 +1207,13 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
   if (TDressJet1_Pt               >= 300)         TDressJet1_Pt             = 299.99;
   if (TDressJet1_E                >= 400)         TDressJet1_E              = 399.99;
   if (TDressJet1_Eta              >= 2.4)         TDressJet1_Eta            = 2.39;
-  if (TDressJet2_Pt               >= 300)         TDressJet2_Pt             = 299.99;
-  if (TDressJet2_E                >= 400)         TDressJet2_E              = 399.99;
-  if (TDressJet2_Eta              >= 2.4)         TDressJet2_Eta            = 2.39;
   if (TDressLep1Lep2_Pt           >= 200)         TDressLep1Lep2_Pt         = 199.99;
   if (TDressLep1Lep2_M            >= 300)         TDressLep1Lep2_M          = 299.99;
   if (TDressLep1Lep2_DPhi         >= TMath::Pi()) TDressLep1Lep2_DPhi       = 3.14;
   if (TDressLep1Jet1_M            >= 400)         TDressLep1Jet1_M          = 399.99;
   if (TDressLep1Jet1_DPhi         >= TMath::Pi()) TDressLep1Jet1_DPhi       = 3.14;
-  if (TDressLep1Jet2_M            >= 400)         TDressLep1Jet2_M          = 399.99;
-  if (TDressLep1Jet2_DPhi         >= TMath::Pi()) TDressLep1Jet2_DPhi       = 3.14;
   if (TDressLep2Jet1_M            >= 300)         TDressLep2Jet1_M          = 299.99;
   if (TDressLep2Jet1_DPhi         >= TMath::Pi()) TDressLep2Jet1_DPhi       = 3.14;
-  if (TDressLep2Jet2_M            >= 300)         TDressLep2Jet2_M          = 299.99;
-  if (TDressLep2Jet2_DPhi         >= TMath::Pi()) TDressLep2Jet2_DPhi       = 3.14;
   if (DressSys_Pt                 >= 700)         DressSys_Pt               = 699.99;
   if (DressSys_E                  >= 700)         DressSys_E                = 699.99;
   if (DressSys_Eta                >= 2.4)         DressSys_Eta              = 2.39;
@@ -1572,7 +1222,7 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
   if (TDressMiniMax               >= 420)         TDressMiniMax             = 419.99;
   if (TDressHT                    >= 600)         TDressHT                  = 599.99;
   if (TDressMET                   >= 200)         TDressMET                 = 199.99;
-  
+
   if (TDressLep1_Pt               < 0)         TDressLep1_Pt                = 0;
   if (TDressLep1_E                < 0)         TDressLep1_E                 = 0;
   if (TDressLep1_Eta              <= -2.4)     TDressLep1_Eta               = -2.39;
@@ -1582,20 +1232,13 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
   if (TDressJet1_Pt               < 0)         TDressJet1_Pt                = 0;
   if (TDressJet1_E                < 0)         TDressJet1_E                 = 0;
   if (TDressJet1_Eta              <= -2.4)     TDressJet1_Eta               = -2.39;
-  if (TDressJet2_Pt               < 0)         TDressJet2_Pt                = 0;
-  if (TDressJet2_E                < 0)         TDressJet2_E                 = 0;
-  if (TDressJet2_Eta              <= -2.4)     TDressJet2_Eta               = -2.39;
   if (TDressLep1Lep2_Pt           < 0)         TDressLep1Lep2_Pt            = 0;
   if (TDressLep1Lep2_M            < 0)         TDressLep1Lep2_M             = 0;
   if (TDressLep1Lep2_DPhi         <= -TMath::Pi()) TDressLep1Lep2_DPhi      = -3.14;
   if (TDressLep1Jet1_M            < 0)         TDressLep1Jet1_M             = 0;
   if (TDressLep1Jet1_DPhi         <= -TMath::Pi())  TDressLep1Jet1_DPhi     = -3.14;
-  if (TDressLep1Jet2_M            < 0)         TDressLep1Jet2_M             = 0;
-  if (TDressLep1Jet2_DPhi         <= -TMath::Pi())  TDressLep1Jet2_DPhi     = -3.14;
   if (TDressLep2Jet1_M            < 0)         TDressLep2Jet1_M             = 0;
   if (TDressLep2Jet1_DPhi         <= -TMath::Pi()) TDressLep2Jet1_DPhi      = -3.14;
-  if (TDressLep2Jet2_M            < 0)         TDressLep2Jet2_M             = 0;
-  if (TDressLep2Jet2_DPhi         <= -TMath::Pi()) TDressLep2Jet2_DPhi      = -3.14;
   if (DressSys_Pt                 < 0)         DressSys_Pt                  = 0;
   if (DressSys_E                  < 0)         DressSys_E                   = 0;
   if (DressSys_Eta                <= -2.4)     DressSys_Eta                 = -2.39;
@@ -1616,20 +1259,13 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
     TJet1_Pt               = 99999;
     TJet1_E                = 99999;
     TJet1_Eta              = 99999;
-    TJet2_Pt               = 99999;
-    TJet2_E                = 99999;
-    TJet2_Eta              = 99999;
     TLep1Lep2_Pt           = 99999;
     TLep1Lep2_M            = 99999;
     TLep1Lep2_DPhi         = 99999;
     TLep1Jet1_M            = 99999;
     TLep1Jet1_DPhi         = 99999;
-    TLep1Jet2_M            = 99999;
-    TLep1Jet2_DPhi         = 99999;
     TLep2Jet1_M            = 99999;
     TLep2Jet1_DPhi         = 99999;
-    TLep2Jet2_M            = 99999;
-    TLep2Jet2_DPhi         = 99999;
     Sys_Pt                 = 99999;
     Sys_E                  = 99999;
     Sys_Eta                = 99999;
@@ -1649,20 +1285,13 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
     TJet1_PtJESUp          = 99999;
     TJet1_EJESUp           = 99999;
     TJet1_EtaJESUp         = 99999;
-    TJet2_PtJESUp          = 99999;
-    TJet2_EJESUp           = 99999;
-    TJet2_EtaJESUp         = 99999;
     TLep1Lep2_PtJESUp      = 99999;
     TLep1Lep2_MJESUp       = 99999;
     TLep1Lep2_DPhiJESUp    = 99999;
     TLep1Jet1_MJESUp       = 99999;
     TLep1Jet1_DPhiJESUp    = 99999;
-    TLep1Jet2_MJESUp       = 99999;
-    TLep1Jet2_DPhiJESUp    = 99999;
     TLep2Jet1_MJESUp       = 99999;
     TLep2Jet1_DPhiJESUp    = 99999;
-    TLep2Jet2_MJESUp       = 99999;
-    TLep2Jet2_DPhiJESUp    = 99999;
     Sys_PtJESUp            = 99999;
     Sys_EJESUp             = 99999;
     Sys_EtaJESUp           = 99999;
@@ -1682,20 +1311,13 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
     TJet1_PtJESDown        = 99999;
     TJet1_EJESDown         = 99999;
     TJet1_EtaJESDown       = 99999;
-    TJet2_PtJESDown        = 99999;
-    TJet2_EJESDown         = 99999;
-    TJet2_EtaJESDown       = 99999;
     TLep1Lep2_PtJESDown    = 99999;
     TLep1Lep2_MJESDown     = 99999;
     TLep1Lep2_DPhiJESDown  = 99999;
     TLep1Jet1_MJESDown     = 99999;
     TLep1Jet1_DPhiJESDown  = 99999;
-    TLep1Jet2_MJESDown     = 99999;
-    TLep1Jet2_DPhiJESDown  = 99999;
     TLep2Jet1_MJESDown     = 99999;
     TLep2Jet1_DPhiJESDown  = 99999;
-    TLep2Jet2_MJESDown     = 99999;
-    TLep2Jet2_DPhiJESDown  = 99999;
     Sys_PtJESDown          = 99999;
     Sys_EJESDown           = 99999;
     Sys_EtaJESDown         = 99999;
@@ -1715,20 +1337,13 @@ void TWTTbarAnalysis::SetMinimaAndMaxima() {
     TJet1_PtJERUp          = 99999;
     TJet1_EJERUp           = 99999;
     TJet1_EtaJERUp         = 99999;
-    TJet2_PtJERUp          = 99999;
-    TJet2_EJERUp           = 99999;
-    TJet2_EtaJERUp         = 99999;
     TLep1Lep2_PtJERUp      = 99999;
     TLep1Lep2_MJERUp       = 99999;
     TLep1Lep2_DPhiJERUp    = 99999;
     TLep1Jet1_MJERUp       = 99999;
     TLep1Jet1_DPhiJERUp    = 99999;
-    TLep1Jet2_MJERUp       = 99999;
-    TLep1Jet2_DPhiJERUp    = 99999;
     TLep2Jet1_MJERUp       = 99999;
     TLep2Jet1_DPhiJERUp    = 99999;
-    TLep2Jet2_MJERUp       = 99999;
-    TLep2Jet2_DPhiJERUp    = 99999;
     Sys_PtJERUp            = 99999;
     Sys_EJERUp             = 99999;
     Sys_EtaJERUp           = 99999;

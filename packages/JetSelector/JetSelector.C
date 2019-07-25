@@ -80,6 +80,15 @@ void JetSelector::Initialise(){
     vetoJet_maxEta  = 4.7;
     minDR           = 0.4;
   }
+  else if (gSelection == itW) {
+    taggerName      = "DeepFlav";
+    stringWP        = "Medium";
+    jet_MaxEta      = 2.4;
+    jet_MinPt       = 30;
+    vetoJet_minPt   = 20.;
+    vetoJet_maxEta  = 4.7;
+    minDR           = 0.4;
+  }
 
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   if (taggerName == "DeepFlav" && year == 2017) MeasType = "comb";
@@ -213,7 +222,7 @@ void JetSelector::InsideLoop(){
         if (gSelection == itt) {
           if(TMath::Abs(tJ.p.Eta()) > 2.4)  vetoJets.push_back(tJ);
         }
-        else if (gSelection == itWtt) {
+        else if (gSelection == itWtt || gSelection == itW) {
           vetoJets.push_back(tJ);
           
           if (!gIsData) {
@@ -269,7 +278,7 @@ void JetSelector::InsideLoop(){
     for(Int_t i = 0; i < ngenJet; i++){
       GetGenJetVariables(i);
       tJ = Jet(tpJ, 0, 1, flavmc);
-      if (gSelection == itWtt) {
+      if (gSelection == itWtt || gSelection == itW) {
         if (tJ.p.Pt() > 20) {
           genJets.push_back(tJ);
         }
@@ -329,7 +338,7 @@ Bool_t JetSelector::IsBtag(Jet j){
   if(j.Pt() < 20) return false;
   Bool_t isbtag = false;
   // using "weights" as scale factors in the tW analysis :)
-  if (gSelection == itWtt) isbtag = fBTagSFnom->IsTagged(j.csv, -999999, j.p.Pt(), j.p.Eta(), (UInt_t)j.p.Pt());
+  if (gSelection == itWtt || gSelection == itW) isbtag = fBTagSFnom->IsTagged(j.csv, -999999, j.p.Pt(), j.p.Eta(), (UInt_t)j.p.Pt());
   else   isbtag = fBTagSFnom->IsTagged(j.csv,j.flavmc, j.p.Pt(), j.p.Eta(), (UInt_t)j.p.Pt());
   return isbtag;
 }

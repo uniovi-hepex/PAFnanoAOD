@@ -28,7 +28,7 @@ except ImportError:
 from fileReader import getDicFiles, GetAllInfoFromFile, IsVarInTree
 
 
-def ex(command, verbose = False, pretend = False):
+def ExecOrder(command, verbose = False, pretend = False):
   if verbose:
     print 'Executing command: ', command
   if pretend:
@@ -108,31 +108,31 @@ def GetTStringVectorSamples(path, samples):
   from ROOT import vector, TString, gSystem
   # Add the input data files
   v = vector(TString)()
-  for s in samples: 
+  for s in samples:
     t = TString(path+s)
     v.push_back(t)
   return v
   v = GetTStringVector(samples)
 
 
-def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, outname = '', outpath = '', options = '', nEvents = 0, FirstEvent = 0, prefix = 'Tree', verbose = False, pretend = False, dotest = False, sendJobs = False, queu = 'short'):
+def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, outname = '', outpath = '', options = '', nEvents = 0, FirstEvent = 0, prefix = 'Tree', verbose = False, pretend = False, dotest = False, sendJobs = False, queue = 'short'):
   if ',' in sample:
     sample.replace(' ', '')
     sample = sample.split(',')
   if not isinstance(sample, list): sample = [sample]
-  
+
   if not path.endswith('/'): path += '/'
-  
-  
+
+
   # Get dictionary with all files in the path directory
   samples = GetSampleList(path, sample)
-  
+
   nEventsInTree, nGenEvents, nSumOfWeights, isData = GetAllInfoFromFile([path + x for x in samples])
   xsec = GetXsec(xsec, outname, verbose, isData) if not dotest else 1
   isamcatnlo = True if nGenEvents != nSumOfWeights else False
   if isData: isamcatnlo = False
 
-  if verbose: 
+  if verbose:
     stipe = 'MC' if not isData else 'DATA'
     print '## Processing a %i %s sample...'%(year, stipe)
     print '## Files found in %s'%path
@@ -161,7 +161,7 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
     for s in samples: SampString += '%s/%s,'%(path,s)
   if SampString.endswith(','): SampString = SampString[:-1]
 
-  command = '\'run.C(\"%s\", \"%s\", %f, %f, %i, \"%s\", %i, \"%s\", \"%s\", %i, %i, %i, %i, \"%s\", \"%s\")\''%(SampString, selection, xsec, nSumOfWeights, year, outname, nSlots, outpath, options, isamcatnlo, isData, nEvents, FirstEvent, workingdir, pathSamples)
+  command = '\'run.C(\"%s\", \"%s\", %f, %f, %i, \"%s\", %i, \"%s\", \"%s\", %i, %i, %i, %i, \"%s\", \"%s\", %i)\''%(SampString, selection, xsec, nSumOfWeights, year, outname, nSlots, outpath, options, isamcatnlo, isData, nEvents, FirstEvent, workingdir, pathSamples, verbose)
   command = 'root -l -b -q ' + command
 
   if sendJobs:
@@ -173,12 +173,13 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
     pathjob = path + jobname + '/'
     jobfile = "%s%s.sh"%(pathjob,jobname)
     os.mkdir(pathjob)
-    ex('cp -r packages %s'%pathjob, verbose)
-    ex('cp xsec.cfg %s'   %pathjob, verbose)
-    ex('cp run.C %s'      %pathjob, verbose)
-    ex('cp run.py %s'     %pathjob, verbose)
+    ExecOrder('cp -r packages %s'%pathjob, verbose)
+    ExecOrder('cp xsec.cfg %s'   %pathjob, verbose)
+    ExecOrder('cp run.C %s'      %pathjob, verbose)
+    ExecOrder('cp run.py %s'     %pathjob, verbose)
     f = open(jobfile,'w')
     f.write('#!/bin/sh\n\n')
+    f.write("sleep 2s\n\n")
     f.write('cd %s\n\n'%pathjob)
     f.write(command + "\n\n")
     f.write("sleep 5s")
@@ -187,10 +188,10 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
     errname = '%sERR%s.out'%(pathjob,tag)
     outname = '%sOUT%s.out'%(pathjob,tag)
     runCommand = "sbatch -p %s -c %i -J %s -e %s -o %s %s"%(queue, nSlots, jname, errname, outname, jobfile)
-    ex(runCommand, verbose, pretend)
+    ExecOrder(runCommand, verbose, pretend)
 
   elif runC:
-    ex(command, verbose, pretend)
+    ExecOrder(command, verbose, pretend)
   else:
     if pretend:
       print 'Pretending...'
@@ -201,28 +202,28 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
 def RunPAF(samples, selection, xsec, nSumOfWeights, year, outname, nSlots = 1, outpath = '', options = '', isamcatnlo = False, isData = False, nEvents = 0, FirstEvent = 0, workingdir = ''):
   from ROOT import PAFProject, PAFIExecutionEnvironment ,PAFSequentialEnvironment, PAFPROOFLiteEnvironment, PAFPoDEnvironment
   from ROOT import vector, TString, gSystem
-  
+
   # PAF mode selection (based on number of slots)
   pafmode = PAFSequentialEnvironment();
   if   nSlots <=  1: pafmode = PAFSequentialEnvironment();
   else             : pafmode = PAFPROOFLiteEnvironment(nSlots);
-  
+
   myProject = PAFProject(pafmode);
-  
+
   myProject.AddDataFiles(samples);
   myProject.SetDefaultTreeName("Events");
-  
+
   # Deal with first and last event
   if nEvents > 0:      myProject.SetNEvents(nEvents);
   if FirstEvent > 0:   myProject.SetFirstEvent(FirstEvent);
   if workingdir == "": workingdir = os.getcwd()
-  
+
   # Set output file
   if outpath == '': outpath = workingdir + "/" + selection + "_temp"
   gSystem.mkdir(outpath, 1);
   myProject.SetOutputFile(outpath + "/" + outname + ".root");
   if verbose: print '## Output to: %s'%(outpath + "/" + outname + ".root")
-  
+
   # Parameters for the analysis
   myProject.SetInputParam("sampleName",        outname);
   myProject.SetInputParam("IsData",            isData    );
@@ -233,15 +234,15 @@ def RunPAF(samples, selection, xsec, nSumOfWeights, year, outname, nSlots = 1, o
   myProject.SetInputParam("xsec",              xsec);
   myProject.SetInputParam("_options",          options);
   myProject.SetInputParam("year",              str(year));
-  
+
   # Name of analysis class
   myProject.AddSelectorPackage("LeptonSelector");
   myProject.AddSelectorPackage("JetSelector");
   myProject.AddSelectorPackage("EventBuilder");
-  
+
   # Analysis selector
   if selection != "": myProject.AddSelectorPackage(selection)
-  
+
   # Additional packages
   myProject.AddPackage("Lepton");
   myProject.AddPackage("Jet");
@@ -249,8 +250,61 @@ def RunPAF(samples, selection, xsec, nSumOfWeights, year, outname, nSlots = 1, o
   myProject.AddPackage("Functions");
   myProject.AddPackage("LeptonSF");
   myProject.AddPackage("BTagSFUtil");
-  
+
   myProject.Run();
+
+
+def CheckFileEvents(snames, sfiles, path, outpath, chkdir = None):
+  ''' Check events in mother file and output file, using the fhDummy histogram '''
+  from ROOT import TFile
+  outlist = []
+  getlist = lambda x : [x] if not ',' in x else x.replace(' ', '').split(',')
+  for f in snames:
+    if f not in chkdir:
+      trypath = '%s/%s.root'%(outpath, f)
+      if not os.path.isfile(trypath):
+        outlist.append(f)
+        print '\033[0;31mSample \033[0;36m%s\033[0;31m not found\033[0m'%f
+      else:
+        tf = TFile.Open(trypath)
+        if not hasattr(tf, 'fhDummy'):
+          print '\033[0;31mSample \033[0;36m%s\033[0;31m does not contain fhDummy\033[0m'%f
+          outlist.append(f)
+          continue
+        dummy = tf.fhDummy.GetEntries()
+        samples = GetSampleList(path, getlist(sfiles[f]) )
+        nEventsInTree, nGenEvents, nSumOfWeights, isData = GetAllInfoFromFile([path + x for x in samples])
+        if nEventsInTree == dummy:
+          print '\033[0;32mOK  \033[0;34m%s\033[0m'%f
+        else:
+          print '\033[0;31mBAD \033[0;34m%s \033[0;33m(%1.2f %s)\033[0m'%(f, (nEventsInTree-dummy)/nEventsInTree*100, '%')
+          outlist.append(f)
+    else:
+      samples      = GetSampleList(path, getlist(sfiles[f]))
+      nTrueEntries = GetAllInfoFromFile([path + x for x in samples])[0]
+      tmpnchs      = int(chunkdir[f])
+      tmpnEvents   = nTrueEntries / tmpnchs
+      for ich in range(tmpnchs):
+        trypath = '{op}/{nm}_{ch}.root'.format(op = outpath, nm = f, ch = ich)
+        if not os.path.isfile(trypath):
+          outlist.append((f, ich))
+          print '\033[0;31mSample \033[0;36m%s_%s\033[0;31m not found\033[0m'%(f, ich)
+        else:
+          tf = TFile.Open(trypath)
+          if not hasattr(tf, 'fhDummy'):
+            print '\033[0;31mSample \033[0;36m%s\033[0;31m does not contain fhDummy\033[0m'%f
+            outlist.append((f, ich))
+            continue
+          dummy   = tf.fhDummy.GetEntries()
+          tmpFirstEvent = tmpnEvents * ich
+          if (ich == tmpnchs - 1): tmpnEvents = nTrueEntries - tmpFirstEvent
+          if tmpnEvents == dummy:
+            print '\033[0;32mOK  \033[0;34m%s_%s\033[0m'%(f, ich)
+          else:
+            print '\033[0;31mBAD \033[0;34m%s \033[0;33m(%1.2f %s)\033[0m'%(f, (tmpnEvents - dummy) / tmpnEvents * 100, '%')
+            outlist.append((f, ich))
+
+  return outlist
 
 
 
@@ -285,26 +339,29 @@ def CheckFileEvents(snames, sfiles, path, outpath):
 ################################################################################
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Run with PAF')
-  parser.add_argument('--verbose','-v'    , action='store_true'  , help = 'Activate the verbosing')
-  parser.add_argument('--pretend','-p'    , action='store_true'  , help = 'Create the files but not send the jobs')
-  parser.add_argument('--test','-t'       , action='store_true'  , help = 'Sends only one or two jobs, as a test')
-  parser.add_argument('--sendJobs','-j'   , action='store_true'  , help = 'Send jobs!')
-  parser.add_argument('selection'                                , help = 'Name of the selector')
-  parser.add_argument('--path'            , default=''           , help = 'Path to look for nanoAOD')
-  parser.add_argument('--sample','-s'     , default=''           , help = 'Sample(s) to process')
-  parser.add_argument('--xsec','-x'       , default='xsec'       , help = 'Cross section')
-  parser.add_argument('--year','-y'       , default=-1           , help = 'Year')
-  parser.add_argument('--conf','-c'       , default=''           , help = 'Config file (not yet implemented')
-  parser.add_argument('--options','-o'    , default=''           , help = 'Options to pass to your analysis')
-  parser.add_argument('--prefix'          , default='Tree'       , help = 'Prefix of the name...')
-  parser.add_argument('--outname'         , default=''           , help = 'Name of the output file')
-  parser.add_argument('--outpath'         , default=''           , help = 'Output path')
-  parser.add_argument('--queue','-q'      , default='short'      , help = 'Queue to send jobs')
-  parser.add_argument('--firstEvent'      , default=0            , help = 'First event')
-  parser.add_argument('--nEvents'         , default=0            , help = 'Number of events')
-  parser.add_argument('--nSlots','-n'     , default=-1           , help = 'Number of slots')
-  parser.add_argument('--check'           , action='store_true'  , help = 'Check the output trees')
-  parser.add_argument('--resubmit'        , action='store_true'  , help = 'Resubmit jobs')
+
+  parser.add_argument('--verbose',    '-v', action='store_true', help = 'Activate the verbosing')
+  parser.add_argument('--pretend',    '-p', action='store_true', help = 'Create the files but not send the jobs')
+  parser.add_argument('--test',       '-t', action='store_true', help = 'Sends only one or two jobs, as a test')
+  parser.add_argument('--sendJobs',   '-j', action='store_true', help = 'Send jobs!')
+  parser.add_argument('selection'                              , help = 'Name of the selector')
+  parser.add_argument('--path',             default=''         , help = 'Path to look for nanoAOD')
+  parser.add_argument('--sample',     '-s', default=''         , help = 'Sample(s) to process')
+  parser.add_argument('--xsec',       '-x', default='xsec'     , help = 'Cross section')
+  parser.add_argument('--year',       '-y', default=-1         , help = 'Year')
+  parser.add_argument('--conf',       '-c', default=''         , help = 'Config file (not yet implemented')
+  parser.add_argument('--options',    '-o', default=''         , help = 'Options to pass to your analysis')
+  parser.add_argument('--prefix',           default='Tree'     , help = 'Prefix of the name...')
+  parser.add_argument('--outname',          default=''         , help = 'Name of the output file')
+  parser.add_argument('--outpath',          default=''         , help = 'Output path')
+  parser.add_argument('--queue',      '-q', default='short'    , help = 'Queue to send jobs')
+  parser.add_argument('--firstEvent',       default=0          , help = 'First event')
+  parser.add_argument('--nEvents',          default=0          , help = 'Number of events')
+  parser.add_argument('--nSlots',     '-n', default=-1         , help = 'Number of slots')
+  parser.add_argument('--fixedchunk', '-f', default=-1         , help = 'Chunk to be produced alone. It requires to specify the number of chunks in the configuration file. IMPORTANT: is the CHUNK number (from 0 to N-1).')
+  parser.add_argument('--check'           , action='store_true', help = 'Check the output trees')
+  parser.add_argument('--resubmit'        , action='store_true', help = 'Resubmit jobs')
+
 
   args = parser.parse_args()
   aarg = sys.argv
@@ -325,9 +382,11 @@ if __name__ == "__main__":
   FirstEvent  = args.firstEvent
   sendJobs    = args.sendJobs
   queue       = args.queue
+
+  fixedchunk  = int(args.fixedchunk)
+  ncores      = nSlots
   doCheck     = args.check
   doReSubmit  = args.resubmit
-  ncores      = nSlots
   if doReSubmit: doCheck = True
 
   # Check if a cfg file is given as first argument
@@ -402,7 +461,8 @@ if __name__ == "__main__":
     if args.outpath    != ''     : outpath     = args.outpath
     if args.nEvents    != 0      : nEvents     = int(args.nEvents)
     if args.firstEvent != 0      : FirstEvent  = int(args.firstEvent)
-    if args.queue      != 0      : queue       = args.queue
+    if args.queue      != "short": queue       = args.queue
+
 
     if args.nSlots     != -1:
       nSlots      = int(args.nSlots)
@@ -419,15 +479,17 @@ if __name__ == "__main__":
       spl = [sample]
 
     if doCheck:
-      outlist = CheckFileEvents(spl, samplefiles, path, outpath)
+
+      outlist = CheckFileEvents(spl, samplefiles, path, outpath, chunkdir)
       if doReSubmit:
         spl = outlist
         if len(spl) == 0: print 'Everything went fine!! :)'
-        else: 
+        else:
           print 'Files to resubmit: '
           for f in spl:
-            print ' >> %s'%f
-      else: 
+            if not isinstance(f, tuple): print ' >> %s'%f
+            else:                        print ' >> %s'%(f[0])
+      else:
         exit()
 
     if dotest:
@@ -439,29 +501,49 @@ if __name__ == "__main__":
       outname = 'test'
 
     for sname in spl:
-      outname = sname
-      sample  = samplefiles[sname]
-      ncores  = nslots[sname]
+      if not isinstance(sname, tuple): truesname = sname
+      else:
+        truesname = sname[0]
+        fixedchunk = sname[1]
 
-      if sname in chunkdir:
+      outname = truesname
+      sample  = samplefiles[truesname]
+      ncores  = nslots[truesname]
+
+      if truesname in chunkdir:
         tmpsample = sample
         tmppath   = path
-        tmpnchs   = int(chunkdir[sname])
-        if verbose: print " >> The sample {smp} is going to be separated into {chs} chunks.".format(smp = sname, chs = str(chunkdir[sname]))
+        tmpnchs   = int(chunkdir[truesname])
+        if verbose: print " >> The sample {smp} is going to be separated into {chs} chunks.".format(smp = truesname, chs = str(chunkdir[truesname]))
         if ',' in tmpsample:
           tmpsample.replace(' ', '')
           tmpsample = tmpsample.split(',')
         if not isinstance(tmpsample, list): tmpsample = [tmpsample]
         if not tmppath.endswith('/'): tmppath += '/'
-        tmpsamples      = GetSampleList(tmppath, tmpsample)
+        tmpsamples   = GetSampleList(tmppath, tmpsample)
         nTrueEntries = GetAllInfoFromFile([tmppath + x for x in tmpsamples])[0]
 
-        for ich in range(tmpnchs):
-          tmpoutname    = outname + "_{ch}".format(ch = ich)
+        if not sendJobs:
+          ExecOrder("sleep 2s")
+          ExecOrder("resetpaf")
+        if fixedchunk < 0:
+          for ich in range(tmpnchs):
+            tmpoutname    = outname + "_{ch}".format(ch = ich)
+            tmpnEvents    = nTrueEntries / tmpnchs
+            tmpFirstEvent = tmpnEvents * ich
+            if (ich == tmpnchs - 1): tmpnEvents = nTrueEntries - tmpFirstEvent
+            RunSamplePAF(selection, path, sample, year, xsec, ncores, tmpoutname, outpath, options, tmpnEvents, tmpFirstEvent, prefix, verbose, pretend, dotest, sendJobs, queue)
+            if not sendJobs:
+              ExecOrder("resetpaf")
+              ExecOrder("sleep 3s")
+        else:
+          if verbose: print " >> We only are going to produce the chunk with index {chk}.".format(chk = str(fixedchunk))
+          tmpoutname    = outname + "_{ch}".format(ch = fixedchunk)
           tmpnEvents    = nTrueEntries / tmpnchs
-          tmpFirstEvent = tmpnEvents * ich
-          if (ich == tmpnchs - 1): tmpnEvents = nTrueEntries - tmpFirstEvent
+          tmpFirstEvent = tmpnEvents * fixedchunk
+          if (fixedchunk == tmpnchs - 1): tmpnEvents = nTrueEntries - tmpFirstEvent
           RunSamplePAF(selection, path, sample, year, xsec, ncores, tmpoutname, outpath, options, tmpnEvents, tmpFirstEvent, prefix, verbose, pretend, dotest, sendJobs, queue)
+
       else:
         RunSamplePAF(selection, path, sample, year, xsec, ncores, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs, queue)
 else: # no config file...
