@@ -104,7 +104,7 @@ void TWTTbarAnalysis::InsideLoop() {
   fhDummy->Fill(0.5);
   
   // Particle level selection
-  if ((DressNLeps >= 2) && (DressNJets == 2) && (DressNBJets == 2) && (DressNLooseCentral == 2) &&
+  if ((DressNLeps == 2) && (DressNJets == 2) && (DressNBJets == 2) && (DressNLooseCentral == 2) &&
       ((DressLeptons.at(0).p + DressLeptons.at(1).p).M() > 20) && (TDressLep1_Pt > 25) && (TDressLep2_Pt > 20) && !TDressIsSS) {
 
     CalculateDressTWTTbarVariables();
@@ -112,7 +112,7 @@ void TWTTbarAnalysis::InsideLoop() {
   }
 
   // Detector level selection
-  if ((TNSelLeps >= 2) && passTrigger && passMETfilters && ((selLeptons.at(0).p + selLeptons.at(1).p).M() > 20) &&
+  if ((TNSelLeps == 2) && passTrigger && passMETfilters && ((selLeptons.at(0).p + selLeptons.at(1).p).M() > 20) &&
       (TLep1_Pt > 25) && (TLep2_Pt > 20) && (!TIsSS)) {
 
     CalculateSFAndWeights();
