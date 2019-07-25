@@ -89,7 +89,7 @@ void TopAnalysis::Initialise(){
   JetPt        = gOptions.Contains("JetPtNom")? "Jet_pt_nom" : "Jet_pt";
   if (gSampleName == "TT" && year == 2016) gIsTTbar = true;
 
-  makeTree   = false;
+  makeTree   = true;
   makeHistos = true;
 
   if(makeTree){
@@ -462,6 +462,7 @@ void TopAnalysis::GetWeights(){
       ElecSFDo *= selLeptons.at(1).GetSF(-1);
     }
   }
+  
   TWeight             = NormWeight*ElecSF*MuonSF*TrigSF*PUSF;
   TWeight_ElecEffUp   = NormWeight*ElecSFUp*MuonSF*TrigSF*PUSF;
   TWeight_ElecEffDown = NormWeight*ElecSFDo*MuonSF*TrigSF*PUSF;
@@ -545,8 +546,8 @@ void TopAnalysis::InitHistos(){
         fHLep1Pt[ch][cut][sys]      = CreateH1F("H_Lep1Pt_"     +suffix, "Lep1Pt"    , 1800,20,200);
         fHLep0Iso[ch][cut][sys]     = CreateH1F("H_Lep0Iso_"     +suffix, "RelIso"    , 50,0,0.15);
         fHLep1Iso[ch][cut][sys]     = CreateH1F("H_Lep1Iso_"     +suffix, "RelIso"    , 50,0,0.15);
-        fHJetEta[ch][cut][sys]      = CreateH1F("H_JetAllEta_"     +suffix, "JetAllEta"    , 100,-5,5);
-        fHJetPt[ch][cut][sys]       = CreateH1F("H_JetAllPt_"     +suffix, "JetAllPt"    , 3000,0,300);
+        fHJetEta[ch][cut][sys]      = CreateH1F("H_JetAllEta_"     +suffix, "JetAllEta"    , 50,-2.5,2.5);
+        fHJetPt[ch][cut][sys]       = CreateH1F("H_JetAllPt_"     +suffix, "JetAllPt"    , 2700,30,300);
         fHJetCSV[ch][cut][sys]      = CreateH1F("H_JetAllCSV_" +suffix, "CSV" , 100,0, 1.0);
         fHJet0CSV[ch][cut][sys]     = CreateH1F("H_Jet0CSV_" +suffix, "Jet0CSV" , 100,0, 1.0);
         fHJet1CSV[ch][cut][sys]     = CreateH1F("H_Jet1CSV_" +suffix, "Jet1CSV" , 100,0, 1.0);
@@ -556,7 +557,7 @@ void TopAnalysis::InitHistos(){
         fHJetDeepFlav[ch][cut][sys]  = CreateH1F("H_JetAllDeepFlav_" +suffix, "DeepFlav" , 100,0, 1.0);
         fHJet0DeepFlav[ch][cut][sys] = CreateH1F("H_Jet0DeepFlav_" +suffix, "Jet0DeepFlav" , 100,0, 1.0);
         fHJet1DeepFlav[ch][cut][sys] = CreateH1F("H_Jet1DeepFlav_" +suffix, "Jet1DeepFlav" , 100,0, 1.0);
-        fHvertices[ch][cut][sys]    = CreateH1F("H_Vtx_"+suffix, "Vtx", 102, -0.5, 100.5); 
+        fHvertices[ch][cut][sys]    = CreateH1F("H_Vtx_"+suffix, "Vtx", 101, -0.5, 100.5); 
       }
     }
   }

@@ -254,6 +254,32 @@ def RunPAF(samples, selection, xsec, nSumOfWeights, year, outname, nSlots = 1, o
 
 
 
+def CheckFileEvents(snames, sfiles, path, outpath):
+ ''' Check events in mother file and output file, using the fhDummy histogram '''
+ from ROOT import TFile
+ outlist = []
+ getlist = lambda x : [x] if not ',' in x else x.replace(' ', '').split(',')
+ for f in snames:
+   trypath = '%s/%s.root'%(outpath, f)
+   if not os.path.isfile(trypath):
+     outlist.append(f)
+     print '\033[0;31mSample \033[0;36m%s\033[0;31m not found\033[0m'%f 
+   else:
+     tf = TFile.Open(trypath)
+     if not hasattr(tf, 'fhDummy'): 
+       print '\033[0;31mSample \033[0;36m%s\033[0;31m does not contain fhDummy\033[0m'%f 
+       outlist.append(f)
+       continue
+     dummy = tf.fhDummy.GetEntries()
+     samples = GetSampleList(path, getlist(sfiles[f]) )
+     nEventsInTree, nGenEvents, nSumOfWeights, isData = GetAllInfoFromFile([path + x for x in samples])
+     if nEventsInTree == dummy: 
+       print '\033[0;32mOK  \033[0;34m%s\033[0m'%f
+     else: 
+       print '\033[0;31mBAD \033[0;34m%s \033[0;33m(%1.2f %s)\033[0m'%(f, (nEventsInTree-dummy)/nEventsInTree*100, '%')
+       outlist.append(f)
+ return outlist
+
 ################################################################################
 ### Execute
 ################################################################################
@@ -277,6 +303,8 @@ if __name__ == "__main__":
   parser.add_argument('--firstEvent'      , default=0            , help = 'First event')
   parser.add_argument('--nEvents'         , default=0            , help = 'Number of events')
   parser.add_argument('--nSlots','-n'     , default=-1           , help = 'Number of slots')
+  parser.add_argument('--check'           , action='store_true'  , help = 'Check the output trees')
+  parser.add_argument('--resubmit'        , action='store_true'  , help = 'Resubmit jobs')
 
   args = parser.parse_args()
   aarg = sys.argv
@@ -297,7 +325,10 @@ if __name__ == "__main__":
   FirstEvent  = args.firstEvent
   sendJobs    = args.sendJobs
   queue       = args.queue
+  doCheck     = args.check
+  doReSubmit  = args.resubmit
   ncores      = nSlots
+  if doReSubmit: doCheck = True
 
   # Check if a cfg file is given as first argument
   fname = selection
@@ -369,8 +400,8 @@ if __name__ == "__main__":
     if args.prefix     != 'Tree' : prefix      = args.prefix
     if args.outname    != ''     : outname     = args.outname
     if args.outpath    != ''     : outpath     = args.outpath
-    if args.nEvents    != 0      : nEvents     = args.nEvents
-    if args.firstEvent != 0      : FirstEvent  = args.firstEvent
+    if args.nEvents    != 0      : nEvents     = int(args.nEvents)
+    if args.firstEvent != 0      : FirstEvent  = int(args.firstEvent)
     if args.queue      != 0      : queue       = args.queue
 
     if args.nSlots     != -1:
@@ -386,6 +417,18 @@ if __name__ == "__main__":
         samplefiles[sample] = sample
         nslots[sample] = nSlots
       spl = [sample]
+
+    if doCheck:
+      outlist = CheckFileEvents(spl, samplefiles, path, outpath)
+      if doReSubmit:
+        spl = outlist
+        if len(spl) == 0: print 'Everything went fine!! :)'
+        else: 
+          print 'Files to resubmit: '
+          for f in spl:
+            print ' >> %s'%f
+      else: 
+        exit()
 
     if dotest:
       nEvents = 1000
@@ -421,5 +464,7 @@ if __name__ == "__main__":
           RunSamplePAF(selection, path, sample, year, xsec, ncores, tmpoutname, outpath, options, tmpnEvents, tmpFirstEvent, prefix, verbose, pretend, dotest, sendJobs, queue)
       else:
         RunSamplePAF(selection, path, sample, year, xsec, ncores, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs, queue)
-  else: # no config file...
+else: # no config file...
     RunSamplePAF(selection, path, sample, year, xsec, nSlots, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs, queue)
+
+
