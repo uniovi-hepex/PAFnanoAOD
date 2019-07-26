@@ -104,8 +104,9 @@ void TWTTbarAnalysis::InsideLoop() {
   fhDummy->Fill(0.5);
   
   // Particle level selection
-  if ((DressNLeps == 2) && (DressNJets == 2) && (DressNBJets == 2) && (DressNLooseCentral == 2) &&
-      ((DressLeptons.at(0).p + DressLeptons.at(1).p).M() > 20) && (TDressLep1_Pt > 25) && (TDressLep2_Pt > 20) && !TDressIsSS) {
+//   if ((DressNLeps == 2) && (DressNJets == 2) && (DressNBJets == 2) && (DressNLooseCentral == 2) &&
+  if ((DressNLeps == 2) && (DressNJets == 2) && (DressNBJets == 2) &&
+     ((DressLeptons.at(0).p + DressLeptons.at(1).p).M() > 20) && (TDressLep1_Pt > 25) && (TDressLep2_Pt > 20) && !TDressIsSS) {
 
     CalculateDressTWTTbarVariables();
     DoesItReallyPassDress();
@@ -1188,7 +1189,8 @@ void TWTTbarAnalysis::DoesItReallyPassDress() { // FINAL (not all) requirements 
 
 
 void TWTTbarAnalysis::DoesItReallyPassReco() { // FINAL (not all) requirements for detector level selection
-  if ((TNJets == 2) && (TNBJets == 2) && (NLooseCentral == 2)) {
+//   if ((TNJets == 2) && (TNBJets == 2) && (NLooseCentral == 2)) {
+  if ((TNJets == 2) && (TNBJets == 2)) {
     if (TChannel == iMuon || TChannel == iElec) {
       cout << "wololo. met: " << TMET << " ml1l2: " << TLep1Lep2_M << " el abs: " << abs(TLep1Lep2_M - Zm) << endl;
       if ((TMET > 20) && (abs(TLep1Lep2_M - Zm) > 15)) TPassReco = true;
@@ -1196,19 +1198,22 @@ void TWTTbarAnalysis::DoesItReallyPassReco() { // FINAL (not all) requirements f
     else TPassReco = true;
   }
 
-  if ((TNJetsJESUp == 2) && (TNBJetsJESUp == 2) && (NLooseCentralJESUp == 2)) {
+//   if ((TNJetsJESUp == 2) && (TNBJetsJESUp == 2) && (NLooseCentralJESUp == 2)) {
+  if ((TNJetsJESUp == 2) && (TNBJetsJESUp == 2)) {
     if (TChannel == iMuon || TChannel == iElec) {
       if ((TMETJESUp > 20) && (abs(TLep1Lep2_MJESUp - Zm) > 15)) TPassRecoJESUp = true;
     }
     else TPassRecoJESUp = true;
   }
-  if ((TNJetsJESDown == 2) && (TNBJetsJESDown == 2) && (NLooseCentralJESDown == 2)) {
+//   if ((TNJetsJESDown == 2) && (TNBJetsJESDown == 2) && (NLooseCentralJESDown == 2)) {
+  if ((TNJetsJESDown == 2) && (TNBJetsJESDown == 2)) {
     if (TChannel == iMuon || TChannel == iElec) {
       if ((TMETJESDown > 20) && (abs(TLep1Lep2_MJESDown - Zm) > 15)) TPassRecoJESDown = true;
     }
     else TPassRecoJESDown = true;
   }
-  if ((TNJetsJERUp == 2) && (TNBJetsJERUp == 2) && (NLooseCentralJERUp == 2)) {
+//   if ((TNJetsJERUp == 2) && (TNBJetsJERUp == 2) && (NLooseCentralJERUp == 2)) {
+  if ((TNJetsJERUp == 2) && (TNBJetsJERUp == 2)) {
     if (TChannel == iMuon || TChannel == iElec) {
       if ((TMETJERUp > 20) && (abs(TLep1Lep2_MJERUp - Zm) > 15)) TPassRecoJERUp = true;
     }
