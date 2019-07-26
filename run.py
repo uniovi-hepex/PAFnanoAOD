@@ -69,10 +69,10 @@ def GetXsec(xsec, s, verbose, isdata):
   if isinstance(xsec, int): xsec = float(xsec)
   if isinstance(xsec, str):
     xsecdic = loadxsecdic(xsec, verbose)
-    if not re.sub("_(([0-9])|([1-9][0-9]))$", "", s) in xsecdic.keys():
+    if not re.sub("_(([0-9])|([1-9][0-9])|([1-9][0-9][0-9]))$", "", s) in xsecdic.keys():
       print 'ERROR: not found xsec value for sample %s'%s
       xsec = 1
-    else: xsec = xsecdic[re.sub("_(([0-9])|([1-9][0-9]))$", "", s)]
+    else: xsec = xsecdic[re.sub("_(([0-9])|([1-9][0-9])|([1-9][0-9][0-9]))$", "", s)]
   return xsec
 
 
