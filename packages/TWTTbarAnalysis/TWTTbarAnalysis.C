@@ -706,7 +706,7 @@ void TWTTbarAnalysis::GetGenJetVariables() {
       if (genJets.at(i).Pt() > 30) {
         DressJets.push_back(genJets.at(i));
         TDressHT += genJets.at(i).Pt();
-        if (genJets.at(i).isBtag) DressNBJets++;sdsdsd
+        if (genJets.at(i).isBtag) DressNBJets++;
       }
     }
     else if (TMath::Abs(genJets.at(i).Eta()) < 4.7) {

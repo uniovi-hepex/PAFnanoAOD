@@ -69,7 +69,7 @@ class TWTTbarAnalysis : public PAFChainItemSelector{
 
     Short_t TChannel, GenChannel;
     Bool_t TIsSS, TDressIsSS;
-    Bool_t PassMinDressSel; PassMinRecoSel;
+    Bool_t PassMinDressSel, PassMinRecoSel;
     Bool_t TPassReco, TPassRecoJESUp, TPassRecoJESDown, TPassRecoJERUp;
     Bool_t TPassDress, TPassPart;
 
