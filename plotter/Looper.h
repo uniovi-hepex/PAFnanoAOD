@@ -4,7 +4,7 @@
 #include <TROOT.h>
 #include <TChain.h>
 #include <THStack.h>
-#include <TH1F.h>
+#include <TH1D.h>
 #include <TFile.h>
 #include <TMath.h>
 #include <TLegend.h>
@@ -30,7 +30,7 @@ TString CraftVar(TString varstring, TString sys, TTree* tree);
 TTreeFormula *GetFormula(TString name, TString var, TTree* tree);
 TTree* loadTree(TString path, TString sampleName, TString treeName);
 TH1D* loadHistogram1D(TString path, TString sampleName, TString histoName);
-TH1F* loadHistogram1F(TString path, TString sampleName, TString histoName);
+TH1D* loadHistogram1F(TString path, TString sampleName, TString histoName);
 Histo* GetHistoFromHeppyTrees(TString path, TString sample, TString var, TString cut, TString hName, Int_t nbins, Float_t bin0, Float_t binN, Float_t *bins = nullptr);
 TChain* GetChain(TString path, TString sample);
 
@@ -107,7 +107,7 @@ class Looper{
      else chan = "All";
    }
    Bool_t doISRweight = false;
-   Bool_t verbose = false;
+   Bool_t verbose;
    Int_t numberInstance;
    TString GetSampleName(){return sampleName;}
    void SetSampleName(TString t){sampleName   = t;}
@@ -115,6 +115,7 @@ class Looper{
 	 void SetTreeName(  TString t){treeName     = t;}
 	 void SetPath(      TString t){path         = t;}
    void SetWeight(    TString t){weight       = t;}
+   void SetVerbosity(Bool_t v){verbose = v;}
 
    virtual Histo* GetHisto(TString sampleName, TString sys = "0");
 
@@ -156,7 +157,7 @@ class Looper{
    void loadTree();
    TTree* tree;
 
-   std::vector<TH1F*> FRhistos;
+   std::vector<TH1D*> FRhistos;
 
 };
 
@@ -191,6 +192,7 @@ class Multilooper : public Looper{
   vector<Histo*> vHistos;
   vector<TTreeFormula*> vFormulas;
   vector<TTreeFormula*> vFormVars;
+  Bool_t verbose;
 
   //>>> Methods
   public:
@@ -199,6 +201,7 @@ class Multilooper : public Looper{
   void CreateHistosAndFormulas();
   void Fill();
   vector<Histo*> GetAllHistos(){ return vHistos;}
+  void SetVerbosity(Bool_t v){verbose = v;}
 };
 
 
@@ -642,12 +645,12 @@ TH1D* loadHistogram1D(TString path, TString sampleName, TString histoName){
   return h;
 }
 
-TH1F* loadHistogram1F(TString path, TString sampleName, TString histoName){
+TH1D* loadHistogram1F(TString path, TString sampleName, TString histoName){
   if(!path.EndsWith("/")) path += "/";
   sampleName.ReplaceAll(".root", "");
   if(sampleName.BeginsWith("Tree_")) sampleName = sampleName(5, sampleName.Sizeof());
   TString thefile = path + "Tree_" + sampleName + ".root";
-  TH1F* h;
+  TH1D* h;
   TFile* inputfile = TFile::Open(thefile);
   inputfile->GetObject(histoName, h);
   h->SetDirectory(0);
@@ -693,7 +696,7 @@ Histo* GetHistoFromHeppyTrees(TString path, TString sample, TString var, TString
 Histo* LoadHistogram(TString pathToFile, TString name){
   if(!pathToFile.EndsWith(".root")) pathToFile += ".root";
   TFile* f = TFile::Open(pathToFile);
-  TH1F* h = (TH1F*) f->Get(name);
+  TH1D* h = (TH1D*) f->Get(name);
   h->SetStats(0); h->SetDirectory(0);
   Histo* histo = new Histo(*h);
   histo->SetDirectory(0);
