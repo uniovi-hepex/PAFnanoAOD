@@ -1014,6 +1014,7 @@ def lazyoptimisation(tsk):
 
 
 if __name__ == '__main__':
+    vl.SetUpWarnings()
     tasks = []
     #tasks.append( ("nLooseCentral", "signal", "wololo") )
     #for v in vl.varList["Names"]["Variables"]:
@@ -1023,7 +1024,8 @@ if __name__ == '__main__':
                 #for chn in ["ElMu", "Muon", "Elec", "All"]:
                     #tasks.append( (v, ct, chn, bnng) )
     
-    for chn in ["ElMu", "Muon", "Elec", "All"]:
+    #for chn in ["ElMu", "Muon", "Elec", "All"]:
+    for chn in ["ElMu"]:
       for lvl in ["detector", "particle"]:
         tasks.append(("Lep1_Pt",       "signal", chn, "descriptive", lvl))
         tasks.append(("Lep1_Eta",      "signal", chn, "descriptive", lvl))
