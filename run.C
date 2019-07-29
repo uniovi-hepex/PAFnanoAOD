@@ -74,7 +74,7 @@ void run(TString samp, TString selection, Double_t xsec, Double_t sumofweights, 
   myProject->AddSelectorPackage("EventBuilder");
   
   // Analysis selector
-  if(selection != "")
+  if (selection != "")
     myProject->AddSelectorPackage(selection);
   
   // Additional packages
