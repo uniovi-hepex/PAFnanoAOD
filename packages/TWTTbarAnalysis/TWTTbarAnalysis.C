@@ -100,27 +100,28 @@ void TWTTbarAnalysis::InsideLoop() {
   fhDummy->Fill(0.5);
   
   // Particle level selection
-  PassMinDressSel = (DressNLeps == 2) && (TDressLep1_Pt > 25) && (TDressLep2_Pt > 20) &&
-                    !TDressIsSS && ((DressLeptons.at(0).p + DressLeptons.at(1).p).M() > 20);
+  TPassMinDressSel = (DressNLeps == 2);
+//                     !TDressIsSS && ((DressLeptons.at(0).p + DressLeptons.at(1).p).M() > 20);
 
-  if (PassMinDressSel) {
+  if (TPassMinDressSel) {
     CalculateDressTWTTbarVariables();
     DoesItReallyPassDress();
   }
 
   // Detector level selection
-  PassMinRecoSel =  passTrigger && passMETfilters &&
-                    (TNSelLeps == 2) && (TLep1_Pt > 25) && (TLep2_Pt > 20) &&
-                    (!TIsSS) && ((selLeptons.at(0).p + selLeptons.at(1).p).M() > 20);
+  TPassMinRecoSel =  passTrigger && passMETfilters &&
+                    (TNSelLeps == 2);
+//                     (TNSelLeps == 2) && (TLep1_Pt > 25) && (TLep2_Pt > 20) &&
+//                     (!TIsSS) && ((selLeptons.at(0).p + selLeptons.at(1).p).M() > 20);
 
-  if (PassMinRecoSel) {
+  if (TPassMinRecoSel) {
     CalculateSFAndWeights();
     CalculateTWTTbarVariables();
     DoesItReallyPassReco();
   }
   
   // Filling
-  if (PassMinDressSel || PassMinRecoSel) {
+  if (TPassMinDressSel || TPassMinRecoSel) {
     SetMinimaAndMaxima();
     fMiniTree->Fill();
   }
@@ -158,6 +159,7 @@ void TWTTbarAnalysis::SetTWTTbarVariables() {
   fMiniTree->Branch("TLHEWeight",            TLHEWeight,             "TLHEWeight[254]/F");
   
   
+  fMiniTree->Branch("TPassMinRecoSel",       &TPassMinRecoSel,       "TPassMinRecoSel/O");
   fMiniTree->Branch("TPassReco",             &TPassReco,             "TPassReco/O");
   fMiniTree->Branch("TPassRecoJESUp",        &TPassRecoJESUp,        "TPassRecoJESUp/O");
   fMiniTree->Branch("TPassRecoJESDown",      &TPassRecoJESDown,      "TPassRecoJESDown/O");
@@ -357,6 +359,7 @@ void TWTTbarAnalysis::SetTWTTbarVariables() {
   fMiniTree->Branch("TGenChannel",           &GenChannel,            "GenChannel/B");
   
   // Particle level variables
+  fMiniTree->Branch("TPassMinDressSel",      &TPassMinDressSel,      "TPassMinDressSel/O");
   fMiniTree->Branch("TPassDress",            &TPassDress,            "TPassDress/O");
   fMiniTree->Branch("TDressIsSS",            &TDressIsSS,            "TDressIsSS/O");
   fMiniTree->Branch("TDressNJets",           &DressNJets,            "TDressNJets/b");
@@ -765,8 +768,8 @@ void TWTTbarAnalysis::GetMETandGenMET() {
 void TWTTbarAnalysis::ResetTWTTbarVariables() {
   ElecSF    = 1;  MuonSF   = 1; ElecSFUp  = 1;  ElecSFDo = 1;  MuonSFUp = 1;  MuonSFDo = 1; lepSF = 1;
   
-  PassMinDressSel        = false;
-  PassMinRecoSel         = false;
+  TPassMinDressSel        = false;
+  TPassMinRecoSel         = false;
   TPassReco              = false;
   TPassRecoJESUp         = false;
   TPassRecoJESDown       = false;
@@ -1198,7 +1201,7 @@ TLorentzVector TWTTbarAnalysis::getSysVector(const TString& sys) {
 
 
 void TWTTbarAnalysis::DoesItReallyPassDress() { // FINAL (not all) requirements for particle level selection
-  if ((DressNJets == 2) && (DressNBJets == 2)) {
+  if ((DressNJets == 2) && (DressNBJets == 2) && (TDressLep1_Pt > 25) && (TDressLep2_Pt > 20) && !TDressIsSS && ((DressLeptons.at(0).p + DressLeptons.at(1).p).M() > 20)) {
     if (GenChannel == iMuon || GenChannel == iElec) {
       if ((TDressMET > 20) && (abs(TDressLep1Lep2_M - Zm) > 15)) TPassDress = true;
     }
@@ -1209,7 +1212,7 @@ void TWTTbarAnalysis::DoesItReallyPassDress() { // FINAL (not all) requirements 
 
 void TWTTbarAnalysis::DoesItReallyPassReco() { // FINAL (not all) requirements for detector level selection
 //   if ((TNJets == 2) && (TNBJets == 2) && (NLooseCentral == 2)) {
-  if ((TNJets == 2) && (TNBJets == 2)) {
+  if ((TNJets == 2) && (TNBJets == 2) && (TLep1_Pt > 25) && (TLep2_Pt > 20) && (!TIsSS) && ((selLeptons.at(0).p + selLeptons.at(1).p).M() > 20)) {
     if (TChannel == iMuon || TChannel == iElec) {
       if ((TMET > 20) && (abs(TLep1Lep2_M - Zm) > 15)) TPassReco = true;
     }
