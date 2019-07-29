@@ -67,17 +67,17 @@ class TWTTbarAnalysis : public PAFChainItemSelector{
     Float_t   TLHEWeight[254];
     ULong64_t TEvent;
 
-    Short_t TChannel, GenChannel;
-    Bool_t TIsSS, TDressIsSS;
-    Bool_t PassMinDressSel, PassMinRecoSel;
-    Bool_t TPassReco, TPassRecoJESUp, TPassRecoJESDown, TPassRecoJERUp;
-    Bool_t TPassDress, TPassPart;
+    Char_t  TChannel, GenChannel;
+    Bool_t  TIsSS, TDressIsSS;
+    Bool_t  PassMinDressSel, PassMinRecoSel;
+    Bool_t  TPassReco, TPassRecoJESUp, TPassRecoJESDown, TPassRecoJERUp;
+    Bool_t  TPassDress, TPassPart;
 
-    UShort_t TNBJets, TNBJetsJESUp, TNBJetsJESDown, TNBJetsJERUp;
-    UShort_t NLooseCentral, NLooseCentralJESUp, NLooseCentralJESDown, NLooseCentralJERUp;
-    UShort_t NLooseFwd, NLooseFwdJESUp, NLooseFwdJESDown, NLooseFwdJERUp;
-    UShort_t NBLooseCentral, NBLooseCentralJESUp, NBLooseCentralJESDown, NBLooseCentralJERUp;
-    UShort_t DressNJets, DressNLooseCentral, DressNLooseFwd, DressNBJets, DressNBLooseCentral;
+    UChar_t TNBJets, TNBJetsJESUp, TNBJetsJESDown, TNBJetsJERUp;
+    UChar_t NLooseCentral, NLooseCentralJESUp, NLooseCentralJESDown, NLooseCentralJERUp;
+    UChar_t NLooseFwd, NLooseFwdJESUp, NLooseFwdJESDown, NLooseFwdJERUp;
+    UChar_t NBLooseCentral, NBLooseCentralJESUp, NBLooseCentralJESDown, NBLooseCentralJERUp;
+    UChar_t DressNJets, DressNLooseCentral, DressNLooseFwd, DressNBJets, DressNBLooseCentral;
 
     Float_t TLep1_Pt,  TLep1_PtJESUp,  TLep1_PtJESDown,  TLep1_PtJERUp;
     Float_t TLep1_E,   TLep1_EJESUp,   TLep1_EJESDown,   TLep1_EJERUp;
@@ -169,9 +169,9 @@ class TWTTbarAnalysis : public PAFChainItemSelector{
     Float_t TPartMET, TPartMET_Phi;
 
 
-    UShort_t TNSelLeps, DressNLeps;
+    UChar_t  TNSelLeps, DressNLeps;
 
-    UShort_t TNJets, TNJetsJESUp, TNJetsJESDown, TNJetsJERUp;
+    UChar_t  TNJets, TNJetsJESUp, TNJetsJESDown, TNJetsJERUp;
 
     Double_t ElecSF, MuonSF, ElecSFUp, ElecSFDo, MuonSFUp, MuonSFDo, lepSF;
     Double_t TrigSF, TrigSFerr;
@@ -195,7 +195,6 @@ class TWTTbarAnalysis : public PAFChainItemSelector{
     TString  gSampleName;
     Bool_t   gIsTTbar;
     Bool_t   gIsLHE;
-    Int_t    gChannel;
     TString  gOptions;
     Bool_t   gPUWeight;
     Bool_t   passMETfilters;
