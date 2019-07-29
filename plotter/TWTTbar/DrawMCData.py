@@ -9,6 +9,7 @@ vl.SetUpWarnings()
 NameOfTree  = vl.treename;
 StandardCut = "TPassReco == 1";
 ControlCut  = "TIsSS == 0 && TNJets == 1  && TNBtags == 1 && TNLooseCentral > 1";
+StandardDressCut = "TPassDress == 1";
 #systlist    = vl.GiveMeTheExpNamesWOJER(vl.varList["Names"]["ExpSysts"])
 systlist    = ""
 systdresslist = ""
@@ -27,7 +28,7 @@ chandir["Muon"]= "#mu^{#pm}#mu^{#mp}"
 legtxtsize  = 0.055
 labelpos    = (0.275, 0.89)
 doPrefChecks= False
-doNorm      = True
+doNorm      = False
 pathToTree  = vl.minipath
 nCores      = 1
 
@@ -1039,10 +1040,15 @@ if __name__ == '__main__':
         tasks.append(("MiniMax",       "signal", chn, "descriptive", lvl))
         tasks.append(("Lep1Lep2_DPhi", "signal", chn, "descriptive", lvl))
     
-    print "> Launching plotting processes..."
-    pool = Pool(nCores)
-    pool.map(lazyoptimisation, tasks)
-    pool.close()
-    pool.join()
-    del pool
+    if (nCores > 1):
+      print "\n> Launching plotting processes..."
+      pool = Pool(nCores)
+      pool.map(lazyoptimisation, tasks)
+      pool.close()
+      pool.join()
+      del pool
+    else:
+      print "\n> Initiating sequential execution..."
+      for tsk in tasks: lazyoptimisation(tsk)
+
     print "> Done!", "\n"
