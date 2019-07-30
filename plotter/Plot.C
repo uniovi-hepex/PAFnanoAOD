@@ -27,32 +27,49 @@ Histo* Plot::GetH(TString sample, TString sys, Int_t type) {
 }
 
 
-void Plot::AddSample(TString p, TString pr, Int_t type, Int_t color, TString sys, TString options){
+void Plot::AddSample(TString p, TString pr, Int_t type, Int_t color, TString sys, TString options) {
   //>>> Multiprocess...
   p.ReplaceAll(" ", "");
-  if(pr == "") pr = p;
-  if(p.Contains(",")){
+  if (pr == "") pr = p;
+  if (p.Contains(",") || p.Contains("*")) {
     TString First_p = p(0, p.First(','));
-    TString theRest = p(p.First(',')+1, p.Sizeof());
-    AddSample(First_p, pr, type, color, sys, options);
-    AddSample(theRest, pr, type, color, sys, options);
+    TString theRest = p(p.First(',') + 1, p.Sizeof());
+
+    if (First_p == "") {
+      First_p = theRest;
+      theRest = "";
+    }
+
+    if (First_p.Contains("*")) {
+      void *dirp = gSystem->OpenDirectory(path);
+      Char_t *afile;
+      while ( (afile = const_cast<Char_t *>(gSystem->GetDirEntry(dirp))) ) {
+        TString tmpfile = afile;
+        if (tmpfile.Contains(First_p.ReplaceAll("*", ""))) AddSample(tmpfile(0, tmpfile.Index(".root")), pr, type, color, sys, options);
+        else continue;
+      }
+    }
+    else AddSample(First_p, pr, type, color, sys, options);
+
+    if (theRest != "") AddSample(theRest, pr, type, color, sys, options);
+
     return;
   }
 
   //>>> Propagating options to looper
   SetLoopOptions(options);
   VTagOptions.push_back(options);
-  if(sys != "0" && sys != "") AddToSystematicLabels(sys);
-  if(type == itBkg || type == itSignal){
+  if (sys != "0" && sys != "") AddToSystematicLabels(sys);
+  if (type == itBkg || type == itSignal) {
     VTagSamples.push_back(p);    //
     VTagProcesses.push_back(pr);
   }
 
   //>>> Using MultiLooper??
-  if( (type == itBkg || type == itSignal) && (sys != "" && sys != "0")){
+  if ( (type == itBkg || type == itSignal) && (sys != "" && sys != "0")){
     VTagSamples.push_back(p);
     VTagProcesses.push_back(pr);
-    if(type == itSignal){
+    if (type == itSignal){
       nSignalSamples++;
       SetSignalProcess(pr);
     }
@@ -62,7 +79,7 @@ void Plot::AddSample(TString p, TString pr, Int_t type, Int_t color, TString sys
 
   //>>> Getting histo from looper
   Histo* h = GetH(p, sys, type);
-  if(type != itData && !LoopOptions.Contains("noScaleLumi"))  h->Scale(Lumi*1000);
+  if (type != itData && !LoopOptions.Contains("noScaleLumi"))  h->Scale(Lumi*1000);
   PrepareHisto(h, p, pr, type, color, sys);
 }
 
@@ -1927,7 +1944,7 @@ void Plot::AddPlotFromHyperlooper(Hyperlooper *HyperLoop, TString plotname){
   }
 }
 
-
+/*
 //=========================================== MULTIPLOT
 
 void MultiPlot::AddHyperlooper(TString sample, TString process, Int_t type, Int_t color, TString syst, TString weight, TString options, TString pathS){
@@ -2019,7 +2036,6 @@ void MultiPlot::SetPlot(TString name, TString xtitle, TString ytitle, TString se
 
 
     // Draw systematics signal
-    /*
 
   Histo* hSignalerr = NULL;
   VSignalsErr.clear();
