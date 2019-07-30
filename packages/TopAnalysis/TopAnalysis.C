@@ -517,9 +517,9 @@ void TopAnalysis::InitHistos(){
     for(Int_t cut = 0; cut < nLevels; cut++){
       suffix = GetSuffix(ch, cut, 0);
       if(!gIsData){
-        if(gDoPDFunc)   fHPDFweights[ch][cut]       = CreateH1F("H_PDFweights"  +suffix, "PDFweights", nPDFweights, 0.5, nPDFweights+0.5); // 33 as nominal... 100 for 2016 old tune
-        if(gDoScaleUnc) fHScaleWeights[ch][cut]     = CreateH1F("H_ScaleWeights"+suffix, "ScaleWeights", 9, 0.5, 9.5);
-        if(gDoPSunc)    fHPSweights[ch][cut]        = CreateH1F("H_PSweights"   +suffix, "PSweights", 4, 0.5, 4.5);
+        if(gDoPDFunc)   fHPDFweights[ch][cut]       = CreateH1F("H_PDFweights_"  +suffix, "PDFweights", nPDFweights, 0.5, nPDFweights+0.5); // 33 as nominal... 100 for 2016 old tune
+        if(gDoScaleUnc) fHScaleWeights[ch][cut]     = CreateH1F("H_ScaleWeights_"+suffix, "ScaleWeights", 9, 0.5, 9.5);
+        if(gDoPSunc)    fHPSweights[ch][cut]        = CreateH1F("H_PSweights_"   +suffix, "PSweights", 4, 0.5, 4.5);
       }
       for(Int_t sys = 0; sys < nSyst; sys++){
         if(gIsData && sys > 0) break;
@@ -604,15 +604,15 @@ void TopAnalysis::FillHistos(Int_t ch, Int_t cut, Int_t sys){
     Int_t i = 0;
     if(gDoPSunc){
       for(i = 0; i < Get<Int_t>("nPSWeight"); i++)
-        fHPSweights[ch][cut]->Fill(Get<Int_t>("PSWeight",i),weight);
+        fHPSweights[ch][cut]->Fill(i+1, Get<Int_t>("PSWeight",i)*weight);
     }
     if(gDoPDFunc){
       for(i = 0; i < Get<Int_t>("nLHEPdfWeight"); i++)
-        fHPSweights[ch][cut]->Fill(Get<Int_t>("LHEPdfWeight",i),weight);
+        fHPDFweights[ch][cut]->Fill(i+1, Get<Int_t>("LHEPdfWeight",i)*weight);
     }
     if(gDoScaleUnc){
       for(i = 0; i < Get<Int_t>("nLHEScaleWeight"); i++)
-        fHScaleWeights[ch][cut]->Fill(Get<Int_t>("LHEScaleWeight",i), weight);
+        fHScaleWeights[ch][cut]->Fill(i+1, Get<Int_t>("LHEScaleWeight",i)*weight);
     }
   } 
 
