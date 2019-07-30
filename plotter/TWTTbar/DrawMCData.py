@@ -98,7 +98,7 @@ def plotvariable(tsk):
     #p.AddSample("DYJetsToLL_M5to50_MLM",        "DY",           r.itBkg, 852, systlist);
     #p.AddSample("DYJetsToLL_M50_MLM",           "DY",           r.itBkg, 852, systlist);
     
-    p.AddSample("TTTo2L2Nu",                 "t#bar{t}",     r.itBkg, 633, systlist)
+    p.AddSample("TTTo2L2Nu_*",                 "t#bar{t}",     r.itBkg, 633, systlist)
     
     #specialweight = vl.n_ttbar/vl.sigma_ttbar/(vl.n_ttbar/vl.sigma_ttbar + vl.n_dilep/vl.sigma_dilep)
     #if doPrefChecks: p.SetWeight('TWeight * (1 - prefWeight) * ' + str(specialweight))   # FOR PREFIRING CHECKS
@@ -111,8 +111,8 @@ def plotvariable(tsk):
     #if doPrefChecks: p.SetWeight('TWeight * (1 - prefWeight)')   # FOR PREFIRING CHECKS
     #else:            p.SetWeight('TWeight')
 
-    p.AddSample("tbarW_noFullHad",              "tW",           r.itBkg, r.TColor.GetColor("#ffcc33"), systlist)
-    p.AddSample("tW_noFullHad",                 "tW",           r.itBkg, r.TColor.GetColor("#ffcc33"), systlist);
+    p.AddSample("tbarW_noFullHad_*",              "tW",           r.itBkg, r.TColor.GetColor("#ffcc33"), systlist)
+    p.AddSample("tW_noFullHad_*",                 "tW",           r.itBkg, r.TColor.GetColor("#ffcc33"), systlist);
     
     #specialweight = vl.n_tw/vl.sigma_tw/(vl.n_tw/vl.sigma_tw + vl.n_twnohad/vl.sigma_twnohad)
     #if doPrefChecks: p.SetWeight('TWeight * (1 - prefWeight) * ' + str(specialweight))   # FOR PREFIRING CHECKS
@@ -133,7 +133,7 @@ def plotvariable(tsk):
     #if doPrefChecks: p.SetWeight('TWeight * (1 - prefWeight)')   # FOR PREFIRING CHECKS
     #else:            p.SetWeight('TWeight')
     
-    p.AddSample("b_bbar_4l",            "WWbb",      r.itSignal, r.kBlue)
+    p.AddSample("b_bbar_4l_*",            "WWbb",      r.itSignal, r.kBlue)
     
     
     #p.AddSample("MuonEG",                       "Data",         r.itData);
@@ -345,7 +345,7 @@ def plotdressvariable(tsk):
     #p.AddSample("DYJetsToLL_M5to50_MLM",        "DY",           r.itBkg, 852, systdresslist);
     #p.AddSample("DYJetsToLL_M50_MLM",           "DY",           r.itBkg, 852, systdresslist);
 
-    p.AddSample("TTTo2L2Nu",                 "t#bar{t}",     r.itBkg, 633, systdresslist)
+    p.AddSample("TTTo2L2Nu_*",                 "t#bar{t}",     r.itBkg, 633, systdresslist)
 
     #specialweight = vl.n_ttbar/vl.sigma_ttbar/(vl.n_ttbar/vl.sigma_ttbar + vl.n_dilep/vl.sigma_dilep)
     #if doPrefChecks: p.SetWeight('TWeight * (1 - prefWeight) * ' + str(specialweight))   # FOR PREFIRING CHECKS
@@ -358,8 +358,8 @@ def plotdressvariable(tsk):
     #if doPrefChecks: p.SetWeight('TWeight * (1 - prefWeight)')   # FOR PREFIRING CHECKS
     #else:            p.SetWeight('TWeight')
 
-    p.AddSample("tbarW_noFullHad",              "tW",           r.itBkg, r.TColor.GetColor("#ffcc33"), systdresslist)
-    p.AddSample("tW_noFullHad",                 "tW",           r.itBkg, r.TColor.GetColor("#ffcc33"), systdresslist);
+    p.AddSample("tbarW_noFullHad_*",              "tW",           r.itBkg, r.TColor.GetColor("#ffcc33"), systdresslist)
+    p.AddSample("tW_noFullHad_*",                 "tW",           r.itBkg, r.TColor.GetColor("#ffcc33"), systdresslist);
 
     #specialweight = vl.n_tw/vl.sigma_tw/(vl.n_tw/vl.sigma_tw + vl.n_twnohad/vl.sigma_twnohad)
     #if doPrefChecks: p.SetWeight('TWeight * (1 - prefWeight) * ' + str(specialweight))   # FOR PREFIRING CHECKS
@@ -380,7 +380,7 @@ def plotdressvariable(tsk):
     #if doPrefChecks: p.SetWeight('TWeight * (1 - prefWeight)')   # FOR PREFIRING CHECKS
     #else:            p.SetWeight('TWeight')
 
-    p.AddSample("b_bbar_4l",            "WWbb",      r.itSignal, r.kBlue)
+    p.AddSample("b_bbar_4l_*",            "WWbb",      r.itSignal, r.kBlue)
 
     #p.AddSample("MuonEG",                       "Data",         r.itData);
     #p.AddSample("SingleMuon",                   "Data",         r.itData);
