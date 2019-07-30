@@ -69,10 +69,10 @@ def GetXsec(xsec, s, verbose, isdata):
   if isinstance(xsec, int): xsec = float(xsec)
   if isinstance(xsec, str):
     xsecdic = loadxsecdic(xsec, verbose)
-    if not re.sub("_(([0-9])|([1-9][0-9]))$", "", s) in xsecdic.keys():
+    if not re.sub("_(([0-9])|([1-9][0-9])|([1-9][0-9][0-9]))$", "", s) in xsecdic.keys():
       print 'ERROR: not found xsec value for sample %s'%s
       xsec = 1
-    else: xsec = xsecdic[re.sub("_(([0-9])|([1-9][0-9]))$", "", s)]
+    else: xsec = xsecdic[re.sub("_(([0-9])|([1-9][0-9])|([1-9][0-9][0-9]))$", "", s)]
   return xsec
 
 
@@ -182,7 +182,7 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
     f.write("sleep 2s\n\n")
     f.write('cd %s\n\n'%pathjob)
     f.write(command + "\n\n")
-    f.write("sleep 5s")
+    f.write("sleep 2s")
     f.close()
     jname = 'PAF%s'%(tag)
     errname = '%sERR%s.out'%(pathjob,tag)
@@ -457,7 +457,7 @@ if __name__ == "__main__":
           print 'Files to resubmit: '
           for f in spl:
             if not isinstance(f, tuple): print ' >> %s'%f
-            else:                        print ' >> %s'%(f[0])
+            else:                        print ' >> %s_%s'%(f[0], f[1])
       else:
         exit()
 

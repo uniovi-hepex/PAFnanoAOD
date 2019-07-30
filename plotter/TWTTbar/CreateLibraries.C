@@ -4,6 +4,7 @@ R__LOAD_LIBRARY(TResultsTable.C+)
 R__LOAD_LIBRARY(Plot.C+)
 R__LOAD_LIBRARY(PlotToPy.C+)
 R__LOAD_LIBRARY(PlotToPyC.C+)
+R__LOAD_LIBRARY(Datacard.C+)
 R__LOAD_LIBRARY(PDFunc.C+)
 
 #include <iostream>

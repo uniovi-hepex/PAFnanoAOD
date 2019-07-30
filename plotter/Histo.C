@@ -93,7 +93,7 @@ void Histo::SetColor(Int_t c){
 }
 
 void Histo::AddToLegend(TLegend* leg, Bool_t doyi){
-  TH1F* h2 = (TH1F*) Clone("toLeg");
+  TH1D* h2 = (TH1D*) Clone("toLeg");
   TString op = "f";
   if(DrawStyle != "") op = DrawStyle;
   if(DrawStyle == "hist") op = "l";
@@ -113,10 +113,10 @@ void Histo::AddToLegend(TLegend* leg, Bool_t doyi){
   else leg->AddEntry(h2, tag, op);
 }
 
-TH1F* Histo::GetVarHistoStatBin(Int_t bin, TString dir){
+TH1D* Histo::GetVarHistoStatBin(Int_t bin, TString dir){
   Float_t var = GetBinContent(bin);
   Float_t stat = GetBinError(bin);
-  TH1F* h2 = (TH1F*) Clone();
+  TH1D* h2 = (TH1D*) Clone();
   if      (dir == "up" || dir == "Up" || dir == "UP")  h2->SetBinContent(bin, var + stat);
   else if (dir == "down" || dir == "Down" || dir == "DOWN")  h2->SetBinContent(bin, var - stat);
   else    cout << " ---> ERROR!!!! No valid direction: " << dir << endl;
@@ -157,7 +157,7 @@ void Histo::SetBinsErrorFromSyst(){
 
 
 Histo* Histo::CloneHisto(const char* newname) const{
-  TH1F* h = (TH1F*) Clone(newname);
+  TH1D* h = (TH1D*) Clone(newname);
   Histo* g = new Histo(*h);
   g->SetTag(tag, process, xlabel, cuts);
   g->SetType(type); g->SetColor(color);

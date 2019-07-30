@@ -68,7 +68,7 @@ void Datacard::GetParamsFormFile(TString options){
     cout << "[Datacard] Error: cannot open root file!!\n";
     return;
   }
-  TH1F* h; TFile* f;
+  TH1D* h; TFile* f;
   TString filename = (pathToFile != "") ? pathToFile + rootFileName : rootFileName;
   f = TFile::Open(filename);
   if(!f) cout << "[Datacard::GetParamsFormFile] ERROR: cannot find file " << filename << endl;
@@ -80,7 +80,7 @@ void Datacard::GetParamsFormFile(TString options){
     rate[i] = h->Integral();
     //h->SetDirectory();
   }   
-  h = (TH1F*) f->Get("data_obs"); 
+  h = (TH1D*) f->Get("data_obs");
   SetRateData(h->Integral());
   nHistoBins = h->GetNbinsX();
 
