@@ -3,7 +3,7 @@
 
 #include "Histo.h"
 #include "Looper.h"
-#include "TH1F.h"
+#include "TH1D.h"
 #include "THStack.h"
 #include "TLegend.h"
 #include "TCanvas.h"
@@ -19,6 +19,7 @@
 #include "TStyle.h"
 #include "TLatex.h"
 #include "TGraphAsymmErrors.h"
+#include "TDirectory.h"
 
 #include <fstream>
 #include <iostream>
@@ -77,7 +78,7 @@ public:
   TLatex* texcms = NULL;
   TLatex* texPrelim = NULL;
   TLatex* texchan = NULL;
-  TH1F* hratio = NULL;
+  TH1D* hratio = NULL;
   Float_t* TotalSysUp = NULL;
   Float_t* TotalSysDown = NULL;
   TString sys = "0";
@@ -262,7 +263,7 @@ public:
   virtual void SetTexChan();
   virtual void SetTexChanSize(Float_t siz = 0.05) {texchansize = siz;};
   void SetPad(TPad* pad, TString limits, TString margins, bool doGrid);
-  virtual void SetHRatio(TH1F* h = nullptr); // To be updated
+  virtual void SetHRatio(TH1D* h = nullptr); // To be updated
   virtual void SetYaxis(TAxis *a = nullptr);
   virtual void SetAxis(TAxis *a, TString tit = "", Float_t titSize = 0.07, Float_t titOffset = 0.5, Int_t nDiv = 510, Float_t labelSize = 0);
 
@@ -540,10 +541,12 @@ protected:
   Float_t kTextCMSX; Float_t kTextCMSY; Float_t kTextCMSsize;
   Float_t kTextPrelimX; Float_t kTextPrelimY; Float_t kTextPrelimSize;
 };
-
+/*
 class MultiPlot : public Plot{
   public:
-  MultiPlot(){};
+  MultiPlot() : Plot(){
+    Dbins = 0;
+  };
 
   protected:
   Int_t nDist;
@@ -578,6 +581,6 @@ class MultiPlot : public Plot{
   void AddHyperlooper(TString sample, TString process, Int_t type, Int_t color, TString syst, TString weight = "TWeight", TString options = "", TString path = "");
   void Loop();
   void SetPlot(TString name, TString xtit = "", TString ytit = "", TString seltext = "", Float_t ratioMax = 1.2, Float_t rationMin = -999);
-};
+};*/
 
 #endif

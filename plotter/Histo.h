@@ -4,7 +4,7 @@
 #include <TROOT.h>
 #include <TChain.h>
 #include <THStack.h>
-#include <TH1F.h>
+#include <TH1D.h>
 #include <TFile.h>
 #include <TMath.h>
 #include <TLegend.h>
@@ -20,7 +20,7 @@ const TString prefix = "Tree_"; const TString sufix = ".root";
 const TString DefaultTreeName = "MiniTree";
 
 
-class Histo : public TH1F{
+class Histo : public TH1D{
  public:
   Bool_t doStackOverflow = true;
 
@@ -28,7 +28,7 @@ class Histo : public TH1F{
   Histo(const char *name, const char *title, Int_t nbins, Double_t xlow, Double_t xup);
   Histo(const char *name, const char *title, Int_t nbins, Float_t* bins);
   //Histo(const char *name, const char *title, Int_t nbins, const Float_t* xbins);
- Histo(const TH1F &h, Int_t tipo = 0, Int_t c = 1): tag(""), process(""){
+ Histo(const TH1D &h, Int_t tipo = 0, Int_t c = 1): tag(""), process(""){
     ((Histo&)h).Copy(*this);
     cuts = "cut"; xlabel = "[GeV]"; sysNorm = 0.25;
     SysTag = "";
@@ -71,7 +71,7 @@ class Histo : public TH1F{
   TString GetSysTag(){return SysTag;}
   
   void AddToLegend(TLegend* leg, Bool_t doyi = 1);
-  TH1F* GetVarHistoStatBin(Int_t bin = 0, TString dir = "Up");
+  TH1D* GetVarHistoStatBin(Int_t bin = 0, TString dir = "Up");
   void AddToSystematics(Histo* hsys, TString dir = "Down");
   void SetBinsErrorFromSyst();
   void SetDrawStyle(TString g){ DrawStyle = g;}
@@ -102,7 +102,7 @@ Histo::Histo(){
   SetColor(1);
 };
 
-Histo::Histo(const char *name, const char *title, Int_t nbins, Double_t xlow, Double_t xup)     : TH1F(name, title, nbins, xlow, xup){
+Histo::Histo(const char *name, const char *title, Int_t nbins, Double_t xlow, Double_t xup)     : TH1D(name, title, nbins, xlow, xup){
         SetType(0);
         SetStyle();
         SetColor(1);

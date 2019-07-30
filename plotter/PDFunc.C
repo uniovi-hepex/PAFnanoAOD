@@ -137,7 +137,7 @@ public:
   void FillHistoWeightsAllBins();
   void SetBin(Int_t bin);
   void SetLumi(Float_t lum);
-  TH1F* GetHisto(Int_t bin);
+  TH1D* GetHisto(Int_t bin);
 
   Float_t GetWyield(Int_t i);
   Float_t GetNomYield(Int_t i);
@@ -166,7 +166,7 @@ protected:
   ofstream os;
   
   // Here we store all the LHE-weighted events
-  TH1F* weights; vector<TH1F*> wBins; Double_t count;
+  TH1D* weights; vector<TH1D*> wBins; Double_t count;
 
   // Info about the histogram
   Int_t nBins; Float_t bin0; Float_t binN; Float_t *bins; Float_t Lumi;
@@ -187,7 +187,7 @@ protected:
 void PDFunc::SetHistoWeights(Int_t bin){
   if(verbose) cout << "[PDFunc::SetHistoWeights] Setting histo weights for bin " << bin << endl;
   //if(weights) delete weights;
-  weights = new TH1F(Form("weights_%i",bin), Form("weights_%i",bin), totalNweights, 0, totalNweights);
+  weights = new TH1D(Form("weights_%i",bin), Form("weights_%i",bin), totalNweights, 0, totalNweights);
 }
 
 void PDFunc::SetFormulas(){
@@ -252,7 +252,7 @@ void PDFunc::FillHistoWeightsAllBins(){
 }
 
 void PDFunc::PrintWeightHisto(Int_t bin){
-  TH1F* hist;
+  TH1D* hist;
   if(bin == 0 || var == ""){
     hist = weights;
   }
@@ -264,8 +264,8 @@ void PDFunc::PrintWeightHisto(Int_t bin){
 
 Histo* PDFunc::GetSystHisto(TString dir, TString systname){
   Histo* SystHisto;
-  if(bin0 != binN) SystHisto = new Histo(TH1F("SystHisto_" + systname + "_" + dir, var, nBins, bin0, binN));
-  else             SystHisto = new Histo(TH1F("SystHisto_" + systname + "_" + dir, var, nBins, bins));
+  if(bin0 != binN) SystHisto = new Histo(TH1D("SystHisto_" + systname + "_" + dir, var, nBins, bin0, binN));
+  else             SystHisto = new Histo(TH1D("SystHisto_" + systname + "_" + dir, var, nBins, bins));
   SystHisto->Init();
   Float_t variation;
   if((Int_t) wBins.size() < nBins) cout << "[PDFunc::GetSystHisto] WARNING: histograms unfilled!" << endl;
@@ -286,8 +286,8 @@ Histo* PDFunc::GetSystHisto(TString dir, TString systname){
 
 Histo* PDFunc::GetSystVariation(TString dir, TString systname){
   Histo* SystHisto;
-  if(bin0 != binN) SystHisto = new Histo(TH1F("SystHisto_" + systname + "_" + dir, var, nBins, bin0, binN));
-  else             SystHisto = new Histo(TH1F("SystHisto_" + systname + "_" + dir, var, nBins, bins));
+  if(bin0 != binN) SystHisto = new Histo(TH1D("SystHisto_" + systname + "_" + dir, var, nBins, bin0, binN));
+  else             SystHisto = new Histo(TH1D("SystHisto_" + systname + "_" + dir, var, nBins, bins));
   SystHisto->Init();
   Float_t variation;
   if((Int_t) wBins.size() < nBins) cout << "[PDFunc::GetSystVariation] WARNING: histograms unfilled!" << endl;
@@ -314,7 +314,7 @@ void PDFunc::SetLumi(Float_t lum){
   Lumi = lum;
 }
 
-TH1F* PDFunc::GetHisto(Int_t bin){
+TH1D* PDFunc::GetHisto(Int_t bin){
   if(bin == -99) return weights;
   else return wBins.at(bin);
 }

@@ -9,7 +9,7 @@ enum genLepMatch{kLGMtoGenLep, kLGMgood, kLGMfake, kLGMflip, kLGMconv, kLGMtoGen
 
 class Lepton : public TObject{
   public:
-    Lepton(){
+    Lepton() {
       p = TLorentzVector(0,0,0,0);
       charge = 0;
       type = -1;
@@ -41,12 +41,12 @@ class Lepton : public TObject{
     ~Lepton(){};
     TLorentzVector p;
     Int_t charge;
+    Int_t type;
     Int_t decayMode;
     Int_t idDecayMode;
     Int_t idMVA;
     Int_t idAntiE;
     Int_t idAntiMu;
-    Int_t type;
     Int_t Mid; // mother Id, for gen leptons
     Bool_t isElec;
     Bool_t isMuon;
