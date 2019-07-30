@@ -124,7 +124,9 @@ void TopAnalysis::Initialise(){
   }
   nSyst = useSyst.size();
   InitHistos();
-  metvar = year == 2017? "METFixEE2017" : "MET";
+  metvar   = year == 2017? "METFixEE2017" : "MET";
+  metvarpt = year == 2017? "METFixEE2017_pt" : "MET_pt";
+  if(year != 2017 and gOptions.Contains("JetPtNom")) metvarpt = "MET_pt_nom";
 
   gIs2017 = false; gIs2016 = false; gIs2018 = false;
   if     (year == 2017) gIs2017 = true;
@@ -400,7 +402,7 @@ void TopAnalysis::GetGenJetVariables(std::vector<Jet> genJets, std::vector<Jet> 
 
 void TopAnalysis::GetMET(){
     TRun        = gIsData ? Get<UInt_t>("run") : 1;
-    TMET        = Get<Float_t>(metvar+"_pt"); // MET_pt
+    TMET        = Get<Float_t>(metvarpt); // MET_pt
     TMET_Phi    = Get<Float_t>(metvar+"_phi");  // MET phi
     if((Int_t) selLeptons.size() >= 2) TMT2        = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMET, TMET_Phi);
     TMETJESUp = 0; TMETJESDown = 0; TGenMET = 0; TgenTop1Pt = 0; TgenTop2Pt = 0;
@@ -472,6 +474,7 @@ void TopAnalysis::GetWeights(){
   TWeight_TrigDown   = NormWeight*lepSF*(TrigSF-TrigSFerr)*PUSF;
   TWeight_PUDown     = NormWeight*lepSF*TrigSF*PUSF_Up;
   TWeight_PUUp       = NormWeight*lepSF*TrigSF*PUSF_Down;
+  //TWeight = NormWeight;
 }
 
 void TopAnalysis::InitHistos(){

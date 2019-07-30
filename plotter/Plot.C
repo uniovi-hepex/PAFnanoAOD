@@ -1,6 +1,7 @@
 #include "Plot.h"
 
-Histo* Plot::GetH(TString sample, TString sys, Int_t type){
+
+Histo* Plot::GetH(TString sample, TString sys, Int_t type) {
   // Returns a Histo for sample and systematic variation
   TString pathToMiniTree = path;
   if     (type == itSignal || sample.Contains("T2tt")) pathToMiniTree = pathSignal;
@@ -13,6 +14,7 @@ Histo* Plot::GetH(TString sample, TString sys, Int_t type){
   if(xN != x0) ah = new Looper(pathToMiniTree, treeName, var, cut, chan, nb, x0, xN);
   else         ah = new Looper(pathToMiniTree, treeName, var, cut, chan, nb, vbins);
 
+  ah->SetVerbosity(verbose);
   ah->SetWeight(weight);
   ah->SetOptions(LoopOptions);
   Histo* h = ah->GetHisto(sample, sys);
@@ -25,33 +27,49 @@ Histo* Plot::GetH(TString sample, TString sys, Int_t type){
 }
 
 
-
-void Plot::AddSample(TString p, TString pr, Int_t type, Int_t color, TString sys, TString options){
+void Plot::AddSample(TString p, TString pr, Int_t type, Int_t color, TString sys, TString options) {
   //>>> Multiprocess...
   p.ReplaceAll(" ", "");
-  if(pr == "") pr = p;
-  if(p.Contains(",")){
+  if (pr == "") pr = p;
+  if (p.Contains(",") || p.Contains("*")) {
     TString First_p = p(0, p.First(','));
-    TString theRest = p(p.First(',')+1, p.Sizeof());
-    AddSample(First_p, pr, type, color, sys, options);
-    AddSample(theRest, pr, type, color, sys, options);
+    TString theRest = p(p.First(',') + 1, p.Sizeof());
+
+    if (First_p == "") {
+      First_p = theRest;
+      theRest = "";
+    }
+
+    if (First_p.Contains("*")) {
+      void *dirp = gSystem->OpenDirectory(path);
+      Char_t *afile;
+      while ( (afile = const_cast<Char_t *>(gSystem->GetDirEntry(dirp))) ) {
+        TString tmpfile = afile;
+        if (tmpfile.Contains(First_p.ReplaceAll("*", ""))) AddSample(tmpfile(0, tmpfile.Index(".root")), pr, type, color, sys, options);
+        else continue;
+      }
+    }
+    else AddSample(First_p, pr, type, color, sys, options);
+
+    if (theRest != "") AddSample(theRest, pr, type, color, sys, options);
+
     return;
   }
 
   //>>> Propagating options to looper
   SetLoopOptions(options);
   VTagOptions.push_back(options);
-  if(sys != "0" && sys != "") AddToSystematicLabels(sys);
-  if(type == itBkg || type == itSignal){
+  if (sys != "0" && sys != "") AddToSystematicLabels(sys);
+  if (type == itBkg || type == itSignal) {
     VTagSamples.push_back(p);    //
     VTagProcesses.push_back(pr);
   }
 
   //>>> Using MultiLooper??
-  if( (type == itBkg || type == itSignal) && (sys != "" && sys != "0")){
+  if ( (type == itBkg || type == itSignal) && (sys != "" && sys != "0")){
     VTagSamples.push_back(p);
     VTagProcesses.push_back(pr);
-    if(type == itSignal){
+    if (type == itSignal){
       nSignalSamples++;
       SetSignalProcess(pr);
     }
@@ -61,7 +79,7 @@ void Plot::AddSample(TString p, TString pr, Int_t type, Int_t color, TString sys
 
   //>>> Getting histo from looper
   Histo* h = GetH(p, sys, type);
-  if(type != itData && !LoopOptions.Contains("noScaleLumi"))  h->Scale(Lumi*1000);
+  if (type != itData && !LoopOptions.Contains("noScaleLumi"))  h->Scale(Lumi*1000);
   PrepareHisto(h, p, pr, type, color, sys);
 }
 
@@ -78,18 +96,18 @@ void Plot::GetStack(Bool_t doNorm) {
     Double_t tmpint = 0;
     for (UShort_t i = 0; i < nBkgs; i++) tmpint += VBkgs.at(i)->Integral();
     for (UShort_t i = 0; i < nBkgs; i++) {
-      TH1F* tmphist = (TH1F*) VBkgs.at(i);
+      TH1D* tmphist = (TH1D*) VBkgs.at(i);
       tmphist->Scale(1 / tmpint);
-      hStack->Add((TH1F*) tmphist);
+      hStack->Add((TH1D*) tmphist);
     }
   }
   else {
-    for (UShort_t i = 0; i < nBkgs; i++) hStack->Add((TH1F*) VBkgs.at(i));
+    for (UShort_t i = 0; i < nBkgs; i++) hStack->Add((TH1D*) VBkgs.at(i));
   }
 
   if (doExternalSyst) return;
   if (hAllBkg) delete hAllBkg;
-  hAllBkg = (new Histo(*(TH1F*) hStack->GetStack()->Last(), 3))->CloneHisto("AllBkg");
+  hAllBkg = (new Histo(*(TH1D*) hStack->GetStack()->Last(), 3))->CloneHisto("AllBkg");
   if (doNorm) hAllBkg->Scale(1 / hAllBkg->Integral());
   hAllBkg->doStackOverflow = doStackOverflow;
   hAllBkg->SetStyle();
@@ -133,8 +151,8 @@ void Plot::SetData(){  // Returns histogram for Data
   if(hData) delete hData;
   if(gROOT->FindObject("HistoData")) delete gROOT->FindObject("HistoData");
 
-  if(x0 != xN) hData = new Histo(TH1F("HistoData", dataTag, nb, x0, xN));
-  else         hData = new Histo(TH1F("HistoData", dataTag, nb, vbins));
+  if(x0 != xN) hData = new Histo(TH1D("HistoData", dataTag, nb, x0, xN));
+  else         hData = new Histo(TH1D("HistoData", dataTag, nb, vbins));
   if(VData.size() < 1) doData = false;
   TString p = "";
 
@@ -297,7 +315,7 @@ void Plot::GroupSystematics(){
 }
 
 
-void Plot::Multiloop(TString p, TString pr, Int_t type, Int_t color, TString sys){
+void Plot::Multiloop(TString p, TString pr, Int_t type, Int_t color, TString sys) {
   TString pathToMiniTree = path;
   TString sample = p;
   if     (type == itSignal || sample.Contains("T2tt")) pathToMiniTree = pathSignal;
@@ -306,10 +324,12 @@ void Plot::Multiloop(TString p, TString pr, Int_t type, Int_t color, TString sys
     pathToMiniTree = sample(0, sample.Last('/')+1);
     sample = sample(sample.Last('/')+1, sample.Sizeof());
   }
+
   Multilooper* ah;
   if(xN != x0) ah = new Multilooper(pathToMiniTree, treeName, var, cut, chan, nb, x0, xN);
   else         ah = new Multilooper(pathToMiniTree, treeName, var, cut, chan, nb, vbins);
 
+  ah->SetVerbosity(verbose);
   ah->SetWeight(weight);
   ah->SetOptions(LoopOptions);
   ah->SetSampleName(sample);
@@ -328,6 +348,7 @@ void Plot::PrepareHisto(vector<Histo*> vH, TString sampleName, TString pr, Int_t
   PrepareHisto(vH.at(0), sampleName, pr, type, color, sys);
   for(i = 1; i < n; i++) PrepareHisto(vH.at(i), sampleName, pr, itSys, color, sys);
 }
+
 
 void Plot::PrepareHisto(Histo* h, TString sampleName, TString pr, Int_t type, Int_t color, TString sys){
   TString s = (sys == "" || sys == "0") ? h->GetSysTag() : sys;
@@ -348,11 +369,11 @@ void Plot::AddHistoFromFile(TString filename, TString name, int type, int color,
   if(!filename.EndsWith(".root")) filename += ".root";
   //cout << "[Plot::AddHistoFromFile] Searching for histogram \n   --> " << pathInRootfile + name << "\n in file: \n   --> " << filename << endl;
   TFile* f = TFile::Open(filename);
-  TH1F* h = (TH1F*) f->Get(pathInRootfile + name);
+  TH1D* h = (TH1D*) f->Get(pathInRootfile + name);
   h->SetName(h->GetName() + TString("_2"));
   Histo* histo;
-  if(x0 == xN) histo = new Histo(TH1F(name, name, nb, vbins));
-  else         histo = new Histo(TH1F(name, name, nb, x0, xN));
+  if(x0 == xN) histo = new Histo(TH1D(name, name, nb, vbins));
+  else         histo = new Histo(TH1D(name, name, nb, x0, xN));
   histo->SetDirectory(0);
   for(int i = 1; i <= nb; i++){
     histo->SetBinContent(i, h->GetBinContent(i));
@@ -365,8 +386,8 @@ void Plot::AddHistoFromFile(TString filename, TString name, int type, int color,
 void Plot::AddHistoFromFileTGraph(TString filename, TString name, int type, int color, TString sys, TString pathInRootfile){
   if(!filename.EndsWith(".root")) filename += ".root";
   Histo* histo;
-  if(x0 == xN) histo = new Histo(TH1F(name, name, nb, vbins));
-  else         histo = new Histo(TH1F(name, name, nb, x0, xN));
+  if(x0 == xN) histo = new Histo(TH1D(name, name, nb, vbins));
+  else         histo = new Histo(TH1D(name, name, nb, x0, xN));
   TFile* f = TFile::Open(filename);
   TGraph* g = (TGraph*) f->Get(pathInRootfile + name);
   histo->SetDirectory(0);
@@ -382,7 +403,8 @@ void Plot::AddHistoFromFileTGraph(TString filename, TString name, int type, int 
   delete f;
 }
 
-void Plot::Group(Histo* h){
+
+void Plot::Group(Histo* h) {
   TString t = h->GetTag();
   TString tag; Int_t type = h->GetType();
   Int_t n; Int_t i;
@@ -391,9 +413,9 @@ void Plot::Group(Histo* h){
     for(i = 0; i < n; i++){
       tag = VBkgs.at(i)->GetTag();
       if(t == tag){
-        VBkgs.at(i)->Add((TH1F*) h);
+        VBkgs.at(i)->Add((TH1D*) h);
         VBkgs.at(i)->ReCalcValues();
-        if(verbose) cout << "[Plot::AddToHistos] Added histogram " << h->GetName() << " to " << h->GetTag() << " group (" << type << ")" << endl;
+        if (verbose) cout << "[Plot::Group] Added histogram " << h->GetName() << " to " << h->GetTag() << " group (" << type << ")" << endl;
         return;
       }
     }
@@ -403,9 +425,9 @@ void Plot::Group(Histo* h){
     for(i = 0; i < n; i++){
       tag = VSignals.at(i)->GetTag();
       if(t == tag){
-        VSignals.at(i)->Add((TH1F*) h);
+        VSignals.at(i)->Add((TH1D*) h);
         VSignals.at(i)->ReCalcValues();
-        if(verbose) cout << "[Plot::AddToHistos] Added histogram " << h->GetName() << " to " << h->GetTag() << " group (" << type << ")" << endl;
+        if (verbose) cout << "[Plot::Group] Added histogram " << h->GetName() << " to " << h->GetTag() << " group (" << type << ")" << endl;
         return;
       }
     }
@@ -415,9 +437,9 @@ void Plot::Group(Histo* h){
     for(i = 0; i < n; i++){
       tag = VSyst.at(i)->GetTag();
       if(t == tag){
-        VSyst.at(i)->Add((TH1F*) h);
+        VSyst.at(i)->Add((TH1D*) h);
         VSyst.at(i)->ReCalcValues();
-        if(verbose) cout << "[Plot::AddToHistos] Added histogram " << h->GetName() << " to " << h->GetTag() << " group (" << type << ")" << endl;
+        if (verbose) cout << "[Plot::Group] Added histogram " << h->GetName() << " to " << h->GetTag() << " group (" << type << ")" << endl;
         return;
       }
     }
@@ -940,15 +962,15 @@ void Plot::DrawComp(TString tag, bool doNorm, TString options){
 
   //>>> Setting ratio histogram
   pratio->cd();
-  vector<TH1F*> ratios;
-  TH1F* htemp = NULL;
-  hratio = (TH1F*)VSignals.at(0)->Clone("hratio_sig");
+  vector<TH1D*> ratios;
+  TH1D* htemp = NULL;
+  hratio = (TH1D*)VSignals.at(0)->Clone("hratio_sig");
   SetHRatio();
   if(options.Contains("ratiocolor")){
     for(Int_t  i = 1; i < nsamples; i++){
       if(VSignals.at(i)->GetColor() == VSignals.at(i-1)->GetColor()){
-        hratio = (TH1F*)VSignals.at(i-1)->Clone("hratio");
-        htemp  = (TH1F*)VSignals.at(i  )->Clone("htemp");
+        hratio = (TH1D*)VSignals.at(i-1)->Clone("hratio");
+        htemp  = (TH1D*)VSignals.at(i  )->Clone("htemp");
         htemp->Divide(hratio);
         SetHRatio(htemp);
         htemp->SetLineColor(VSignals.at(i)->GetColor());
@@ -968,9 +990,9 @@ void Plot::DrawComp(TString tag, bool doNorm, TString options){
   }
   else{
     for(Int_t  i = 1; i < nsamples; i++){
-      //htemp = (TH1F*)hratio->Clone("htemp");
+      //htemp = (TH1D*)hratio->Clone("htemp");
       //htemp->Divide(VSignals.at(i));
-      htemp = (TH1F*)VSignals.at(i)->Clone("htemp");
+      htemp = (TH1D*)VSignals.at(i)->Clone("htemp");
       htemp->Divide(hratio);
       SetHRatio(htemp);
 
@@ -1031,7 +1053,7 @@ void Plot::DrawStack(TString tag, Bool_t doNorm) {
         hSignal->SetFillColor(0);
         hSignal->SetLineColor(hSignal->GetColor());
         hSignal->SetLineWidth(2);
-        hSignal->Add( (TH1F*)  ((TH1F*) hStack->GetStack()->Last()) -> Clone("StackForSignal_"+hSignal->GetProcess()) );
+        hSignal->Add( (TH1D*)  ((TH1D*) hStack->GetStack()->Last()) -> Clone("StackForSignal_"+hSignal->GetProcess()) );
         VSignalsStack.push_back(hSignal);
       }
     }
@@ -1043,10 +1065,10 @@ void Plot::DrawStack(TString tag, Bool_t doNorm) {
     }
     if (doNorm) hSignal->Scale(1 / hSignal->Integral());
   }
-/*  TH1F* hSigDraw;
+/*  TH1D* hSigDraw;
   if(doSignal){
-    hSigDraw = (TH1F*) hSignal->Clone("hSigDraw");
-    hSigDraw->Add((TH1F*) hAllBkg->Clone("hAllBkg_clone"));
+    hSigDraw = (TH1D*) hSignal->Clone("hSigDraw");
+    hSigDraw->Add((TH1D*) hAllBkg->Clone("hAllBkg_clone"));
     hSigDraw->Draw("hist");
   }*/
 
@@ -1098,7 +1120,7 @@ void Plot::DrawStack(TString tag, Bool_t doNorm) {
     if (verbose) cout << "[Plot::DrawStack] Signal style: scan ----> nSignals = " << nSignals << endl;
     if (doNorm) {
       for (Int_t  i = 0; i < nSignals; i++) {
-        TH1F* tmpSig = (TH1F*)VSignals.at(i)->Clone("tmpSig");
+        TH1D* tmpSig = (TH1D*)VSignals.at(i)->Clone("tmpSig");
         tmpSig->Scale(1 / VSignals.at(i)->Integral());
         tmpSig->Draw(SignalDrawStyle + "same");
       }
@@ -1144,7 +1166,7 @@ void Plot::DrawStack(TString tag, Bool_t doNorm) {
   if (verbose) cout << "[Plot::DrawStack] Drawing systematics ratio." << endl;
   if (verbose) cout << "[Plot::DrawStack] WARNING: ratio normalisation not implemented for uncertainties." << endl;
   Int_t nbins = hAllBkg->GetNbinsX(); Float_t binval = 0; Float_t errbin = 0; Float_t totalerror = 0;
-  TH1F* hratioerr =  (TH1F*) hAllBkg->Clone("hratioerr");
+  TH1D* hratioerr =  (TH1D*) hAllBkg->Clone("hratioerr");
   if (doSys) {
     hAllBkg->SetFillStyle(StackErrorStyle);
     Int_t nbins = hAllBkg->GetNbinsX(); Float_t binval = 0; Float_t errbin = 0; Float_t totalerror = 0;
@@ -1184,7 +1206,7 @@ void Plot::DrawStack(TString tag, Bool_t doNorm) {
       if (verbose) cout << "[Plot::DrawStack] Integral of hSignal: " << hSignal->Integral() << ", yield: " << hSignal->GetYield() << endl;
       Float_t StoBmean = hSignal->GetYield()/hAllBkg->GetYield();
       if (verbose) cout << "[Plot::DrawStack] StoBmean = " << StoBmean << endl;
-      hratio = (TH1F*)hSignal->Clone("hratio");
+      hratio = (TH1D*)hSignal->Clone("hratio");
       Float_t xlow = hratio->GetBinLowEdge(1);
       Float_t xup  = hratio->GetBinLowEdge(nbins+1);
       hline = new TLine(xlow, StoBmean, xup, StoBmean); hline->SetLineColor(kOrange-2);
@@ -1209,8 +1231,8 @@ void Plot::DrawStack(TString tag, Bool_t doNorm) {
   else if (RatioStyle == "S/sqrtB")   {cout << "Option not implemented yet!!!! Sorry!!!! [DO IT YOURSELF!]\n";}
   else if (RatioStyle == "S/sqrtSpB") {cout << "Option not implemented yet!!!! Sorry!!!! [DO IT YOURSELF!]\n";}
   else if (RatioStyle == "S/SpB")     {
-    if (doData) hratio = (TH1F*)hData->Clone("hratio");
-    else        hratio = (TH1F*)hAllBkg->Clone("hratio");
+    if (doData) hratio = (TH1D*)hData->Clone("hratio");
+    else        hratio = (TH1D*)hAllBkg->Clone("hratio");
     // ratio by hand so systematic (background) errors don't get summed up to statistical ones (data)
     for (Int_t bin = 0; bin < hratio->GetNbinsX(); ++bin) {
       if (hratio->GetBinContent(bin+1) > 0) {
@@ -1221,8 +1243,8 @@ void Plot::DrawStack(TString tag, Bool_t doNorm) {
     }
   }
   else { // ratio Data/MC
-      if (doData) hratio = (TH1F*)hData->Clone("hratio");
-      else        hratio = (TH1F*)hAllBkg->Clone("hratio");
+      if (doData) hratio = (TH1D*)hData->Clone("hratio");
+      else        hratio = (TH1D*)hAllBkg->Clone("hratio");
       // ratio by hand so systematic (background) errors don't get summed up to statistical ones (data)
       for (Int_t bin = 0; bin < hratio->GetNbinsX(); ++bin) {
         if (hratio->GetBinContent(bin+1) > 0){
@@ -1328,7 +1350,7 @@ void Plot::SaveHistograms(){
   gSystem->mkdir(limitFolder, kTRUE);
   f = new TFile(limitFolder + filename + ".root", "recreate");
 
-  TH1F* statup; TH1F* statdown; Histo* nom;
+  TH1D* statup; TH1D* statdown; Histo* nom;
   int nVBkgs = (int) VBkgs.size();
   int nSig   = (int) VSignals.size();
   int nbins;
@@ -1413,7 +1435,7 @@ void Plot::SetPad(TPad* pad, TString limits, TString margins, bool doGrid){
   if(doGrid) pad->SetGrid();
 }
 
-void Plot::SetHRatio(TH1F* h) {
+void Plot::SetHRatio(TH1D* h) {
   if (h == nullptr) h = hratio;
   h->SetTitle("");
   if      (RatioYtitle == "S/B"    )   h->GetYaxis()->SetTitle("S/B");
@@ -1922,7 +1944,7 @@ void Plot::AddPlotFromHyperlooper(Hyperlooper *HyperLoop, TString plotname){
   }
 }
 
-
+/*
 //=========================================== MULTIPLOT
 
 void MultiPlot::AddHyperlooper(TString sample, TString process, Int_t type, Int_t color, TString syst, TString weight, TString options, TString pathS){
@@ -2014,7 +2036,6 @@ void MultiPlot::SetPlot(TString name, TString xtitle, TString ytitle, TString se
 
 
     // Draw systematics signal
-    /*
 
   Histo* hSignalerr = NULL;
   VSignalsErr.clear();

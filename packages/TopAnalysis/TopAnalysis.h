@@ -198,6 +198,7 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t dileppt, deltaphi, deltaeta;
 
     TString metvar;
+    TString metvarpt;
     TString JetPt;
     Bool_t gPUWeigth;
     Bool_t gDoJECunc;

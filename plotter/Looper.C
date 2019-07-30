@@ -1,6 +1,7 @@
 #include "Looper.h"
 
 void Looper::SetFormulas(TString systematic){
+  if (verbose) cout << "[Looper::SetFormulas] Entering SetFormulas." << endl;
   if(FormulasCuts) delete FormulasCuts;
   //if(FormulasVars) delete FormulasVars;
   vvars.clear();
@@ -12,9 +13,8 @@ void Looper::SetFormulas(TString systematic){
   stringcut = ""; stringvar = "";
   TString cu = ""; TString ch = ""; 
   stringcut = CraftFormula(cut, chan, systematic, weight, tree, options);
-  if(verbose) cout << "[Looper::SetFormulas] Formula: " << stringcut << endl;
+  if (verbose) cout << "[Looper::SetFormulas] Formula: " << stringcut << endl;
   FormulasCuts = new TTreeFormula("Form_" + sampleName + "_" + systematic + "_cut", stringcut, tree);
-//   cout << FormulasCuts->GetTitle() << endl;
 
   //>>> var
   TString v = "";
@@ -33,20 +33,21 @@ void Looper::SetFormulas(TString systematic){
     }
     else vinst.push_back(0);
     FormulasVars = new TTreeFormula("Form_" + sampleName + "_" + systematic + "_var", stringvar, tree);
-//     cout << FormulasVars->GetTitle() << endl;
     vvars.push_back(FormulasVars);
   }
 }
+
 
 void Looper::CreateHisto(TString sys){
   if(Hist) delete Hist;
   TString name = sampleName;
   if(sys != "0") name += "_" + sys;
-  if(bin0 != binN) Hist = new Histo(TH1F(name,sampleName+"_"+sys+"_"+var, nbins, bin0, binN));
-  else             Hist = new Histo(TH1F(name,sampleName+"_"+sys+"_"+var, nbins, vbins));
+  if(bin0 != binN) Hist = new Histo(TH1D(name,sampleName+"_"+sys+"_"+var, nbins, bin0, binN));
+  else             Hist = new Histo(TH1D(name,sampleName+"_"+sys+"_"+var, nbins, vbins));
 }
 
 void Looper::Loop(TString sys){
+  if (verbose) cout << "[Looper::Loop] Entering Loop." << endl;
   Int_t nEntries = tree->GetEntries();
   Float_t val = 0; Float_t w = 0;
   Bool_t doAllInstances(false);
@@ -55,6 +56,8 @@ void Looper::Loop(TString sys){
   }
 
   //>>> Starting the loop
+  if (verbose) cout << "[Looper::Loop] nEntries: " << nEntries << endl;
+  if (verbose) cout << "[Looper::Loop] Initiating loop." << endl;
   Int_t counter = 0;
   for (Long64_t jentry=0; jentry<nEntries; jentry++) {
     tree->GetEntry(jentry);
@@ -81,29 +84,34 @@ void Looper::Loop(TString sys){
       }
     }
   }
+  if (verbose) cout << "[Looper::Loop] Finished loop." << endl;
 }
 
+
+
 //=== Load the tree
-void Looper::loadTree(){
+void Looper::loadTree() {
+  if (verbose) cout << "[Looper::loadTree] Entering loadTree." << endl;
 //   TString prefix = "Tree_";
   TString prefix = "";
   TString sufix = ".root";
-	TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject(path + prefix + sampleName + sufix);
-	if (!f || !f->IsOpen()) {
-		f = new TFile(path + prefix + sampleName + sufix);
-	}
-	f->GetObject(treeName,tree);
+  TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject(path + prefix + sampleName + sufix);
+  if (!f || !f->IsOpen()) {
+    if (verbose) cout << "[Looper::loadTree] Opening file." << endl;
+    f = new TFile(path + prefix + sampleName + sufix);
+  }
+  f->GetObject(treeName, tree);
 }
 
+
+
 //=== Workflow fot creating and filling the histogram...
-Histo* Looper::GetHisto(TString sample, TString sys){
+Histo* Looper::GetHisto(TString sample, TString sys) {
+  if (verbose) cout << "[Looper::GetHisto] Entering GetHisto." << endl;
   SetSampleName(sample); 
   loadTree();
-  if(verbose) cout << "### Creating Histo..." << endl;
   CreateHisto(sys);
-  if(verbose) cout << "### Setting formulas..." << endl;
   SetFormulas(sys);
-  if(verbose) cout << "### Looping..." << endl;
   Loop(sys);
   return Hist;
 }
@@ -140,8 +148,8 @@ Histo* GetHisto(TString path, TString samplename, TString treeName, TString var,
 void Multilooper::CreateHisto(TString sys){
   Histo* h;
   TString name = sampleName;
-  if(bin0 != binN) h = new Histo(TH1F(sampleName+"_"+sys+"_"+var,sampleName+"_"+sys+"_"+var, nbins, bin0, binN));
-  else             h = new Histo(TH1F(sampleName+"_"+sys+"_"+var,sampleName+"_"+sys+"_"+var, nbins, vbins));
+  if(bin0 != binN) h = new Histo(TH1D(sampleName+"_"+sys+"_"+var,sampleName+"_"+sys+"_"+var, nbins, bin0, binN));
+  else             h = new Histo(TH1D(sampleName+"_"+sys+"_"+var,sampleName+"_"+sys+"_"+var, nbins, vbins));
   if(sys != "0" && sys != ""){
     name += "_" + sys;
     h->SetType(itSys);
@@ -199,7 +207,9 @@ void Multilooper::CreateHistosAndFormulas(){
   } 
 }
 
-void Multilooper::Loop(){
+
+void Multilooper::Loop() {
+  if (verbose) cout << "[Multilooper::Loop] Entering Loop." << endl;
   Int_t nEntries = tree->GetEntries();
   Float_t val = 0; Float_t w = 0;
   Int_t nHistos = 0;
@@ -209,6 +219,7 @@ void Multilooper::Loop(){
   }
 
   //>>> Starting the loop
+  if (verbose) cout << "[Multilooper::Loop] Beginning loop." << endl;
   Int_t counter = 0;
   for (Long64_t jentry=0; jentry<nEntries; jentry++) {
     tree->GetEntry(jentry);
@@ -237,6 +248,7 @@ void Multilooper::Loop(){
   }
 }
 
+
 Histo* Multilooper::GetHisto(TString syst){
   Int_t nHistos = vHistos.size();
   for(Int_t iH = 0; iH < nHistos; iH++){
@@ -246,6 +258,7 @@ Histo* Multilooper::GetHisto(TString syst){
   cout << "WARNING [Multilooper::GetHisto] Not found histo with syst tag: " << syst << endl;
   return vHistos.at(0);
 }
+
 
 void Multilooper::Fill(){
   if((Int_t) systLabels.size() == 0) cout << "WARNING [Multilooper::Fill] No systematics!! Looping for nominal..." << endl;
@@ -258,7 +271,6 @@ void Multilooper::Fill(){
   CreateHistosAndFormulas();
   Loop();
 }
-
 
 
 Int_t Hyperlooper::GetPos(TString Name){
@@ -314,8 +326,8 @@ void Hyperlooper::CreateHisto(Int_t pos, TString sys){
   distribution d = VDist.at(pos); 
   Histo* h;
   TString name = sampleName;
-  if(d.bin0 != d.binN) h = new Histo(TH1F(name+"_"+sys+"_"+d.name+"_"+process,name+"_"+sys+"_"+d.name, d.nbins, d.bin0, d.binN));
-  else                 h = new Histo(TH1F(name+"_"+sys+"_"+d.name+"_"+process,name+"_"+sys+"_"+d.name, d.nbins, d.bins));
+  if(d.bin0 != d.binN) h = new Histo(TH1D(name+"_"+sys+"_"+d.name+"_"+process,name+"_"+sys+"_"+d.name, d.nbins, d.bin0, d.binN));
+  else                 h = new Histo(TH1D(name+"_"+sys+"_"+d.name+"_"+process,name+"_"+sys+"_"+d.name, d.nbins, d.bins));
   if(sys != "0" && sys != ""){
     name += "_" + sys;
     h->SetType(itSys);

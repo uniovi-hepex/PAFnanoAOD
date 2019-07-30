@@ -1,7 +1,7 @@
 #ifndef datac_h
 #define datac_h 1
 
-#include "TH1F.h"
+#include "TH1D.h"
 #include "TFile.h"
 #include "TString.h"
 #include <iostream>

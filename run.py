@@ -182,7 +182,7 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
     f.write("sleep 2s\n\n")
     f.write('cd %s\n\n'%pathjob)
     f.write(command + "\n\n")
-    f.write("sleep 5s")
+    f.write("sleep 2s")
     f.close()
     jname = 'PAF%s'%(tag)
     errname = '%sERR%s.out'%(pathjob,tag)
@@ -457,7 +457,7 @@ if __name__ == "__main__":
           print 'Files to resubmit: '
           for f in spl:
             if not isinstance(f, tuple): print ' >> %s'%f
-            else:                        print ' >> %s'%(f[0])
+            else:                        print ' >> %s_%s'%(f[0], f[1])
       else:
         exit()
 

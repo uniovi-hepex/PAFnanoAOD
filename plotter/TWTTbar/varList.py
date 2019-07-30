@@ -408,14 +408,17 @@ varList['Jet1_Pt'] = {
     #'genbinning'  : [30., 40., 45., 50., 55., 60., 70., 80., 90., 125., 150.], # propuesta (10 bins)
     #'recobinning' : [30., 35.,37.5, 40.,42.5, 45.,47.5, 50.,52.5,  55., 57.5, 60., 65., 70., 75., 80., 85., 90., 105., 125., 150.], # propuesta (10 bins)
 
-    'descbinning' : [10., 150.],
+    #'descbinning' : [10., 150.],
+    'descbinning' : [10., 200.],
     'ndescbins'   : 14,
     'legpos'      : (0.7, 0.55, 0.90, 0.93),
     'legposdesc'  : (0.7, 0.55, 0.90, 0.93),
     #"legpos_unf"  : "TC",
-    'var'         : 'min(TJet1_Pt, 149.)',
+    #'var'         : 'min(TJet1_Pt, 149.)',
+    'var'         : 'min(TJet1_Pt, 199.)',
     'var_response': 'Jet1_Pt',
-    'var_gen'     : 'min(TDressJet1_Pt, 149.)',
+    #'var_gen'     : 'min(TDressJet1_Pt, 149.)',
+    'var_gen'     : 'min(TDressJet1_Pt, 199.)',
     'uncleg_fold' : "TL",
     'uncleg_unf'  : "TL",
     'uncleg_fid'  : "TL",
@@ -470,14 +473,17 @@ varList['Jet2_Pt'] = {
     #'genbinning'  : [30., 40., 45., 50., 55., 60., 70., 80., 90., 125., 150.], # propuesta (10 bins)
     #'recobinning' : [30., 35.,37.5, 40.,42.5, 45.,47.5, 50.,52.5,  55., 57.5, 60., 65., 70., 75., 80., 85., 90., 105., 125., 150.], # propuesta (10 bins)
 
-    'descbinning' : [10., 150.],
+    #'descbinning' : [10., 150.],
+    'descbinning' : [10., 200.],
     'ndescbins'   : 14,
     'legpos'      : (0.7, 0.55, 0.90, 0.93),
     'legposdesc'  : (0.7, 0.55, 0.90, 0.93),
     #"legpos_unf"  : "TC",
-    'var'         : 'min(TJet2_Pt, 149.)',
+    #'var'         : 'min(TJet2_Pt, 149.)',
+    'var'         : 'min(TJet2_Pt, 199.)',
     'var_response': 'Jet2_Pt',
-    'var_gen'     : 'min(TDressJet2_Pt, 149.)',
+    #'var_gen'     : 'min(TDressJet2_Pt, 149.)',
+    'var_gen'     : 'min(TDressJet2_Pt, 199.)',
     'uncleg_fold' : "TL",
     'uncleg_unf'  : "TL",
     'uncleg_fid'  : "TL",
@@ -668,13 +674,16 @@ varList['Lep2_Pt'] = {
     #'genbinning'  : [25., 35., 45., 50., 55., 60., 65., 85., 100., 125., 150.], # propuesta (10 bins)
     #'recobinning' : [25., 35., 40., 42.5, 45., 47.5, 50., 52.5, 55., 57.5, 60., 62.5, 65., 67.5, 70., 75., 85., 100., 115., 125., 150.], # propuesta (10 bins)
 
-    'descbinning' : [10., 150.],
+    #'descbinning' : [10., 150.],
+    'descbinning' : [10., 200.],
     'ndescbins'   : 14,
     'legpos'      : (0.7, 0.55, 0.90, 0.93),
     'legposdesc'  : (0.58, 0.55, 0.78, 0.93),
-    'var'         : 'min(TLep2_Pt, 149.)',
+    #'var'         : 'min(TLep2_Pt, 149.)',
+    'var'         : 'min(TLep2_Pt, 199.)',
     'var_response': 'Lep2_Pt',
-    'var_gen'     : 'min(TDressLep2_Pt, 149.)',
+    #'var_gen'     : 'min(TDressLep2_Pt, 149.)',
+    'var_gen'     : 'min(TDressLep2_Pt, 199.)',
     'uncleg_fold' : "TL",
     'uncleg_fid'  : "TL",
     "legpos_unf"   : (.18, .3, .32, .05),
@@ -692,6 +701,137 @@ varList['Lep1_Ptuncertainties'] = {
 varList['ResponseLeadingLepPt'] = {
     'xaxis'       : 'Gen Subleading lep #it{p}_{T} (GeV)',
     'yaxis'       : 'Subleading lep #it{p}_{T} (GeV)'
+}
+
+
+varList['LepMuon_Pt'] = {
+    #'xaxis'       : 'p_{T}(\\ell_{1}) (GeV)',
+    'xaxis'       : 'Muon #it{p}_{T} (GeV)',
+    'yaxis'       : 'd#sigma/d(muon #it{p}_{T}) (GeV)',
+    'yaxisfid'    : '(1/#sigma_{fid.})d#sigma/d(muon #it{p}_{T}) (adim.)',
+    'yaxisfidbin' : '(1/#sigma_{fid.})d#sigma/d(muon #it{p}_{T}) (1/GeV)',
+    #'genbinning'  : [0, 50, 120, 190, 250],
+    #'recobinning' : [0, 50, 65, 85, 97, 110, 145, 180, 250],
+   #'genbinning'  : [0, 50, 120, 160, 250],                            # binning presentado en singletop
+   #'recobinning' : [0, 50, 65, 85, 97, 110, 145, 180, 250],
+#    'genbinning'  : [0., 50., 90., 135., 250.],
+#    'recobinning' : [0., 50., 65., 80., 95., 110., 130., 150., 250.],
+    #'genbinning'  : [0., 50., 90., 135., 250.],
+    #'recobinning' : [0., 50., 60., 75., 90., 105., 115., 135., 250.],
+    #'genbinning'  : [0., 50., 90., 125., 150.],
+    #'recobinning' : [0., 50., 60., 70., 80., 90., 105., 125., 150.], # antes de 15-10-2018
+    #'genbinning'  : [25., 50., 90., 125., 150.],                      # usado en drafts, en nota, etc. (4 bins)
+    #'recobinning' : [25., 50., 60., 70., 80., 90., 105., 125., 150.], # usado en drafts, en nota, etc. (4 bins)
+
+    #'genbinning'  : [25., 45., 65., 90., 125., 150.], # propuesta (5 bins)
+    #'recobinning' : [25., 35., 45., 50.,  55., 60., 65., 75., 90., 125., 150.], # propuesta (5 bins)
+
+    #'genbinning'  : [25., 45., 65., 85., 100., 125., 150.], # propuesta (6 bins)
+    #'recobinning' : [25., 35., 45., 50., 55., 60., 65., 75., 85., 100., 115., 125., 150.], # propuesta (6 bins)
+
+    #'genbinning'  : [25., 45., 55., 65., 85., 100., 125., 150.], # propuesta (7 bins)
+    #'recobinning' : [25., 35., 45., 50., 55.,  60.,  65.,  70., 75., 80., 85., 100., 115., 125., 150.], # propuesta (7 bins)
+
+    'genbinning'  : [25, 50, 60, 70, 80, 90, 105, 125, 150], # propuesta (8 bins)
+    'recobinning' : [25, 35, 50, 55, 60, 65,  70,  75,  80, 85, 90, 95, 100, 105, 115, 125, 150], # propuesta (8 bins) SELECCIONADA
+
+    #'genbinning'  : [25., 45., 50., 55., 60., 65., 85., 100., 125., 150.], # propuesta (9 bins)
+    #'recobinning' : [25., 40., 42.5, 45.,47.5,50.,52.5,  55., 57.5,  60., 62.5, 65., 70., 75., 85., 100., 115., 125., 150.], # propuesta (9 bins)
+
+    #'genbinning'  : [25., 35., 45., 50., 55., 60., 65., 85., 100., 125., 150.], # propuesta (10 bins)
+    #'recobinning' : [25., 35., 40., 42.5, 45., 47.5, 50., 52.5, 55., 57.5, 60., 62.5, 65., 67.5, 70., 75., 85., 100., 115., 125., 150.], # propuesta (10 bins)
+
+    #'descbinning' : [10., 150.],
+    'descbinning' : [0., 200.],
+    #'ndescbins'   : 14,
+    'legpos'      : (0.7, 0.55, 0.90, 0.93),
+    'legposdesc'  : (0.58, 0.55, 0.78, 0.93),
+    #'var'         : 'min(TLepMuon_Pt, 149.)',
+    'var'         : 'min(TLepMuon_Pt, 199.)',
+    'var_response': 'LepMuon_Pt',
+    #'var_gen'     : 'min(TDressLepMuon_Pt, 149.)',
+    'var_gen'     : 'min(TDressLepMuon_Pt, 199.)',
+    'uncleg_fold' : "TL",
+    'uncleg_fid'  : "TL",
+    "legpos_unf"   : (.18, .3, .32, .05),
+    'legpos_fidbin':"TC",
+    'uncleg_fidbin':"TL",
+    'resptxtsize' : 1.5,
+    'covtxtsizefol': 1.2,
+    'covtxtsizeunf': 2,
+    "covtxtsizefidnorm": 1.45,
+}
+varList['LepMuon_Ptuncertainties'] = {
+    'xaxis'       : varList['LepMuon_Pt']['xaxis'],
+    'yaxis'       : 'Relative uncertainty (adim.)'
+}
+varList['ResponseLeadingLepPt'] = {
+    'xaxis'       : 'Dressed muon #it{p}_{T} (GeV)',
+    'yaxis'       : 'Muon #it{p}_{T} (GeV)'
+}
+
+
+varList['LepElec_Pt'] = {
+    #'xaxis'       : 'p_{T}(\\ell_{2}) (GeV)',
+    'xaxis'       : 'Electron #it{p}_{T} (GeV)',
+    'yaxis'       : 'd#sigma/d(electron #it{p}_{T}) (GeV)',
+    'yaxisfid'    : '(1/#sigma_{fid.})d#sigma/d(electron #it{p}_{T}) (adim.)',
+    'yaxisfidbin' : '(1/#sigma_{fid.})d#sigma/d(electron #it{p}_{T}) (1/GeV)',
+    #'genbinning'  : [0, 50, 120, 190, 250],
+    #'recobinning' : [0, 50, 65, 85, 97, 110, 145, 180, 250],
+   #'genbinning'  : [0, 50, 120, 160, 250],                            # binning presentado en singletop
+   #'recobinning' : [0, 50, 65, 85, 97, 110, 145, 180, 250],
+#    'genbinning'  : [0., 50., 90., 135., 250.],
+#    'recobinning' : [0., 50., 65., 80., 95., 110., 130., 150., 250.],
+    #'genbinning'  : [0., 50., 90., 135., 250.],
+    #'recobinning' : [0., 50., 60., 75., 90., 105., 115., 135., 250.],
+    #'genbinning'  : [0., 50., 90., 125., 150.],
+    #'recobinning' : [0., 50., 60., 70., 80., 90., 105., 125., 150.], # antes de 15-10-2018
+    #'genbinning'  : [25., 50., 90., 125., 150.],                      # usado en drafts, en nota, etc. (4 bins)
+    #'recobinning' : [25., 50., 60., 70., 80., 90., 105., 125., 150.], # usado en drafts, en nota, etc. (4 bins)
+
+    #'genbinning'  : [25., 45., 65., 90., 125., 150.], # propuesta (5 bins)
+    #'recobinning' : [25., 35., 45., 50.,  55., 60., 65., 75., 90., 125., 150.], # propuesta (5 bins)
+
+    #'genbinning'  : [25., 45., 65., 85., 100., 125., 150.], # propuesta (6 bins)
+    #'recobinning' : [25., 35., 45., 50., 55., 60., 65., 75., 85., 100., 115., 125., 150.], # propuesta (6 bins)
+
+    #'genbinning'  : [25., 45., 55., 65., 85., 100., 125., 150.], # propuesta (7 bins)
+    #'recobinning' : [25., 35., 45., 50., 55.,  60.,  65.,  70., 75., 80., 85., 100., 115., 125., 150.], # propuesta (7 bins)
+
+    'genbinning'  : [25, 50, 60, 70, 80, 90, 105, 125, 150], # propuesta (8 bins)
+    'recobinning' : [25, 35, 50, 55, 60, 65,  70,  75,  80, 85, 90, 95, 100, 105, 115, 125, 150], # propuesta (8 bins) SELECCIONADA
+
+    #'genbinning'  : [25., 45., 50., 55., 60., 65., 85., 100., 125., 150.], # propuesta (9 bins)
+    #'recobinning' : [25., 40., 42.5, 45.,47.5,50.,52.5,  55., 57.5,  60., 62.5, 65., 70., 75., 85., 100., 115., 125., 150.], # propuesta (9 bins)
+
+    #'genbinning'  : [25., 35., 45., 50., 55., 60., 65., 85., 100., 125., 150.], # propuesta (10 bins)
+    #'recobinning' : [25., 35., 40., 42.5, 45., 47.5, 50., 52.5, 55., 57.5, 60., 62.5, 65., 67.5, 70., 75., 85., 100., 115., 125., 150.], # propuesta (10 bins)
+
+    'descbinning' : [10., 200.],
+    'ndescbins'   : 14,
+    'legpos'      : (0.7, 0.55, 0.90, 0.93),
+    'legposdesc'  : (0.58, 0.55, 0.78, 0.93),
+    'var'         : 'min(TLepElec_Pt, 199.)',
+    'var_response': 'LepElec_Pt',
+    'var_gen'     : 'min(TDressLepElec_Pt, 199.)',
+    'uncleg_fold' : "TL",
+    'uncleg_fid'  : "TL",
+    "legpos_unf"   : (.18, .3, .32, .05),
+    'legpos_fidbin':"TC",
+    'uncleg_fidbin':"TL",
+    'resptxtsize' : 1.5,
+    'covtxtsizefol': 1.2,
+    'covtxtsizeunf': 2,
+    "covtxtsizefidnorm": 1.45,
+}
+varList['LepElec_Ptuncertainties'] = {
+    'xaxis'       : varList['LepElec_Pt']['xaxis'],
+    'yaxis'       : 'Relative uncertainty (adim.)'
+}
+varList['ResponseLeadingLepPt'] = {
+    'xaxis'       : 'Dressed electron #it{p}_{T} (GeV)',
+    'yaxis'       : 'Electron #it{p}_{T} (GeV)'
 }
 
 
@@ -765,6 +905,48 @@ varList['Lep1_Etauncertainties'] = {
 varList['ResponseLep1_Eta'] = {
     'xaxis'       : 'Dressed leading lepton |#eta| (adim.)',
     'yaxis'       : 'Leading lepton |#eta| (adim.)'
+}
+
+
+varList['LepMuon_Eta'] = {
+    'xaxis'       : 'Muon #eta (adim.)',
+    'yaxis'       : 'd#sigma (pb)',
+    'genbinning'  : [-2.4, -1.8, -1.2, -0.6, 0., 0.6, 1.2, 1.8, 2.4],
+    'recobinning' : [-2.4, -2.1, -1.8, -1.5, -1.2, -0.9, -0.6, -0.3, 0., 0.3, 0.6, 0.9, 1.2, 1.5, 1.8, 2.1, 2.4],
+    #'genbinning'  : [0., 0.5, 1., 1.6, 2.4],
+    #'recobinning' : [0., 0.25, 0.5, 0.75, 1., 1.3, 1.6, 2., 2.4],
+    'var'         : 'TLepMuon_Eta',
+    'var_response': 'LepMuon_Eta',
+    'var_gen'     : 'TDressLepMuon_Eta',
+}
+varList['LepMuon_Etauncertainties'] = {
+    'xaxis'       : varList['LepMuon_Eta']['xaxis'],
+    'yaxis'       : 'Relative uncertainty (adim.)'
+}
+varList['ResponseLepMuon_Eta'] = {
+    'xaxis'       : 'Dressed muon |#eta| (adim.)',
+    'yaxis'       : 'Muon |#eta| (adim.)'
+}
+
+
+varList['LepElec_Eta'] = {
+    'xaxis'       : 'Elec #eta (adim.)',
+    'yaxis'       : 'd#sigma (pb)',
+    'genbinning'  : [-2.4, -1.8, -1.2, -0.6, 0., 0.6, 1.2, 1.8, 2.4],
+    'recobinning' : [-2.4, -2.1, -1.8, -1.5, -1.2, -0.9, -0.6, -0.3, 0., 0.3, 0.6, 0.9, 1.2, 1.5, 1.8, 2.1, 2.4],
+    #'genbinning'  : [0., 0.5, 1., 1.6, 2.4],
+    #'recobinning' : [0., 0.25, 0.5, 0.75, 1., 1.3, 1.6, 2., 2.4],
+    'var'         : 'TLepElec_Eta',
+    'var_response': 'LepElec_Eta',
+    'var_gen'     : 'TDressLepElec_Eta',
+}
+varList['LepElec_Etauncertainties'] = {
+    'xaxis'       : varList['LepElec_Eta']['xaxis'],
+    'yaxis'       : 'Relative uncertainty (adim.)'
+}
+varList['ResponseLepElec_Eta'] = {
+    'xaxis'       : 'Dressed muon |#eta| (adim.)',
+    'yaxis'       : 'Elec |#eta| (adim.)'
 }
 
 
