@@ -20,6 +20,7 @@ std::vector<TString> TStringToVector(TString t, char separator = ','){
 void run(TString samp, TString selection, Double_t xsec, Double_t sumofweights, Int_t year, TString outname, Int_t nSlots = 1, TString outpath = "", TString options = "", Bool_t isamcatnlo = false, Bool_t isData = false, Long64_t nEvents = 0, Long64_t FirstEvent = 0, TString workingdir = "", TString path = "", Bool_t debug = false) {
 
 
+
   if (debug) {
     gProofDebugMask = TProofDebug::kAll;
     gProofDebugLevel = 5;
@@ -68,6 +69,12 @@ void run(TString samp, TString selection, Double_t xsec, Double_t sumofweights, 
   myProject->SetInputParam("_options",   options);
   myProject->SetInputParam("year",       TString(Form("%i",year)));
   
+  if (selection == "TWAnalysis") {
+    TString tmvalibpath = gSystem->Getenv("ROOTSYS");
+    tmvalibpath += "/lib/libTMVA.so";
+    myProject->AddLibrary(tmvalibpath);
+  }
+
   // Adding packages
   myProject->AddSelectorPackage("LeptonSelector");
   myProject->AddSelectorPackage("JetSelector");
@@ -84,6 +91,6 @@ void run(TString samp, TString selection, Double_t xsec, Double_t sumofweights, 
   myProject->AddPackage("Functions");
   myProject->AddPackage("LeptonSF");
   myProject->AddPackage("BTagSFUtil");
-  
+
   myProject->Run();
 }
