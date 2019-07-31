@@ -19,6 +19,7 @@
 #include "TStyle.h"
 #include "TLatex.h"
 #include "TGraphAsymmErrors.h"
+#include "TDirectory.h"
 
 #include <fstream>
 #include <iostream>
@@ -540,10 +541,12 @@ protected:
   Float_t kTextCMSX; Float_t kTextCMSY; Float_t kTextCMSsize;
   Float_t kTextPrelimX; Float_t kTextPrelimY; Float_t kTextPrelimSize;
 };
-
+/*
 class MultiPlot : public Plot{
   public:
-  MultiPlot(){};
+  MultiPlot() : Plot(){
+    Dbins = 0;
+  };
 
   protected:
   Int_t nDist;
@@ -578,6 +581,6 @@ class MultiPlot : public Plot{
   void AddHyperlooper(TString sample, TString process, Int_t type, Int_t color, TString syst, TString weight = "TWeight", TString options = "", TString path = "");
   void Loop();
   void SetPlot(TString name, TString xtit = "", TString ytit = "", TString seltext = "", Float_t ratioMax = 1.2, Float_t rationMin = -999);
-};
+};*/
 
 #endif
