@@ -9,7 +9,7 @@ TWAnalysis::TWAnalysis() : PAFChainItemSelector() {
   fhDummy        = 0;
   passMETfilters = 0;
   passTrigger    = 0;
-  for (UShort_t i = 0; i < 254; i++) TLHEWeight[i] = 0;
+  for (UChar_t i = 0; i < 254; i++) TLHEWeight[i] = 0;
 }
 
 
@@ -63,7 +63,7 @@ void TWAnalysis::InsideLoop() {
   selJetsJecUp      = GetParam<vector<Jet>>("selJetsJecUp");
   selJetsJecDown    = GetParam<vector<Jet>>("selJetsJecDown");
   selJetsJER        = GetParam<vector<Jet>>("selJetsJER");
-  TNBJets           = (UShort_t)GetParam<Int_t>("nSelBJets");
+  TNBJets           = (UChar_t)GetParam<Int_t>("nSelBJets");
   vetoJets          = GetParam<vector<Jet>>("vetoJets");
   genJets           = GetParam<vector<Jet>>("genJets");
 
@@ -161,26 +161,26 @@ void TWAnalysis::SetTWVariables() {
   fMiniTree->Branch("TPassRecoJESUp",        &TPassRecoJESUp,        "TPassRecoJESUp/O");
   fMiniTree->Branch("TPassRecoJESDown",      &TPassRecoJESDown,      "TPassRecoJESDown/O");
   fMiniTree->Branch("TPassRecoJERUp",        &TPassRecoJERUp,        "TPassRecoJERUp/O");
-  fMiniTree->Branch("TNJets"       ,         &TNJets,                "TNJets/s");
-  fMiniTree->Branch("TNJetsJESUp"  ,         &TNJetsJESUp,           "TNJetsJESUp/s");
-  fMiniTree->Branch("TNJetsJESDown",         &TNJetsJESDown,         "TNJetsJESDown/s");
-  fMiniTree->Branch("TNJetsJERUp",           &TNJetsJERUp,           "TNJetsJERUp/s");
-  fMiniTree->Branch("TNBJets"       ,        &TNBJets,               "TNBJets/s");
-  fMiniTree->Branch("TNBJetsJESUp"  ,        &TNBJetsJESUp,          "TNBJetsJESUp/s");
-  fMiniTree->Branch("TNBJetsJESDown",        &TNBJetsJESDown,        "TNBJetsJESDown/s");
-  fMiniTree->Branch("TNBJetsJERUp",          &TNBJetsJERUp,          "TNBJetsJERUp/s");
-  fMiniTree->Branch("TNLooseCentral"        ,&NLooseCentral      ,   "TNLooseCentral/s");
-  fMiniTree->Branch("TNLooseCentralJESUp"   ,&NLooseCentralJESUp  ,  "TNLooseCentralJESUp/s");
-  fMiniTree->Branch("TNLooseCentralJESDown" ,&NLooseCentralJESDown,  "TNLooseCentralJESDown/s");
-  fMiniTree->Branch("TNLooseCentralJERUp"   ,&NLooseCentralJERUp  ,  "TNLooseCentralJERUp/s");
-  fMiniTree->Branch("TNBLooseCentral"       ,&NBLooseCentral      ,  "TNBLooseCentral/s");
-  fMiniTree->Branch("TNBLooseCentralJESUp"  ,&NBLooseCentralJESUp  , "TNBLooseCentralJESUp/s");
-  fMiniTree->Branch("TNBLooseCentralJESDown",&NBLooseCentralJESDown, "TNBLooseCentralJESDown/s");
-  fMiniTree->Branch("TNBLooseCentralJERUp"  ,&NBLooseCentralJERUp  , "TNBLooseCentralJERUp/s");
-  fMiniTree->Branch("TNLooseFwd"            ,&NLooseFwd            , "TNLooseFwd/s");
-  fMiniTree->Branch("TNLooseFwdJESUp"       ,&NLooseFwdJESUp        ,"TNLooseFwdJESUp/s");
-  fMiniTree->Branch("TNLooseFwdJESDown"     ,&NLooseFwdJESDown      ,"TNLooseFwdJESDown/s");
-  fMiniTree->Branch("TNLooseFwdJERUp"       ,&NLooseFwdJERUp        ,"TNLooseFwdJERUp/s");
+  fMiniTree->Branch("TNJets"       ,         &TNJets,                "TNJets/b");
+  fMiniTree->Branch("TNJetsJESUp"  ,         &TNJetsJESUp,           "TNJetsJESUp/b");
+  fMiniTree->Branch("TNJetsJESDown",         &TNJetsJESDown,         "TNJetsJESDown/b");
+  fMiniTree->Branch("TNJetsJERUp",           &TNJetsJERUp,           "TNJetsJERUp/b");
+  fMiniTree->Branch("TNBJets"       ,        &TNBJets,               "TNBJets/b");
+  fMiniTree->Branch("TNBJetsJESUp"  ,        &TNBJetsJESUp,          "TNBJetsJESUp/b");
+  fMiniTree->Branch("TNBJetsJESDown",        &TNBJetsJESDown,        "TNBJetsJESDown/b");
+  fMiniTree->Branch("TNBJetsJERUp",          &TNBJetsJERUp,          "TNBJetsJERUp/b");
+  fMiniTree->Branch("TNLooseCentral"        ,&NLooseCentral      ,   "TNLooseCentral/b");
+  fMiniTree->Branch("TNLooseCentralJESUp"   ,&NLooseCentralJESUp  ,  "TNLooseCentralJESUp/b");
+  fMiniTree->Branch("TNLooseCentralJESDown" ,&NLooseCentralJESDown,  "TNLooseCentralJESDown/b");
+  fMiniTree->Branch("TNLooseCentralJERUp"   ,&NLooseCentralJERUp  ,  "TNLooseCentralJERUp/b");
+  fMiniTree->Branch("TNBLooseCentral"       ,&NBLooseCentral      ,  "TNBLooseCentral/b");
+  fMiniTree->Branch("TNBLooseCentralJESUp"  ,&NBLooseCentralJESUp  , "TNBLooseCentralJESUp/b");
+  fMiniTree->Branch("TNBLooseCentralJESDown",&NBLooseCentralJESDown, "TNBLooseCentralJESDown/b");
+  fMiniTree->Branch("TNBLooseCentralJERUp"  ,&NBLooseCentralJERUp  , "TNBLooseCentralJERUp/b");
+  fMiniTree->Branch("TNLooseFwd"            ,&NLooseFwd            , "TNLooseFwd/b");
+  fMiniTree->Branch("TNLooseFwdJESUp"       ,&NLooseFwdJESUp        ,"TNLooseFwdJESUp/b");
+  fMiniTree->Branch("TNLooseFwdJESDown"     ,&NLooseFwdJESDown      ,"TNLooseFwdJESDown/b");
+  fMiniTree->Branch("TNLooseFwdJERUp"       ,&NLooseFwdJERUp        ,"TNLooseFwdJERUp/b");
 
   fMiniTree->Branch("TLep1_Pt",              &TLep1_Pt,              "TLep1_Pt/F");
   fMiniTree->Branch("TLep1_E",               &TLep1_E,               "TLep1_E/F");
@@ -306,11 +306,11 @@ void TWAnalysis::SetTWVariables() {
   // Particle level variables
   fMiniTree->Branch("TPassDress",            &TPassDress,            "TPassDress/O");
   fMiniTree->Branch("TDressIsSS",            &TDressIsSS,            "TDressIsSS/O");
-  fMiniTree->Branch("TDressNJets",           &DressNJets,            "TDressNJets/s");
-  fMiniTree->Branch("TDressNBJets",          &DressNBJets,           "TDressNBJets/s");
-  fMiniTree->Branch("TDressNLooseCentral",   &DressNLooseCentral,    "TDressNLooseCentral/s");
-  fMiniTree->Branch("TDressNBLooseCentral",  &DressNBLooseCentral,   "TDressNBLooseCentral/s");
-  fMiniTree->Branch("TDressNLooseFwd",       &DressNLooseFwd,        "TDressNLooseFwd/s");
+  fMiniTree->Branch("TDressNJets",           &DressNJets,            "TDressNJets/b");
+  fMiniTree->Branch("TDressNBJets",          &DressNBJets,           "TDressNBJets/b");
+  fMiniTree->Branch("TDressNLooseCentral",   &DressNLooseCentral,    "TDressNLooseCentral/b");
+  fMiniTree->Branch("TDressNBLooseCentral",  &DressNBLooseCentral,   "TDressNBLooseCentral/b");
+  fMiniTree->Branch("TDressNLooseFwd",       &DressNLooseFwd,        "TDressNLooseFwd/b");
 
   fMiniTree->Branch("TDressLep1_Pt",         &TDressLep1_Pt,         "TDressLep1_Pt/F");
   fMiniTree->Branch("TDressLep1_E",          &TDressLep1_E,          "TDressLep1_E/F");
@@ -428,7 +428,7 @@ void TWAnalysis::GetJetVariables() {
   TNJetsJESDown = selJetsJecDown.size();
   TNJetsJERUp   = selJetsJER.size();
 
-  for (UShort_t i = 0; i < TNJets; i++) THT += selJets.at(i).Pt();
+  for (UChar_t i = 0; i < TNJets; i++) THT += selJets.at(i).Pt();
 
   if (TNJets > 0) {
     TJet1_Pt  = selJets.at(0).Pt();
@@ -437,7 +437,7 @@ void TWAnalysis::GetJetVariables() {
     TJet1_Eta = selJets.at(0).Eta();
   }
 
-  for (UShort_t j = 0; j < vetoJets.size(); ++j) {
+  for (UChar_t j = 0; j < vetoJets.size(); ++j) {
     if (TMath::Abs(vetoJets.at(j).Eta()) < 2.4) {
       LooseCentralJets.push_back(vetoJets.at(j));
       if (vetoJets.at(j).isBtag) NBLooseCentral++;
@@ -484,7 +484,7 @@ void TWAnalysis::GetJetVariables() {
   }
 
 
-  for (UShort_t j = 0; j < vetoJets.size(); ++j) {
+  for (UChar_t j = 0; j < vetoJets.size(); ++j) {
     if (vetoJets.at(j).pTJESUp > 20.) {
       if (TMath::Abs(vetoJets.at(j).Eta()) < 2.4) {
         LooseCentralJetsJESUp.push_back(vetoJets.at(j));
@@ -522,7 +522,7 @@ void TWAnalysis::GetGenJetVariables() {
   if (gIsData) return;
   DressNJets = genJets.size();
 
-  for (UShort_t i = 0; i < (UShort_t)DressNJets; i++) {
+  for (UChar_t i = 0; i < DressNJets; i++) {
     if (TMath::Abs(genJets.at(i).Eta()) < 2.4 && Cleaning(genJets.at(i), DressLeptons, 0.4)) {
       DressLooseCentralJets.push_back(genJets.at(i));
       if (genJets.at(i).isBtag) DressNBLooseCentral++;
@@ -578,7 +578,7 @@ void TWAnalysis::GetMETandGenMET() {
   TDressMET_Phi = Get<Float_t>("MET_fiducialGenPhi");
   TPartMET      = Get<Float_t>("GenMET_pt");
   TPartMET_Phi  = Get<Float_t>("GenMET_phi");
-//   if (gIsLHE)  for(UShort_t i = 0; i < Get<Int_t>("nLHEweight"); i++) TLHEWeight[i] = Get<Float_t>("LHEweight_wgt", i);
+//   if (gIsLHE)  for(UChar_t i = 0; i < Get<Int_t>("nLHEweight"); i++) TLHEWeight[i] = Get<Float_t>("LHEweight_wgt", i);
 }
 
 
@@ -635,6 +635,7 @@ void TWAnalysis::ResetTWVariables() {
   THT                    = -99;
   TMET                   = -99;
   TMET_Phi               = -99;
+  TBDT                   = -99;
 
   TLep1_PtJESUp          = -99;
   TLep1_EJESUp           = -99;
@@ -663,6 +664,7 @@ void TWAnalysis::ResetTWVariables() {
   THTJESUp               = -99;
   TMETJESUp              = -99;
   TMET_PhiJESUp          = -99;
+  TBDTJESUp              = -99;
 
   TLep1_PtJESDown        = -99;
   TLep1_EJESDown         = -99;
@@ -691,6 +693,7 @@ void TWAnalysis::ResetTWVariables() {
   THTJESDown             = -99;
   TMETJESDown            = -99;
   TMET_PhiJESDown        = -99;
+  TBDTJESDown            = -99;
 
   TLep1_PtJERUp          = -99;
   TLep1_EJERUp           = -99;
@@ -719,6 +722,7 @@ void TWAnalysis::ResetTWVariables() {
   THTJERUp               = -99;
   TMETJERUp              = -99;
   TMET_PhiJERUp          = -99;
+  TBDTJERUp              = -99;
 
   TDressLep1_Pt          = -99;
   TDressLep1_E           = -99;
@@ -754,7 +758,7 @@ void TWAnalysis::ResetTWVariables() {
 }
 
 
-void TWAnalysis::CalculateTWVariables() {  // VERY IMPORTAAAAAAAANT        Now ONLY for 2j2b
+void TWAnalysis::CalculateTWVariables() {
   TLorentzVector tmpsys;
   if (TNJets == 2 && TNBJets == 2) {
     TLep1Lep2_Pt   = (selLeptons.at(0).p + selLeptons.at(1).p).Pt();
@@ -1353,4 +1357,94 @@ void TWAnalysis::SetMinimaAndMaxima() {
     THTJERUp               = 99999;
     TMETJERUp              = 99999;
   }
+}
+
+
+void TWAnalysis::setTWBDT() {
+  // 1j1b region
+  BDT1j1b = new TMVA::Reader();
+  BDT1j1b->AddVariable("TnLooseCentral"       , &nLooseCentral     );
+  BDT1j1b->AddVariable("TnBTotal"             , &nBTotal           );
+  BDT1j1b->AddVariable("TDilepMETJetPt"       , &DilepMETJetPt     );
+  BDT1j1b->AddVariable("TTHTtot"              , &THTtot            );
+  BDT1j1b->AddVariable("TTJet1_pt"            , &TJet1_pt          );
+  BDT1j1b->AddVariable("TTJetLooseCentralpt"  , &TJetLooseCentralpt);
+  BDT1j1b->AddVariable("TDilepMETJetPt_THTtot", &DilepmetjetOverHT );
+  BDT1j1b->AddVariable("TMSys"                , &MSys              );
+  BDT1j1b->AddVariable("TC_jll_v2"            , &C_jll             );
+  BDT1j1b->AddVariable("THTLepOverHT"         , &HTLepOverHT       );
+  BDT1j1b->AddVariable("TDilepJetPt"          , &DilepJetPt        );
+  BDT1j1b->BookMVA("BDT", "/nfs/fanae/user/sscruz/TW_train/AnalysisPAF/plotter/TW/StableWeights/bdtForTWv4/weights/TMVAClassification_GradBoost_2000_0.01.weights.xml");
+
+  BDT1j1b_JESUp = new TMVA::Reader();
+  BDT1j1b_JESUp->AddVariable( "TnLooseCentral"            , &nLooseCentralJESUp      );
+  BDT1j1b_JESUp->AddVariable( "TnBTotal"                  , &nBTotalJESUp            );
+  BDT1j1b_JESUp->AddVariable( "TDilepMETJetPt"            , &DilepMETJetPtJESUp      );
+  BDT1j1b_JESUp->AddVariable( "TTHTtot"                   , &THTtotJESUp             );
+  BDT1j1b_JESUp->AddVariable( "TTJet1_pt"                 , &TJet1_ptJESUp           );
+  BDT1j1b_JESUp->AddVariable( "TTJetLooseCentralpt"       , &TJetLooseCentralptJESUp );
+  BDT1j1b_JESUp->AddVariable( "TDilepMETJetPt_THTtot"     , &DilepmetjetOverHTJESUp  );
+  BDT1j1b_JESUp->AddVariable( "TMSys"                     , &MSysJESUp               );
+  BDT1j1b_JESUp->AddVariable( "TC_jll_v2"                    , &C_jllJESUp              );
+  BDT1j1b_JESUp->AddVariable( "THTLepOverHT"              , &HTLepOverHTJESUp        );
+  BDT1j1b_JESUp->AddVariable( "TDilepJetPt"               , &DilepJetPtJESUp         );
+  BDT1j1b_JESUp->BookMVA("BDT_JESUp", "/nfs/fanae/user/sscruz/TW_train/AnalysisPAF/plotter/TW/StableWeights/bdtForTWv4/weights/TMVAClassification_GradBoost_2000_0.01.weights.xml");
+
+  BDT1j1b_JESDown = new TMVA::Reader();
+  BDT1j1b_JESDown->AddVariable( "TnLooseCentral"            , &nLooseCentralJESDown      );
+  BDT1j1b_JESDown->AddVariable( "TnBTotal"                  , &nBTotalJESDown            );
+  BDT1j1b_JESDown->AddVariable( "TDilepMETJetPt"            , &DilepMETJetPtJESDown      );
+  BDT1j1b_JESDown->AddVariable( "TTHTtot"                   , &THTtotJESDown             );
+  BDT1j1b_JESDown->AddVariable( "TTJet1_pt"                 , &TJet1_ptJESDown           );
+  BDT1j1b_JESDown->AddVariable( "TTJetLooseCentralpt"       , &TJetLooseCentralptJESDown );
+  BDT1j1b_JESDown->AddVariable( "TDilepMETJetPt_THTtot"     , &DilepmetjetOverHTJESDown  );
+  BDT1j1b_JESDown->AddVariable( "TMSys"                     , &MSysJESDown               );
+  BDT1j1b_JESDown->AddVariable( "TC_jll_v2"                 , &C_jllJESDown              );
+  BDT1j1b_JESDown->AddVariable( "THTLepOverHT"              , &HTLepOverHTJESDown        );
+  BDT1j1b_JESDown->AddVariable( "TDilepJetPt"               , &DilepJetPtJESDown         );
+  BDT1j1b_JESDown->BookMVA("BDT_JESDown", "/nfs/fanae/user/sscruz/TW_train/AnalysisPAF/plotter/TW/StableWeights/bdtForTWv4/weights/TMVAClassification_GradBoost_2000_0.01.weights.xml");
+
+  BDT1j1b_JER = new TMVA::Reader();
+  BDT1j1b_JER->AddVariable( "TnLooseCentral"            , &nLooseCentralJERUp      );
+  BDT1j1b_JER->AddVariable( "TnBTotal"                  , &nBTotalJERUp            );
+  BDT1j1b_JER->AddVariable( "TDilepMETJetPt"            , &DilepMETJetPtJERUp      );
+  BDT1j1b_JER->AddVariable( "TTHTtot"                   , &THTtotJERUp             );
+  BDT1j1b_JER->AddVariable( "TTJet1_pt"                 , &TJet1_ptJERUp           );
+  BDT1j1b_JER->AddVariable( "TTJetLooseCentralpt"       , &TJetLooseCentralptJERUp );
+  BDT1j1b_JER->AddVariable( "TDilepMETJetPt_THTtot"     , &DilepmetjetOverHTJERUp  );
+  BDT1j1b_JER->AddVariable( "TMSys"                     , &MSysJERUp               );
+  BDT1j1b_JER->AddVariable( "TC_jll_v2"                 , &C_jllJERUp              );
+  BDT1j1b_JER->AddVariable( "THTLepOverHT"              , &HTLepOverHTJERUp        );
+  BDT1j1b_JER->AddVariable( "TDilepJetPt"               , &DilepJetPtJERUp         );
+  BDT1j1b_JER->BookMVA("BDT_JER", "/nfs/fanae/user/sscruz/TW_train/AnalysisPAF/plotter/TW/StableWeights/bdtForTWv4/weights/TMVAClassification_GradBoost_2000_0.01.weights.xml");
+
+
+  // 2j1b region
+  BDT2j1b = new TMVA::Reader();
+  BDT2j1b->AddVariable("jetPtSubLeading_"          , &jetPtSubLeading_  );
+  BDT2j1b->AddVariable("deltaRL1_J1_"              , &TDR_L1_J1         );
+  BDT2j1b->AddVariable("deltaRL1L2_J1J2_"          , &TDR_L1L2_J1J2     );
+  BDT2j1b->AddVariable("deltaRL1L2_metJ1J2_"       , &TDR_L1L2_J1J2MET  );
+  BDT2j1b->BookMVA("2j1b", "/nfs/fanae/user/sscruz/TW_jun4/AnalysisPAF/plotter/TW/StableWeights/jul8/bdtForTWv5/weights/TMVAClassification_GradBoost_200_005_4.weights.xml");
+
+  BDT2j1bJESUp = new TMVA::Reader();
+  BDT2j1bJESUp->AddVariable("jetPtSubLeading_"     , &jetPtSubLeading_JESUp  );
+  BDT2j1bJESUp->AddVariable("deltaRL1_J1_"         , &TDR_L1_J1JESUp         );
+  BDT2j1bJESUp->AddVariable("deltaRL1L2_J1J2_"     , &TDR_L1L2_J1J2JESUp     );
+  BDT2j1bJESUp->AddVariable("deltaRL1L2_metJ1J2_"  , &TDR_L1L2_J1J2METJESUp  );
+  BDT2j1bJESUp->BookMVA("2j1b", "/nfs/fanae/user/sscruz/TW_jun4/AnalysisPAF/plotter/TW/StableWeights/jul8/bdtForTWv5/weights/TMVAClassification_GradBoost_200_005_4.weights.xml");
+
+  BDT2j1bJESDown = new TMVA::Reader();
+  BDT2j1bJESDown->AddVariable("jetPtSubLeading_"   , &jetPtSubLeading_JESDown  );
+  BDT2j1bJESDown->AddVariable("deltaRL1_J1_"       , &TDR_L1_J1JESDown         );
+  BDT2j1bJESDown->AddVariable("deltaRL1L2_J1J2_"   , &TDR_L1L2_J1J2JESDown     );
+  BDT2j1bJESDown->AddVariable("deltaRL1L2_metJ1J2_", &TDR_L1L2_J1J2METJESDown  );
+  BDT2j1bJESDown->BookMVA("2j1b", "/nfs/fanae/user/sscruz/TW_jun4/AnalysisPAF/plotter/TW/StableWeights/jul8/bdtForTWv5/weights/TMVAClassification_GradBoost_200_005_4.weights.xml");
+
+  BDT2j1bJER = new TMVA::Reader();
+  BDT2j1bJER->AddVariable("jetPtSubLeading_"       , &jetPtSubLeading_JERUp  );
+  BDT2j1bJER->AddVariable("deltaRL1_J1_"           , &TDR_L1_J1JERUp );
+  BDT2j1bJER->AddVariable("deltaRL1L2_J1J2_"       , &TDR_L1L2_J1J2JERUp );
+  BDT2j1bJER->AddVariable("deltaRL1L2_metJ1J2_"    , &TDR_L1L2_J1J2METJERUp );
+  BDT2j1bJER->BookMVA("2j1b", "/nfs/fanae/user/sscruz/TW_jun4/AnalysisPAF/plotter/TW/StableWeights/jul8/bdtForTWv5/weights/TMVAClassification_GradBoost_200_005_4.weights.xml");
 }

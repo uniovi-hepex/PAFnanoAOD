@@ -5,6 +5,8 @@
 #include "BTagSFUtil.h"
 #include <iostream>
 #include <vector>
+#include "TMVA/Factory.h"
+#include "TMVA/Reader.h"
 
 const Int_t nWeights = 248;
 
@@ -40,6 +42,7 @@ class TWAnalysis : public PAFChainItemSelector{
     TLorentzVector getSysVector(const TString& sys = "");
     Float_t getTopPtRW();
 
+    void    setTWBDT();
 
     // Attributes
     std::vector<Lepton> DressLeptons;
@@ -66,16 +69,16 @@ class TWAnalysis : public PAFChainItemSelector{
     Float_t   TLHEWeight[254];
     ULong64_t TEvent;
 
-    Short_t TChannel, GenChannel;
+    Char_t TChannel, GenChannel;
     Bool_t TIsSS, TDressIsSS;
     Bool_t TPassReco, TPassRecoJESUp, TPassRecoJESDown, TPassRecoJERUp;
     Bool_t TPassDress, TPassPart;
 
-    UShort_t TNBJets, TNBJetsJESUp, TNBJetsJESDown, TNBJetsJERUp;
-    UShort_t NLooseCentral, NLooseCentralJESUp, NLooseCentralJESDown, NLooseCentralJERUp;
-    UShort_t NLooseFwd, NLooseFwdJESUp, NLooseFwdJESDown, NLooseFwdJERUp;
-    UShort_t NBLooseCentral, NBLooseCentralJESUp, NBLooseCentralJESDown, NBLooseCentralJERUp;
-    UShort_t DressNJets, DressNLooseCentral, DressNLooseFwd, DressNBJets, DressNBLooseCentral;
+    UChar_t TNBJets, TNBJetsJESUp, TNBJetsJESDown, TNBJetsJERUp;
+    UChar_t NLooseCentral, NLooseCentralJESUp, NLooseCentralJESDown, NLooseCentralJERUp;
+    UChar_t NLooseFwd, NLooseFwdJESUp, NLooseFwdJESDown, NLooseFwdJERUp;
+    UChar_t NBLooseCentral, NBLooseCentralJESUp, NBLooseCentralJESDown, NBLooseCentralJERUp;
+    UChar_t DressNJets, DressNLooseCentral, DressNLooseFwd, DressNBJets, DressNBLooseCentral;
 
     Float_t TLep1_Pt, TLep1_PtJESUp, TLep1_PtJESDown, TLep1_PtJERUp;
     Float_t TLep1_E, TLep1_EJESUp, TLep1_EJESDown, TLep1_EJERUp;
@@ -105,6 +108,7 @@ class TWAnalysis : public PAFChainItemSelector{
     Float_t THT, THTJESUp, THTJESDown, THTJERUp;
     Float_t TMET, TMETJESUp, TMETJESDown, TMETJERUp;
     Float_t TMET_Phi, TMET_PhiJESUp, TMET_PhiJESDown, TMET_PhiJERUp;
+    Float_t TBDT, TBDTJESUp, TBDTJESDown, TBDTJERUp;
 
     Float_t TDressLep1_Pt;
     Float_t TDressLep1_E;
@@ -137,9 +141,9 @@ class TWAnalysis : public PAFChainItemSelector{
     Float_t TPartMET, TPartMET_Phi;
 
 
-    UShort_t TNSelLeps, DressNLeps;
+    UChar_t TNSelLeps, DressNLeps;
 
-    UShort_t TNJets, TNJetsJESUp, TNJetsJESDown, TNJetsJERUp;
+    UChar_t TNJets, TNJetsJESUp, TNJetsJESDown, TNJetsJERUp;
 
     Double_t ElecSF, MuonSF, ElecSFUp, ElecSFDo, MuonSFUp, MuonSFDo, lepSF;
     Double_t TrigSF, TrigSFerr;
@@ -157,13 +161,36 @@ class TWAnalysis : public PAFChainItemSelector{
     Double_t TWeight_MistagUp, TWeight_MistagDown;
     Double_t TWeight_BtagUp, TWeight_BtagDown;
 
+    /* TMVA::Reader* BDTada; */
+    /* TMVA::Reader* BDTada_JESUp; */
+    /* TMVA::Reader* BDTada_JESDown; */
+    /* TMVA::Reader* BDTada_JER; */
+    /* TMVA::Reader* BDTgrad; */
+    /* TMVA::Reader* BDTgrad_JESUp; */
+    /* TMVA::Reader* BDTgrad_JESDown; */
+    /* TMVA::Reader* BDTgrad_JER; */
+    TMVA::Reader* BDT;
+    TMVA::Reader* BDT_JESUp;
+    TMVA::Reader* BDT_JESDown;
+    TMVA::Reader* BDT_JER;
+    TMVA::Reader* BDT2j1t;
+    TMVA::Reader* BDT2j1tJESUp;
+    TMVA::Reader* BDT2j1tJESDown;
+    TMVA::Reader* BDT2j1tJER;
+
+    TMVA::Reader* BDT2j1t_DR;
+    TMVA::Reader* BDT2j1t_ot;
+
+    /* TMVA::Reader* BDT2j1tv1; */
+    /* TMVA::Reader* BDT2j1tv2; */
+    /* TMVA::Reader* BDT2j1tv3; */
+
   protected:
     // Parameters
     Bool_t   gIsData;
     TString  gSampleName;
     Bool_t   gIsTTbar;
     Bool_t   gIsLHE;
-    Int_t    gChannel;
     TString  gOptions;
     Bool_t   gPUWeight;
     Bool_t   passMETfilters;
