@@ -34,6 +34,7 @@ void TWAnalysis::Initialise() {
 
   fMiniTree = CreateTree("fMiniTree", "MiniTree");
   SetTWVariables();
+  SetTWBDT();
 
   DressLeptons          = std::vector<Lepton>();
   selLeptons            = std::vector<Lepton>();
@@ -2050,7 +2051,7 @@ void TWAnalysis::SetMinimaAndMaxima() {
 }
 
 
-void TWAnalysis::setTWBDT() {
+void TWAnalysis::SetTWBDT() {
   // 1j1b region
   BDT1j1b = new TMVA::Reader();
   BDT1j1b->AddVariable("TnLooseCentral"       , &FNLooseCentral);

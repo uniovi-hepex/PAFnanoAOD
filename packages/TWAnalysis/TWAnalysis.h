@@ -46,7 +46,7 @@ class TWAnalysis : public PAFChainItemSelector{
     Float_t GetLep12Jet12_DR(const TString& sys = "");
     Float_t GetLep12Jet12MET_DR(const TString& sys = "");
 
-    void    setTWBDT();
+    void    SetTWBDT();
 
     // Attributes
     std::vector<Lepton> DressLeptons;
