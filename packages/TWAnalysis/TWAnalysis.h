@@ -39,12 +39,12 @@ class TWAnalysis : public PAFChainItemSelector{
     void DoesItReallyPassDress();
     void DoesItReallyPassReco();
 
-    TLorentzVector getSysVector(const TString& sys = "");
-    Float_t getTopPtRW();
-    Float_t getHTtot(const TString& sys = "", TString reg = "1j1b");
-    Float_t getLep1Jet1_DR(const TString& sys = "");
-    Float_t getLep12Jet12_DR(const TString& sys = "");
-    Float_t getLep12Jet12MET_DR(const TString& sys = "");
+    TLorentzVector GetSysVector(const TString& sys = "");
+    Float_t GetTopPtRW();
+    Float_t GetHTtot(const TString& sys = "", TString reg = "1j1b");
+    Float_t GetLep1Jet1_DR(const TString& sys = "");
+    Float_t GetLep12Jet12_DR(const TString& sys = "");
+    Float_t GetLep12Jet12MET_DR(const TString& sys = "");
 
     void    setTWBDT();
 
@@ -81,8 +81,10 @@ class TWAnalysis : public PAFChainItemSelector{
 
     UChar_t TNBJets, TNBJetsJESUp, TNBJetsJESDown, TNBJetsJERUp;
     UChar_t NLooseCentral, NLooseCentralJESUp, NLooseCentralJESDown, NLooseCentralJERUp;
+    Float_t FNLooseCentral, FNLooseCentralJESUp, FNLooseCentralJESDown, FNLooseCentralJERUp;
     UChar_t NLooseFwd, NLooseFwdJESUp, NLooseFwdJESDown, NLooseFwdJERUp;
     UChar_t NBLooseCentral, NBLooseCentralJESUp, NBLooseCentralJESDown, NBLooseCentralJERUp;
+    Float_t FNBLooseCentral, FNBLooseCentralJESUp, FNBLooseCentralJESDown, FNBLooseCentralJERUp;
     UChar_t DressNJets, DressNLooseCentral, DressNLooseFwd, DressNBJets, DressNBLooseCentral;
 
     Float_t TLep1_Pt, TLep1_PtJESUp, TLep1_PtJESDown, TLep1_PtJERUp;
@@ -147,23 +149,37 @@ class TWAnalysis : public PAFChainItemSelector{
     Float_t TDressLep2_E;
     Float_t TDressLep2_Phi;
     Float_t TDressLep2_Eta;
+    Float_t TDressLepMuon_Pt;
+    Float_t TDressLepMuon_E;
+    Float_t TDressLepMuon_Phi;
+    Float_t TDressLepMuon_Eta;
+    Float_t TDressLepElec_Pt;
+    Float_t TDressLepElec_E;
+    Float_t TDressLepElec_Phi;
+    Float_t TDressLepElec_Eta;
     Float_t TDressJet1_Pt;
     Float_t TDressJet1_E;
     Float_t TDressJet1_Eta;
     Float_t TDressJet1_Phi;
+    Float_t TDressJet2_Pt;
+    Float_t TDressJet2_E;
+    Float_t TDressJet2_Eta;
     Float_t TDressLep1Lep2_Pt;
     Float_t TDressLep1Lep2_M;
     Float_t TDressLep1Lep2_DPhi;
     Float_t TDressLep1Jet1_M;
     Float_t TDressLep1Jet1_DPhi;
+    Float_t TDressLep1Jet2_M;
+    Float_t TDressLep1Jet2_DPhi;
     Float_t TDressLep2Jet1_M;
     Float_t TDressLep2Jet1_DPhi;
+    Float_t TDressLep2Jet2_M;
+    Float_t TDressLep2Jet2_DPhi;
     Float_t DressSys_Pt;
     Float_t DressSys_E;
     Float_t DressSys_Eta;
     Float_t DressSys_M;
     Float_t DressSys_Pz;
-    Float_t TDressMiniMax;
     Float_t TDressHT;
     Float_t TDressMET, TDressMET_Phi;
 
