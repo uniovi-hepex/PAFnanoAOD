@@ -116,6 +116,8 @@ void TopAnalysis::Initialise(){
     useSyst.push_back(kBtagDown);
     useSyst.push_back(kMistagUp);
     useSyst.push_back(kMistagDown);
+    useSyst.push_back(kTrigUp);
+    useSyst.push_back(kTrigDown);
 
     if(gDoJECunc){
       useSyst.push_back(kJESUp);
@@ -465,8 +467,8 @@ void TopAnalysis::GetWeights(){
   else{
     if(selLeptons.at(0).isMuon){
       MuonSF   *= selLeptons.at(0).GetSF( 0);
-      MuonSFUp *= selLeptons.at(0).GetSF( 1);
-      MuonSFDo *= selLeptons.at(0).GetSF(-1);
+      MuonSFUp *= selLeptons.at(0).GetSF( 1)+MuonSF*0.005;
+      MuonSFDo *= selLeptons.at(0).GetSF(-1)-MuonSF*0.005;
     }
     else{
       ElecSF   *= selLeptons.at(0).GetSF( 0);
@@ -475,8 +477,8 @@ void TopAnalysis::GetWeights(){
     }
     if(selLeptons.at(1).isMuon){
       MuonSF   *= selLeptons.at(1).GetSF( 0);
-      MuonSFUp *= selLeptons.at(1).GetSF( 1);
-      MuonSFDo *= selLeptons.at(1).GetSF(-1);
+      MuonSFUp *= selLeptons.at(1).GetSF( 1)+MuonSF*0.005;
+      MuonSFDo *= selLeptons.at(1).GetSF(-1)-MuonSF*0.005;
     }
     else{
       ElecSF   *= selLeptons.at(1).GetSF( 0);
