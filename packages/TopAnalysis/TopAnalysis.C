@@ -127,6 +127,12 @@ void TopAnalysis::Initialise(){
       useSyst.push_back(kPUUp);
       useSyst.push_back(kPUDown);
     }
+    if(gDoPSunc){
+      useSyst.push_back(kISRUp);
+      useSyst.push_back(kISRDown);
+      useSyst.push_back(kFSRUp);
+      useSyst.push_back(kFSRDown);
+    }
   }
   nSyst = useSyst.size();
   InitHistos();
@@ -144,7 +150,7 @@ void TopAnalysis::Initialise(){
   TString taggerName="DeepFlav"; //"CSVv2"; //"DeepCSV"; // DeepFlav
   TString MeasType = "mujets";
   TString stringWP = "Medium";
-  if(taggerName == "DeepFlav" && year == 2017) MeasType = "comb";
+  //if(taggerName == "DeepFlav" && year == 2017) MeasType = "comb";
   fBTagSFnom = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP,  0, year);
   if(!gIsData){
     fBTagSFbUp = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP,  1, year);
@@ -421,15 +427,28 @@ void TopAnalysis::GetMET(){
 void TopAnalysis::GetWeights(){
   TWeight_ElecEffUp = 1; TWeight_ElecEffDown = 1; TWeight_MuonEffUp = 1; TWeight_MuonEffDown = 1;
   TWeight_TrigUp = 1; TWeight_TrigDown = 1; TWeight_PUDown = 1; TWeight_PUUp = 1; TWeight = 1;
+  TWeight_ISRUp   = 1; TWeight_ISRDown = 1; TWeight_FSRUp   = 1; TWeight_FSRDown = 1;
   if(gIsData) return;
   if(TNSelLeps < 2) return;
   Float_t lepSF   = selLeptons.at(0).GetSF( 0)*selLeptons.at(1).GetSF( 0);
   Float_t ElecSF = 1; Float_t MuonSF = 1;
   Float_t ElecSFUp = 1; Float_t ElecSFDo = 1; Float_t MuonSFUp = 1; Float_t MuonSFDo = 1;
   Float_t stat = 0; 
+  Float_t fsrUp = 1; Float_t fsrDo = 1;  Float_t isrUp = 1; Float_t isrDo = 1; 
+
+  if(gDoPSunc){
+    // [0] is ISR=0.5 FSR=1; [1] is ISR=1 FSR=0.5; [2] is ISR=2 FSR=1; [3] is ISR=1 FSR=2
+    isrDo = Get<Float_t>("PSWeight", 0);
+    fsrDo = Get<Float_t>("PSWeight", 1);
+    isrUp = Get<Float_t>("PSWeight", 2);
+    fsrUp = Get<Float_t>("PSWeight", 3);
+  }
+  
+
   //For muons
   //https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonReferenceEffsRun2
-  //Additional 1% for ID + 0.5% for Isolation + 0.5% single muon triggers
+  // OLD --> Additional 1% for ID + 0.5% for Isolation + 0.5% single muon triggers
+  // 0.5% for iso (AN from Sergio)
 
   if(TChannel == iElec){
     ElecSF   = selLeptons.at(0).GetSF( 0)*selLeptons.at(1).GetSF( 0);
@@ -474,6 +493,10 @@ void TopAnalysis::GetWeights(){
   TWeight_TrigDown   = NormWeight*lepSF*(TrigSF-TrigSFerr)*PUSF;
   TWeight_PUDown     = NormWeight*lepSF*TrigSF*PUSF_Up;
   TWeight_PUUp       = NormWeight*lepSF*TrigSF*PUSF_Down;
+  TWeight_ISRUp      = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*isrUp;
+  TWeight_ISRDown    = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*isrDo;
+  TWeight_FSRUp      = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*fsrUp;
+  TWeight_FSRDown    = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*fsrDo;
   TWeight = NormWeight;
 }
 
@@ -573,25 +596,25 @@ void TopAnalysis::InitHistos(){
 void TopAnalysis::FillDYHistos(Int_t ch){
   Int_t sys = 0;
   Int_t cut;
-  Float_t EventWeight = TWeight;
+  Float_t EventWeight = weight;
   cut = idilepton;
-  fHDYInvMass[ch][cut][sys]       -> Fill(TMll, EventWeight);
-  fHDYInvMassSF[ch][cut][sys]     -> Fill(TMll, EventWeight);
+  fHDYInvMass[ch][cut][sys]       -> Fill(invmass, EventWeight);
+  fHDYInvMassSF[ch][cut][sys]     -> Fill(invmass, EventWeight);
   cut = iZVeto;
-  fHDYInvMass[ch][cut][sys]       -> Fill(TMll, EventWeight);
-  fHDYInvMassSF[ch][cut][sys]     -> Fill(TMll, EventWeight);
+  fHDYInvMass[ch][cut][sys]       -> Fill(invmass, EventWeight);
+  fHDYInvMassSF[ch][cut][sys]     -> Fill(invmass, EventWeight);
   cut = iMETcut;
-  if(TMET > 40) fHDYInvMassSF[ch][cut][sys]     -> Fill(TMll, EventWeight);
-  fHDYInvMass[ch][cut][sys]       -> Fill(TMll, EventWeight);
+  if(met > 40) fHDYInvMassSF[ch][cut][sys]     -> Fill(invmass, EventWeight);
+  fHDYInvMass[ch][cut][sys]       -> Fill(invmass, EventWeight);
   //  }
-  if(TNJets > 1){
+  if(njets > 1){
     cut = i2jets;
-    if(TMET > 40) fHDYInvMassSF[ch][cut][sys]     -> Fill(TMll, EventWeight);
-    fHDYInvMass[ch][cut][sys]       -> Fill(TMll, EventWeight);
-    if(TNBtags > 0){
+    if(met > 40) fHDYInvMassSF[ch][cut][sys]     -> Fill(invmass, EventWeight);
+    fHDYInvMass[ch][cut][sys]       -> Fill(invmass, EventWeight);
+    if(nbtags > 0){
       cut = i1btag;
-      if(TMET > 40) fHDYInvMassSF[ch][cut][sys]     -> Fill(TMll, EventWeight);
-      fHDYInvMass[ch][cut][sys]       -> Fill(TMll, EventWeight);
+      if(met > 40) fHDYInvMassSF[ch][cut][sys]     -> Fill(invmass, EventWeight);
+      fHDYInvMass[ch][cut][sys]       -> Fill(invmass, EventWeight);
     }
   }
 }
@@ -604,15 +627,15 @@ void TopAnalysis::FillHistos(Int_t ch, Int_t cut, Int_t sys){
     Int_t i = 0;
     if(gDoPSunc){
       for(i = 0; i < Get<Int_t>("nPSWeight"); i++)
-        fHPSweights[ch][cut]->Fill(i+1, Get<Int_t>("PSWeight",i)*weight);
+        fHPSweights[ch][cut]->Fill(i+1, Get<Float_t>("PSWeight",i)*weight);
     }
     if(gDoPDFunc){
       for(i = 0; i < Get<Int_t>("nLHEPdfWeight"); i++)
-        fHPDFweights[ch][cut]->Fill(i+1, Get<Int_t>("LHEPdfWeight",i)*weight);
+        fHPDFweights[ch][cut]->Fill(i+1, Get<Float_t>("LHEPdfWeight",i)*weight);
     }
     if(gDoScaleUnc){
       for(i = 0; i < Get<Int_t>("nLHEScaleWeight"); i++)
-        fHScaleWeights[ch][cut]->Fill(i+1, Get<Int_t>("LHEScaleWeight",i)*weight);
+        fHScaleWeights[ch][cut]->Fill(i+1, Get<Float_t>("LHEScaleWeight",i)*weight);
     }
   } 
 
@@ -892,6 +915,10 @@ void TopAnalysis::SetVariables(int sys){
   else if(sys == kTrigDown   ) weight = TWeight_TrigDown;
   else if(sys == kPUUp       ) weight = TWeight_PUUp;   
   else if(sys == kPUDown     ) weight = TWeight_PUDown;
+  else if(sys == kISRUp      ) weight = TWeight_ISRUp;
+  else if(sys == kISRDown    ) weight = TWeight_ISRDown;
+  else if(sys == kFSRUp      ) weight = TWeight_FSRUp;
+  else if(sys == kFSRDown    ) weight = TWeight_FSRDown;
 }
 
   
