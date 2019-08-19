@@ -11,13 +11,15 @@ TopAnalysis::TopAnalysis() : PAFChainItemSelector() {
   event           = 0;
   lumiblock       = 0;
 
-  for(Int_t i = 0; i < 254; i++) TLHEWeight[i] = 0;
-  
   for(Int_t ch = 0; ch < nChannels; ch++){
     for(Int_t cut = 0; cut < nLevels; cut++){
+      if(!gIsData){
+        fHPSweights[ch][cut]  = 0;
+        fHPDFweights[ch][cut]  = 0;
+        fHScaleWeights[ch][cut]  = 0;
+      }
       for(Int_t sys = 0; sys < nSyst; sys++){
         if(gIsData && sys!=0) break;
-        fHLHEweights[ch][cut][sys]  = 0;
         fHMET[ch][cut][sys]         = 0;
         fHMT2[ch][cut][sys]         = 0;
         fHLep0Eta[ch][cut][sys]     = 0;
@@ -82,12 +84,16 @@ void TopAnalysis::Initialise(){
   gDoSyst      = true;// gOptions.Contains("doSyst")? true : false;
   year         = GetParam<TString>("year").Atoi();
   gIsTTbar     = false;
-  gIsLHE       = false;
   gSelection   = GetSelection(selection);
   gDoJECunc    = gOptions.Contains("JECunc")? true : false;
+  gDoPDFunc    = gOptions.Contains("PDF")? true : false;
+  gDoPSunc     = gOptions.Contains("PS")? true : false;
+  gDoScaleUnc  = gOptions.Contains("Scale")? true : false;
   gPUWeigth    = gOptions.Contains("PUweight")? true : false;
   JetPt        = gOptions.Contains("JetPtNom")? "Jet_pt_nom" : "Jet_pt";
   if (gSampleName == "TT" && year == 2016) gIsTTbar = true;
+
+  nPDFweights = gIsTTbar ? 100 : 33;
 
   makeTree   = false;
   makeHistos = true;
@@ -216,10 +222,6 @@ void TopAnalysis::InsideLoop(){
               if(nFidubJets >= 1){ // At least 1 b-tag
                 fHFiduYields[GenChannel-1][0] -> Fill(i1btag);
 
-                //Int_t nWTree = Get<Int_t>("nLHEweight");
-                //for(int i = 0; i<nWeights; i++){
-                //  fHWeightsFidu->Fill(i, Get<Float_t>("LHEweight_wgt", i));
-                //}
               }
             }
           }
@@ -414,7 +416,6 @@ void TopAnalysis::GetMET(){
     //TMETJESDown = Get<Float_t>("met_jecDown_pt");
 //    TgenTop1Pt  = Get<Float_t>("GenTop_pt"  , 0);;
 //    TgenTop2Pt  = Get<Float_t>("GenTop_pt"  , 1);;
-//  if(gIsLHE)  for(Int_t i = 0; i < Get<Int_t>("nLHEweight"); i++)   TLHEWeight[i] = Get<Float_t>("LHEweight_wgt", i);
 }
 
 void TopAnalysis::GetWeights(){
@@ -474,11 +475,10 @@ void TopAnalysis::GetWeights(){
   TWeight_TrigDown   = NormWeight*lepSF*(TrigSF-TrigSFerr)*PUSF;
   TWeight_PUDown     = NormWeight*lepSF*TrigSF*PUSF_Up;
   TWeight_PUUp       = NormWeight*lepSF*TrigSF*PUSF_Down;
-  //TWeight = NormWeight;
+  TWeight = NormWeight;
 }
 
 void TopAnalysis::InitHistos(){
-  fHWeightsFidu  = CreateH1F("hPDFweightsFidu","hPDFweightsFidu", nWeights, -0.5, nWeights - 0.5);
   fhDummy = CreateH1F("fhDummy","fhDummy", 1, 0, 2);
   for(Int_t ch = 0; ch < nChannels; ch++){
     fhDummyCh[ch] = CreateH1F("fhDummy_"+gChanLabel[ch],"fhDummy_"+gChanLabel[ch], 1, 0, 2);
@@ -516,10 +516,15 @@ void TopAnalysis::InitHistos(){
   TString suffix;
   for(Int_t ch = 0; ch < nChannels; ch++){
     for(Int_t cut = 0; cut < nLevels; cut++){
+      suffix = GetSuffix(ch, cut, 0);
+      if(!gIsData){
+        if(gDoPDFunc)   fHPDFweights[ch][cut]       = CreateH1F("H_PDFweights_"  +suffix, "PDFweights", nPDFweights, 0.5, nPDFweights+0.5); // 33 as nominal... 100 for 2016 old tune
+        if(gDoScaleUnc) fHScaleWeights[ch][cut]     = CreateH1F("H_ScaleWeights_"+suffix, "ScaleWeights", 9, 0.5, 9.5);
+        if(gDoPSunc)    fHPSweights[ch][cut]        = CreateH1F("H_PSweights_"   +suffix, "PSweights", 4, 0.5, 4.5);
+      }
       for(Int_t sys = 0; sys < nSyst; sys++){
         if(gIsData && sys > 0) break;
         suffix = GetSuffix(ch, cut, sys);
-        fHLHEweights[ch][cut][sys]  = CreateH1F("H_LHEweights"  +suffix, "LHEweights", nWeights, -0.5, nWeights - 0.5);
         fHMET[ch][cut][sys]         = CreateH1F("H_MET_"        +suffix, "MET"       , 3000, 0,300);
         fHMT2[ch][cut][sys]         = CreateH1F("H_MT2_"        +suffix, "MT2"       , 3000, 0,300);
         fHMuonEta[ch][cut][sys]     = CreateH1F("H_MuonEta_"    +suffix, "Lep0Eta"   , 50  ,-2.5 ,2.5);
@@ -595,6 +600,22 @@ void TopAnalysis::FillDYHistos(Int_t ch){
 void TopAnalysis::FillHistos(Int_t ch, Int_t cut, Int_t sys){
   if(gIsData && sys != 0) return;
   if(!makeHistos) return;
+
+  if(!gIsData && sys == 0){
+    Int_t i = 0;
+    if(gDoPSunc){
+      for(i = 0; i < Get<Int_t>("nPSWeight"); i++)
+        fHPSweights[ch][cut]->Fill(i+1, Get<Int_t>("PSWeight",i)*weight);
+    }
+    if(gDoPDFunc){
+      for(i = 0; i < Get<Int_t>("nLHEPdfWeight"); i++)
+        fHPDFweights[ch][cut]->Fill(i+1, Get<Int_t>("LHEPdfWeight",i)*weight);
+    }
+    if(gDoScaleUnc){
+      for(i = 0; i < Get<Int_t>("nLHEScaleWeight"); i++)
+        fHScaleWeights[ch][cut]->Fill(i+1, Get<Int_t>("LHEScaleWeight",i)*weight);
+    }
+  } 
 
   // Global
   fHMET[ch][cut][sys]         -> Fill(met, weight);
@@ -782,7 +803,6 @@ void TopAnalysis::SetEventVariables(){
 
   fTree->Branch("TEvent",          &event,           "TEvent/l");
   fTree->Branch("TLuminosityBlock",&lumiblock,       "TLuminosityBlock/i");
-  fTree->Branch("TLHEWeight",      TLHEWeight,       "TLHEWeight[254]/F");
   fTree->Branch("TPassMETFilters", &TPassMETFilters, "TPassMETFilters/B");
   fTree->Branch("TPassTrigger",    &TPassTrigger,    "TPassTrigger/B");
   fTree->Branch("TRun",            &TRun,            "TRun/i");

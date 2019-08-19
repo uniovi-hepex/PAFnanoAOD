@@ -9,7 +9,6 @@
 //enum eChannels{iUnkChan, iElMu, iMuon, iElec, nChannels};
 const Int_t nChannels = 3;
 enum eLevels  {idilepton, iZVeto, iMETcut, i2jets, i1btag, nLevels};
-const int nWeights = 248;
 const TString gChanLabel[nChannels] = {"ElMu", "Muon","Elec"};
 const TString sCut[nLevels] = {"dilepton", "ZVeto", "MET", "2jets", "1btag"};
 const Int_t nPtBins = 14;
@@ -44,9 +43,9 @@ class TopAnalysis : public PAFChainItemSelector{
     BTagSFUtil *fBTagSFlUp;
     BTagSFUtil *fBTagSFlDo;
     Int_t era;
+    Int_t nPDFweights;
 
     TTree* fTree;
-    Float_t TLHEWeight[254];
     TString GetSuffix(int iCh, int iCut, int iSyst = 0);
     void SetLeptonVariables();
     void SetJetVariables();
@@ -202,10 +201,15 @@ class TopAnalysis : public PAFChainItemSelector{
     TString JetPt;
     Bool_t gPUWeigth;
     Bool_t gDoJECunc;
+    Bool_t gDoPDFunc;
+    Bool_t gDoPSunc;
+    Bool_t gDoScaleUnc;
 
 // Histograms
 //=====================================================0
-  TH1F* fHLHEweights[nChannels][nLevels][nSysts];
+  TH1F* fHPDFweights[nChannels][nLevels];
+  TH1F* fHPSweights[nChannels][nLevels];
+  TH1F* fHScaleWeights[nChannels][nLevels];
   TH1F* fHMET[nChannels][nLevels][nSysts];
   TH1F* fHMT2[nChannels][nLevels][nSysts];
   TH1F* fHLep0Eta[nChannels][nLevels][nSysts];
