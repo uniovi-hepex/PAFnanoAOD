@@ -352,11 +352,11 @@ if __name__ == "__main__":
   prefix      = args.prefix
   outname     = args.outname
   outpath     = args.outpath
-  nEvents     = args.nEvents
   nSlots      = args.nSlots
   FirstEvent  = args.firstEvent
   sendJobs    = args.sendJobs
   queue       = args.queue
+  nEvents     = int(args.nEvents)
   fixedchunk  = int(args.fixedchunk)
   ncores      = nSlots
   doCheck     = args.check
@@ -433,8 +433,8 @@ if __name__ == "__main__":
     if args.prefix     != 'Tree' : prefix      = args.prefix
     if args.outname    != ''     : outname     = args.outname
     if args.outpath    != ''     : outpath     = args.outpath
-    if args.nEvents    != 0      : nEvents     = args.nEvents
-    if args.firstEvent != 0      : FirstEvent  = args.firstEvent
+    if args.nEvents    != 0      : nEvents     = int(args.nEvents)
+    if args.firstEvent != 0      : FirstEvent  = int(args.firstEvent)
     if args.queue      != "short": queue       = args.queue
 
     if args.nSlots     != -1:
