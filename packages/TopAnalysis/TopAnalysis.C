@@ -90,6 +90,7 @@ void TopAnalysis::Initialise(){
   gDoPSunc     = gOptions.Contains("PS")? true : false;
   gDoScaleUnc  = gOptions.Contains("Scale")? true : false;
   gPUWeigth    = gOptions.Contains("PUweight")? true : false;
+  gPrefire     = gOptions.Contains("prefire")? true : false;
   JetPt        = gOptions.Contains("JetPtNom")? "Jet_pt_nom" : "Jet_pt";
   if (gSampleName == "TT" && year == 2016) gIsTTbar = true;
 
@@ -128,6 +129,10 @@ void TopAnalysis::Initialise(){
     if(gPUWeigth){
       useSyst.push_back(kPUUp);
       useSyst.push_back(kPUDown);
+    }
+    if(gPrefire){
+      useSyst.push_back(kPrefireUp);
+      useSyst.push_back(kPrefireDown);
     }
     if(gDoPSunc){
       useSyst.push_back(kISRUp);
@@ -191,6 +196,11 @@ void TopAnalysis::InsideLoop(){
     PUSF_Down    = Get<Float_t>("puWeightDown");
   }
   else{PUSF = 1; PUSF_Up = 1; PUSF_Down = 1;}
+  if(!gIsData && gPrefire){
+    PrefWeight   = Get<Float_t>("PrefireWeight");
+    PrefWeightUp = Get<Float_t>("PrefireWeight_Up");
+    PrefWeightDo = Get<Float_t>("PrefireWeight_Down");
+  else{PrefWeight = 1; PrefWeightUp = 1; PrefWeightDo = 1;}
 
   // Event variables
   gChannel       = GetParam<Int_t>("gChannel");
@@ -414,22 +424,27 @@ void TopAnalysis::GetMET(){
     TRun        = gIsData ? Get<UInt_t>("run") : 1;
     TMET        = Get<Float_t>(metvarpt); // MET_pt
     TMET_Phi    = Get<Float_t>(metvar+"_phi");  // MET phi
-    if((Int_t) selLeptons.size() >= 2) TMT2        = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMET, TMET_Phi);
+    if((Int_t) selLeptons.size() >= 2) TMT2 = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMET, TMET_Phi);
     TMETJESUp = 0; TMETJESDown = 0; TGenMET = 0; TgenTop1Pt = 0; TgenTop2Pt = 0;
+    TMETJERUp = 0; TMETJERDown = 0; TMETUnclUp = 0; TMETUnclDown = 0;
+    TMT2JESUp = 0; TMT2JESDown = 0; TMT2JERUp = 0; TMT2JERDown = 0; TMT2UnclUp = 0; TMT2UnclDown = 0;
+    TMT2MESUp = 0; TMT2MESDown = 0; TMT2EESUp = 0; TMT2EESDown = 0;
     if(gIsData) TNVert = Get<Int_t>("PV_npvs");
     if(gIsData) return;
     TNVert      = Get<Int_t>("Pileup_nPU");
     TGenMET     = Get<Float_t>("GenMET_pt");
-    //TMETJESUp   = Get<Float_t>("met_jecUp_pt"  );
-    //TMETJESDown = Get<Float_t>("met_jecDown_pt");
-//    TgenTop1Pt  = Get<Float_t>("GenTop_pt"  , 0);;
-//    TgenTop2Pt  = Get<Float_t>("GenTop_pt"  , 1);;
+    //TMETJESUp    = Get<Float_t>("met_jecUp_pt"  );
+    //TMETJESDown  = Get<Float_t>("met_jecDown_pt");
+    //TMETJERUp    = Get<Float_t>("met_jecUp_pt"  );
+    //TMETJERDown  = Get<Float_t>("met_jecUp_pt"  );
+    //TMETUnclUp   = Get<Float_t>("met_jecUp_pt"  );
+    //TMETUnclDown = Get<Float_t>("met_jecUp_pt"  );
 }
 
 void TopAnalysis::GetWeights(){
   TWeight_ElecEffUp = 1; TWeight_ElecEffDown = 1; TWeight_MuonEffUp = 1; TWeight_MuonEffDown = 1;
   TWeight_TrigUp = 1; TWeight_TrigDown = 1; TWeight_PUDown = 1; TWeight_PUUp = 1; TWeight = 1;
-  TWeight_ISRUp   = 1; TWeight_ISRDown = 1; TWeight_FSRUp   = 1; TWeight_FSRDown = 1;
+  TWeight_ISRUp   = 1; TWeight_ISRDown = 1; TWeight_FSRUp   = 1; TWeight_FSRDown = 1; TWeight_PrefUp = 1; TWeight_PrefDown = 1;
   if(gIsData) return;
   if(TNSelLeps < 2) return;
   Float_t lepSF   = selLeptons.at(0).GetSF( 0)*selLeptons.at(1).GetSF( 0);
@@ -486,19 +501,21 @@ void TopAnalysis::GetWeights(){
       ElecSFDo *= selLeptons.at(1).GetSF(-1);
     }
   }
-  TWeight             = NormWeight*ElecSF*MuonSF*TrigSF*PUSF;
-  TWeight_ElecEffUp   = NormWeight*ElecSFUp*MuonSF*TrigSF*PUSF;
-  TWeight_ElecEffDown = NormWeight*ElecSFDo*MuonSF*TrigSF*PUSF;
-  TWeight_MuonEffUp   = NormWeight*ElecSF*MuonSFUp*TrigSF*PUSF;
-  TWeight_MuonEffDown = NormWeight*ElecSF*MuonSFDo*TrigSF*PUSF;
-  TWeight_TrigUp     = NormWeight*lepSF*(TrigSF+TrigSFerr)*PUSF;
-  TWeight_TrigDown   = NormWeight*lepSF*(TrigSF-TrigSFerr)*PUSF;
-  TWeight_PUDown     = NormWeight*lepSF*TrigSF*PUSF_Up;
-  TWeight_PUUp       = NormWeight*lepSF*TrigSF*PUSF_Down;
-  TWeight_ISRUp      = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*isrUp;
-  TWeight_ISRDown    = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*isrDo;
-  TWeight_FSRUp      = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*fsrUp;
-  TWeight_FSRDown    = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*fsrDo;
+  TWeight             = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeight;
+  TWeight_ElecEffUp   = NormWeight*ElecSFUp*MuonSF*TrigSF*PUSF*PrefWeight;
+  TWeight_ElecEffDown = NormWeight*ElecSFDo*MuonSF*TrigSF*PUSF*PrefWeight;
+  TWeight_MuonEffUp   = NormWeight*ElecSF*MuonSFUp*TrigSF*PUSF*PrefWeight;
+  TWeight_MuonEffDown = NormWeight*ElecSF*MuonSFDo*TrigSF*PUSF*PrefWeight;
+  TWeight_TrigUp     = NormWeight*lepSF*(TrigSF+TrigSFerr)*PUSF*PrefWeight;
+  TWeight_TrigDown   = NormWeight*lepSF*(TrigSF-TrigSFerr)*PUSF*PrefWeight;
+  TWeight_PUDown     = NormWeight*lepSF*TrigSF*PUSF_Up*PrefWeight;
+  TWeight_PUUp       = NormWeight*lepSF*TrigSF*PUSF_Down*PrefWeight;
+  TWeight_ISRUp      = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeight*isrUp;
+  TWeight_ISRDown    = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeight*isrDo;
+  TWeight_FSRUp      = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeight*fsrUp;
+  TWeight_FSRDown    = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeight*fsrDo;
+  TWeight_PrefUp     = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeightUp;
+  TWeight_PrefDown   = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeightDo;
   TWeight = NormWeight;
 }
 
@@ -921,6 +938,8 @@ void TopAnalysis::SetVariables(int sys){
   else if(sys == kISRDown    ) weight = TWeight_ISRDown;
   else if(sys == kFSRUp      ) weight = TWeight_FSRUp;
   else if(sys == kFSRDown    ) weight = TWeight_FSRDown;
+  else if(sys == kPrefireUp  ) weight = TWeight_PrefUp;
+  else if(sys == kPrefireDown) weight = TWeight_PrefDown;
 }
 
   

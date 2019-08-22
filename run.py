@@ -95,6 +95,7 @@ def GetSampleList(path, sample):
 def GetOptions(path, sample, options = ""):
   if not path.endswith('/'): path += '/'
   if not sample.endswith(".root"): sample += '.root'
+  doPrefire   = 'prefire,'  if IsVarInTree(path+sample, 'PrefireWeight') else ''
   doPUweight  = 'PUweight,' if IsVarInTree(path+sample, 'puWeight') else ''
   doPS        = 'PS,'       if IsVarInTree(path+sample, 'nPSWeight') else ''
   doScale     = 'Scale,'    if IsVarInTree(path+sample, 'nLHEScaleWeight') else ''
@@ -102,7 +103,7 @@ def GetOptions(path, sample, options = ""):
   doJECunc    = 'JECunc,'   if IsVarInTree(path+sample, 'Jet_pt_jesTotalUp') else ''
   useJetPtNom = 'JetPtNom,' if IsVarInTree(path+sample, 'Jet_pt_nom') else ''
   useLepGood  = 'LepGood,'  if IsVarInTree(path+sample, 'nLepGood') else ''
-  options += doPUweight + doPS + doScale + doPDF + doJECunc + useJetPtNom + useLepGood + options
+  options += doPUweight + doPrefire + doPS + doScale + doPDF + doJECunc + useJetPtNom + useLepGood + options
   if options.endswith(','): options = options[:-1]
   return options
 
