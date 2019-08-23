@@ -86,7 +86,6 @@ class EventBuilder : public PAFChainItemSelector{
     Int_t run;
     Int_t year;
     Int_t   gSelection;
-    Bool_t gPUWeigth;
     TString selection;
     TString gSampleName;
     TString gPathToHeppyTrees;
