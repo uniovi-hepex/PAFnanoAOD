@@ -500,7 +500,7 @@ void TopAnalysis::GetWeights(){
   TWeight_ISRDown    = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*isrDo;
   TWeight_FSRUp      = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*fsrUp;
   TWeight_FSRDown    = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*fsrDo;
-  TWeight = NormWeight;
+  
 }
 
 void TopAnalysis::InitHistos(){
