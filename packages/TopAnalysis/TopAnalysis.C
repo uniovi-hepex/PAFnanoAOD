@@ -188,6 +188,7 @@ void TopAnalysis::InsideLoop(){
   TrigSF         = GetParam<Float_t>("TriggerSF");
   TrigSFerr      = GetParam<Float_t>("TriggerSFerr");
 
+
   if(!gIsData && gPUWeigth){
     PUSF         = Get<Float_t>("puWeight");
     PUSF_Up      = Get<Float_t>("puWeightUp");
