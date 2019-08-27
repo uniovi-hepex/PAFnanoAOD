@@ -368,12 +368,10 @@ void LeptonSelector::InsideLoop(){
       if     (selLeptons.at(0).isMuon && selLeptons.at(1).isMuon){
         TriggerSF    = LepSF->GetTrigDoubleMuSF(    selLeptons.at(0).p.Pt(), selLeptons.at(1).p.Pt());
         TriggerSFerr = LepSF->GetTrigDoubleMuSF_err(selLeptons.at(0).p.Pt(), selLeptons.at(1).p.Pt());
-        cout << "Muon : " << TriggerSF << endl;
       }
       else if(selLeptons.at(0).isElec && selLeptons.at(1).isElec){
         TriggerSF    = LepSF->GetTrigDoubleElSF(    selLeptons.at(0).p.Pt(), selLeptons.at(1).p.Pt());
         TriggerSFerr = LepSF->GetTrigDoubleElSF_err(selLeptons.at(0).p.Pt(), selLeptons.at(1).p.Pt());
-        cout << "Elec : " << TriggerSF << endl;
       }
       else{
         Float_t pt0 = selLeptons.at(0).Pt();
@@ -384,7 +382,6 @@ void LeptonSelector::InsideLoop(){
         }
         TriggerSF    = LepSF->GetTrigElMuSF(    pt0, pt1);
         TriggerSFerr = LepSF->GetTrigElMuSF_err(pt0, pt1);
-        cout << "ElMu : " << TriggerSF << endl;
       }
     }
   }
