@@ -541,7 +541,7 @@ Float_t LeptonSF::GetTrigDoubleElSF(Float_t eta1, Float_t eta2) const { // binne
   eta2 = TMath::Abs(eta2);
   float pt1 = eta1; if(pt1 > 200) pt1 = 199;
   float pt2 = eta2; if(pt2 > 200) pt2 = 199;
-  return fDoubleElSF->GetBinContent(fDoubleMuSF->FindBin(pt1, pt2));
+  return fDoubleElSF->GetBinContent(fDoubleElSF->FindBin(pt1, pt2));
 }
 
 Float_t LeptonSF::GetTrigElMuSF(Float_t eta1, Float_t eta2) const { // binned in eta1, eta2
@@ -549,7 +549,7 @@ Float_t LeptonSF::GetTrigElMuSF(Float_t eta1, Float_t eta2) const { // binned in
   eta2 = TMath::Abs(eta2);
   float pt1 = eta1; if(pt1 > 200) pt1 = 199;
   float pt2 = eta2; if(pt2 > 200) pt2 = 199;
-  return fMuEGSF->GetBinContent(fDoubleMuSF->FindBin(pt1, pt2));
+  return fMuEGSF->GetBinContent(fMuEGSF->FindBin(pt1, pt2));
 }
 
 Float_t LeptonSF::GetTrigSingleMuonSF(Float_t pt, Float_t eta) const{

@@ -237,14 +237,13 @@ Bool_t LeptonSelector::isVetoLepton(Lepton lep){
 //============================================== Loose leptons (or other)
 //============================================================================================
 Bool_t LeptonSelector::isLooseLepton(Lepton lep){
+  // Same as tight except no Iso
   Bool_t passId; Bool_t passIso;
   if (lep.isMuon) {
     passId  = getMuonId(iTight);
-    passIso = getRelIso04POG(iTight);
   }
   if (lep.isElec) {
     passId = getElecCutBasedId(iTight) && lostHits <= 1;
-    passIso = 1; // getRelIso03POG(iTight); // Isolation already included in CutBasedID!!
     if (TMath::Abs(etaSC) > 1.4442 && TMath::Abs(etaSC) < 1.566) return false;
   }
   if (lep.p.Pt() < 18 || TMath::Abs(lep.p.Eta()) > 2.4) return false;
@@ -317,6 +316,7 @@ void LeptonSelector::InsideLoop(){
     tL = Lepton(tP, charge, type);
     if(tL.isMuon){
       tL.SetIso(RelIso04);
+      tL.SetIsIso(RelIso04 < 0.15);
       tL.SetEnergyUnc(GetMuonEnergyScale());
     }
     else{
@@ -327,18 +327,15 @@ void LeptonSelector::InsideLoop(){
     tL.SetSIP3D(sip);
     tL.Setdxy(dxy);
     tL.Setdz(dz);
-/*
-    // Set status: Good, conv, flip, fake
     if(!gIsData){
-      tL.SetGenMatch(kLGMgood);
-      if(abs(mcMatchPDGID) != abs(pdgid))            tL.SetGenMatch(kLGMother);
-      if(mcPromptGamma == 1)                         tL.SetGenMatch(kLGMconv);
-      if( (tL.GetGenMatch() == kLGMtoGenLep || tL.GetGenMatch() == kLGMgood) && charge*mcMatchPDGID > 0 && abs(mcMatchPDGID) == abs(pdgid))  tL.SetGenMatch(kLGMflip); // flip and no fake
-      if(mcMatchID == 0 || mcMatchID == -99)         tL.SetGenMatch(kLGMfake);
-//      if(!mcPrompt)   tL.SetGenMatch(kLGMfake);
+      tL.SetIsPrompt( genPartFlav == 1 or genPartIndex == 15);
+      tL.SetIsFromTau(genPartIndex == 15);
+      tL.SetIsConversion(genPartIndex == 22);
+      tL.SetIsFromB(genPartIndex == 5);
+      tL.SetIsFromC(genPartIndex == 4);
+      tL.SetIsFromL(genPartIndex == 3);
     }
-    */
-//     PAF_DEBUG("LeptonSelector", Form("for event %i, lepton number %i of type %i and charge %i...", evt, i, LepType, charge));
+
     if(isGoodLepton(tL)){
       //if(1){
       tL.SetSF(   LepSF->GetLeptonSF(     pt, eta, tL.type) ); // Set SF and error
@@ -371,14 +368,23 @@ void LeptonSelector::InsideLoop(){
       if     (selLeptons.at(0).isMuon && selLeptons.at(1).isMuon){
         TriggerSF    = LepSF->GetTrigDoubleMuSF(    selLeptons.at(0).p.Pt(), selLeptons.at(1).p.Pt());
         TriggerSFerr = LepSF->GetTrigDoubleMuSF_err(selLeptons.at(0).p.Pt(), selLeptons.at(1).p.Pt());
+        cout << "Muon : " << TriggerSF << endl;
       }
       else if(selLeptons.at(0).isElec && selLeptons.at(1).isElec){
         TriggerSF    = LepSF->GetTrigDoubleElSF(    selLeptons.at(0).p.Pt(), selLeptons.at(1).p.Pt());
         TriggerSFerr = LepSF->GetTrigDoubleElSF_err(selLeptons.at(0).p.Pt(), selLeptons.at(1).p.Pt());
+        cout << "Elec : " << TriggerSF << endl;
       }
       else{
-        TriggerSF    = LepSF->GetTrigElMuSF(    selLeptons.at(0).p.Pt(), selLeptons.at(1).p.Pt());
-        TriggerSFerr = LepSF->GetTrigElMuSF_err(selLeptons.at(0).p.Pt(), selLeptons.at(1).p.Pt());
+        Float_t pt0 = selLeptons.at(0).Pt();
+        Float_t pt1 = selLeptons.at(1).Pt();
+        if(pt1 > pt0){
+          pt1 = selLeptons.at(0).Pt();
+          pt0 = selLeptons.at(1).Pt();
+        }
+        TriggerSF    = LepSF->GetTrigElMuSF(    pt0, pt1);
+        TriggerSFerr = LepSF->GetTrigElMuSF_err(pt0, pt1);
+        cout << "ElMu : " << TriggerSF << endl;
       }
     }
   }

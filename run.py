@@ -245,7 +245,11 @@ def RunPAF(samples, selection, xsec, nSumOfWeights, year, outname, nSlots = 1, o
   myProject.AddSelectorPackage("EventBuilder");
 
   # Analysis selector
-  if selection != "": myProject.AddSelectorPackage(selection)
+  if selection != "": 
+    myProject.AddSelectorPackage(selection)
+  #if selection == 'TopAnalysis':
+  #  myProject.AddSelectorPackage("LepEffTop")
+ 
 
   # Additional packages
   myProject.AddPackage("Lepton");

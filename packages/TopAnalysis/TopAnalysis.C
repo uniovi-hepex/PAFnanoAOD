@@ -187,9 +187,6 @@ void TopAnalysis::InsideLoop(){
   NormWeight     = GetParam<Double_t>("NormWeight");
   TrigSF         = GetParam<Float_t>("TriggerSF");
   TrigSFerr      = GetParam<Float_t>("TriggerSFerr");
-  if(!gIs2016){
-    TrigSF = 1; TrigSFerr = 0;
-  }
   if(!gIsData && gPUWeigth){
     PUSF         = Get<Float_t>("puWeight");
     PUSF_Up      = Get<Float_t>("puWeightUp");
@@ -200,6 +197,7 @@ void TopAnalysis::InsideLoop(){
     PrefWeight   = Get<Float_t>("PrefireWeight");
     PrefWeightUp = Get<Float_t>("PrefireWeight_Up");
     PrefWeightDo = Get<Float_t>("PrefireWeight_Down");
+  }
   else{PrefWeight = 1; PrefWeightUp = 1; PrefWeightDo = 1;}
 
   // Event variables
@@ -295,9 +293,9 @@ void TopAnalysis::InsideLoop(){
       }
     }
   }
+  SetParam("NJets",  njets);
+  SetParam("NBtags", nbtags);
 }
-
-
 
 //#####################################################################
 // Functions
@@ -516,7 +514,6 @@ void TopAnalysis::GetWeights(){
   TWeight_FSRDown    = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeight*fsrDo;
   TWeight_PrefUp     = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeightUp;
   TWeight_PrefDown   = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeightDo;
-  TWeight = NormWeight;
 }
 
 void TopAnalysis::InitHistos(){
