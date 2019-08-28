@@ -194,8 +194,7 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t  TWeight_FSRDown;
     Float_t  TWeight_PrefUp;
     Float_t  TWeight_PrefDown;
-    
-    
+
     std::vector<Jet> jets;
     Float_t weight;
     Float_t met, ht, nvert, mt2, invmass; 
