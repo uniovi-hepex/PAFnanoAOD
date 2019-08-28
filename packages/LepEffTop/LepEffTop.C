@@ -83,6 +83,7 @@ void LepEffTop::InsideLoop(){
   // Weights and SFs
   NormWeight     = GetParam<Double_t>("NormWeight");
   TriggerSF      = GetParam<Float_t>("TriggerSF");
+  PUSF = 1; PrefWeight = 1;
   if(!gIsData && gPUWeigth){ PUSF       = Get<Float_t>("puWeight");}
   if(!gIsData && gPrefire ){ PrefWeight = Get<Float_t>("PrefireWeight");}
 
@@ -107,6 +108,11 @@ void LepEffTop::InsideLoop(){
 void LepEffTop::FillAll(Int_t i, Int_t j, Int_t k){
   Float_t SF = Elec.GetSF()*Muon.GetSF()*TriggerSF;
   Float_t weight = NormWeight*SF*PUSF*PrefWeight;
+  cout << "weight     = " << weight << endl;
+  cout << "NormWeight = " << NormWeight << endl;
+  cout << "SF         = " << SF << endl;
+  cout << "PU         = " << PUSF << endl;
+  cout << "PrefWeight = " << PrefWeight << endl;
   hMuonPt [i][j][k]->Fill(Muon.Pt(),  weight);
   hMuonEta[i][j][k]->Fill(Muon.Eta(), weight);
   hMuonPhi[i][j][k]->Fill(Muon.Phi(), weight);
