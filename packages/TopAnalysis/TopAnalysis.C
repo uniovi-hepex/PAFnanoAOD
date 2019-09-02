@@ -294,6 +294,8 @@ void TopAnalysis::InsideLoop(){
       }
     }
   }
+  SetParam("NJets",  njets);
+  SetParam("NBtags", nbtags);
 }
 
 
