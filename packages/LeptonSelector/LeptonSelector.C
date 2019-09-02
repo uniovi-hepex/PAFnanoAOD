@@ -328,7 +328,7 @@ void LeptonSelector::InsideLoop(){
     tL.Setdxy(dxy);
     tL.Setdz(dz);
     if(!gIsData){
-      tL.SetIsPrompt( genPartFlav == 1 or genPartIndex == 15);
+      tL.SetIsPrompt( genPartFlav == 1 || genPartIndex == 15 || gIsData);
       tL.SetIsFromTau(genPartIndex == 15);
       tL.SetIsConversion(genPartIndex == 22);
       tL.SetIsFromB(genPartIndex == 5);

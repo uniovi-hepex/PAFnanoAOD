@@ -878,12 +878,13 @@ void TopAnalysis::SetVariables(int sys){
   // Jets
   njets = 0; nbtags = 0;
   jets.clear(); Jet jet; TLorentzVector t; 
-  float pt, eta, phi, m; bool isbtag; float csv, deepcsv;
+  float pt, eta, phi, m; bool isbtag; float csv, deepcsv, deepflav;
   Int_t nJets = Get<Int_t>("nJet");
   Int_t jetid, flav;
   for(int i = 0; i < nJets; i++){
     pt = Get<Float_t>(JetPt,i); eta = Get<Float_t>("Jet_eta",i); phi = Get<Float_t>("Jet_phi", i); m = Get<Float_t>("Jet_mass",i);
-    csv = Get<Float_t>("Jet_btagCSVV2", i); deepcsv = Get<Float_t>("Jet_btagDeepB", i); jetid = Get<Int_t>("Jet_jetId",i);
+    csv = Get<Float_t>("Jet_btagCSVV2", i); deepcsv = Get<Float_t>("Jet_btagDeepB", i); deepflav = Get<Float_t>("Jet_btagDeepFlavB", i);
+    jetid = Get<Int_t>("Jet_jetId",i);
     flav = -999999; if(!gIsData) flav = Get<Int_t>("Jet_hadronFlavour", i);
 
     // JES and JER ----> Update this to propagate to MET, MT2, etc!!
@@ -904,16 +905,18 @@ void TopAnalysis::SetVariables(int sys){
       pt = Get<Float_t>("Jet_pt_jerDown", i);
       m  = Get<Float_t>("Jet_mass_jerDown", i);
     }
-    if     (sys == kBtagUp)      isbtag = fBTagSFbUp->IsTagged(csv, flav, pt, eta);
-    else if(sys == kBtagDown)    isbtag = fBTagSFbDo->IsTagged(csv, flav, pt, eta);
-    else if(sys == kMistagUp)    isbtag = fBTagSFlUp->IsTagged(csv, flav, pt, eta);
-    else if(sys == kMistagDown)  isbtag = fBTagSFlDo->IsTagged(csv, flav, pt, eta);
-    else                         isbtag = fBTagSFnom->IsTagged(csv, flav, pt, eta);
+    Float_t alg = deepflav;
+    if     (sys == kBtagUp)      isbtag = fBTagSFbUp->IsTagged(alg, flav, pt, eta);
+    else if(sys == kBtagDown)    isbtag = fBTagSFbDo->IsTagged(alg, flav, pt, eta);
+    else if(sys == kMistagUp)    isbtag = fBTagSFlUp->IsTagged(alg, flav, pt, eta);
+    else if(sys == kMistagDown)  isbtag = fBTagSFlDo->IsTagged(alg, flav, pt, eta);
+    else                         isbtag = fBTagSFnom->IsTagged(alg, flav, pt, eta);
     if(pt > 30 && TMath::Abs(eta) <= 2.4 && jetid > 1){ // pt > 30, |eta| < 2.4, id > 1 (2, 6)
       t.SetPtEtaPhiM(pt, eta, phi, m);
       jet = Jet(t, csv);
       jet.isBtag = isbtag;
       jet.SetDeepCSVB(deepcsv);
+      jet.SetDeepFlav(deepflav);
 
       if(Cleaning(jet, selLeptons, 0.4)){
         njets++;
