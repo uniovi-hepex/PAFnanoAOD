@@ -291,56 +291,41 @@ void LeptonSF::loadHisto(Int_t iHisto, Int_t wp){
 
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>> Triggers
   else if(iHisto == iTrigDoubleMuon){
-    //filename = "TriggerSF_mumu2016_pt"; histoname = "lepton_pt_2D_sf";
-    if(gIs2017){
-      filename = "trigSF2017"; histoname = "TrigSF_MuMu";
-      if     (era==runB) histoname = "TriggSF_BMuMu";
-      else if(era==runC) histoname = "TriggSF_CMuMu";
-      else if(era==runD) histoname = "TriggSF_DMuMu";
-      else if(era==runE) histoname = "TriggSF_EMuMu";
-      else if(era==runF) histoname = "TriggSF_FMuMu";
-      /*else{
-        filename = "triggerSummary_mumu"; histoname = "scalefactor_eta2d_with_syst";
-      }*/
+    filename = "TriggerSFfromReza";
+    if(gIs2016){
+      histoname = "trigSF2016_Muon"; 
     }
-    else{
-      filename = "triggerSummary_mumu"; histoname = "scalefactor_eta2d_with_syst";
+    else if(gIs2017){
+      histoname = "trigSF2017_Muon"; 
+    }
+    else{ // 2018
+      histoname = "trigSF2018_Muon"; 
     }
     fDoubleMuSF = (TH2F*) GetHistogramFromFileF(path_to_SF_histos + filename + ".root", histoname, "fDoubleMuSF"); 
   }
   else if(iHisto == iTrigDoubleElec){
-    //filename = "TriggerSF_ee2016_pt"; histoname = "lepton_pt_2D_sf";
-    if(gIs2017){
-      filename = "trigSF2017"; histoname = "TrigSF_ElEl";
-      if     (era==runB) histoname = "TriggSF_BElEl";
-      else if(era==runC) histoname = "TriggSF_CElEl";
-      else if(era==runD) histoname = "TriggSF_DElEl";
-      else if(era==runE) histoname = "TriggSF_EElEl";
-      else if(era==runF) histoname = "TriggSF_FElEl";
-      //else{
-      //  filename = "triggerSummary_mumu"; histoname = "scalefactor_eta2d_with_syst";
-      //}
+    filename = "TriggerSFfromReza";
+    if(gIs2016){
+      histoname = "trigSF2016_Elec";
     }
-    else{
-      filename = "triggerSummary_ee"; histoname = "scalefactor_eta2d_with_syst";
+    else if(gIs2017){
+      histoname = "trigSF2017_Elec";
+    }
+    else{ // 2018
+      histoname = "trigSF2018_Elec";
     }
     fDoubleElSF = (TH2F*) GetHistogramFromFileF(path_to_SF_histos + filename + ".root", histoname, "fDoubleElSF"); 
   }
   else if(iHisto == iTrigElMu){
-    //filename = "TriggerSF_emu2016_pt"; histoname = "lepton_pt_2D_sf";
-    if(gIs2017){
-      filename = "trigSF2017"; histoname = "TrigSF_ElMu";
-      if     (era==runB) histoname = "TriggSF_BElMu";
-      else if(era==runC) histoname = "TriggSF_CElMu";
-      else if(era==runD) histoname = "TriggSF_DElMu";
-      else if(era==runE) histoname = "TriggSF_EElMu";
-      else if(era==runF) histoname = "TriggSF_FElMu";
-      /*else{
-        filename = "triggerSummary_mumu"; histoname = "scalefactor_eta2d_with_syst";
-      }*/
+    filename = "TriggerSFfromReza";
+    if(gIs2016){
+      histoname = "trigSF2016_ElMu";
     }
-    else{
-      filename = "triggerSummary_emu"; histoname = "scalefactor_eta2d_with_syst";
+    else if(gIs2017){
+      histoname = "trigSF2017_ElMu";
+    }
+    else{ // 2018
+      histoname = "trigSF2018_ElMu";
     }
     fMuEGSF = (TH2F*) GetHistogramFromFileF(path_to_SF_histos + filename + ".root", histoname, "fMuEGSF"); 
   }
@@ -543,45 +528,28 @@ Float_t LeptonSF::GetTrackerMuonSF(Float_t eta){
 ///////////////////////////////////////////////////
 
 Float_t LeptonSF::GetTrigDoubleMuSF(Float_t eta1, Float_t eta2) const { // binned in eta1, eta2
-  if(gIs2017){
-    float pt = eta2; if(pt > 200) pt = 199;
-    float eta = eta1;
-    return fDoubleMuSF->GetBinContent(fDoubleMuSF->FindBin(eta, pt));
-  }
-  else{
-    eta1 = TMath::Abs(eta1);
-    eta2 = TMath::Abs(eta2);
-    return fDoubleMuSF->GetBinContent(fDoubleMuSF->FindBin(eta1, eta2));
-  }
+  eta1 = TMath::Abs(eta1);
+  eta2 = TMath::Abs(eta2);
+  float pt1 = eta1; if(pt1 > 200) pt1 = 199;
+  float pt2 = eta2; if(pt2 > 200) pt2 = 199;
+  return fDoubleMuSF->GetBinContent(fDoubleMuSF->FindBin(pt1, pt2));
   return 1;
 }
 
 Float_t LeptonSF::GetTrigDoubleElSF(Float_t eta1, Float_t eta2) const { // binned in eta1, eta2
-  if(gIs2017){
-    float pt = eta2; if(pt > 200) pt = 199;
-    float eta = eta1;
-    return fDoubleMuSF->GetBinContent(fDoubleMuSF->FindBin(eta, pt));
-  }
-  else{
-    eta1 = TMath::Abs(eta1);
-    eta2 = TMath::Abs(eta2);
-    return fDoubleElSF->GetBinContent(fDoubleElSF->FindBin(eta1, eta2));
-  }
-  return 1;
+  eta1 = TMath::Abs(eta1);
+  eta2 = TMath::Abs(eta2);
+  float pt1 = eta1; if(pt1 > 200) pt1 = 199;
+  float pt2 = eta2; if(pt2 > 200) pt2 = 199;
+  return fDoubleElSF->GetBinContent(fDoubleElSF->FindBin(pt1, pt2));
 }
 
 Float_t LeptonSF::GetTrigElMuSF(Float_t eta1, Float_t eta2) const { // binned in eta1, eta2
-  if(gIs2017){
-    float pt = eta2; if(pt > 200) pt = 199;
-    float eta = eta1;
-    return fDoubleMuSF->GetBinContent(fDoubleMuSF->FindBin(eta, pt));
-  }
-  else{
-    eta1 = TMath::Abs(eta1);
-    eta2 = TMath::Abs(eta2);
-    return fMuEGSF->GetBinContent(fMuEGSF->FindBin(eta1, eta2) );
-  }
-  return 1;
+  eta1 = TMath::Abs(eta1);
+  eta2 = TMath::Abs(eta2);
+  float pt1 = eta1; if(pt1 > 200) pt1 = 199;
+  float pt2 = eta2; if(pt2 > 200) pt2 = 199;
+  return fMuEGSF->GetBinContent(fMuEGSF->FindBin(pt1, pt2));
 }
 
 Float_t LeptonSF::GetTrigSingleMuonSF(Float_t pt, Float_t eta) const{
@@ -592,12 +560,18 @@ Float_t LeptonSF::GetTrigSingleMuonSF(Float_t pt, Float_t eta) const{
 
 // Trigger SF errors
 Float_t LeptonSF::GetTrigDoubleMuSF_err(Float_t eta1, Float_t eta2) const { // binned in eta1, eta2
+  if(eta1 > 200) eta1 = 199;
+  if(eta2 > 200) eta2 = 199;
   return fDoubleMuSF->GetBinError(fDoubleMuSF->FindBin(TMath::Abs(eta1),TMath::Abs(eta2)));
 }
 Float_t LeptonSF::GetTrigDoubleElSF_err(Float_t eta1, Float_t eta2) const { // binned in eta1, eta2
+  if(eta1 > 200) eta1 = 199;
+  if(eta2 > 200) eta2 = 199;
   return fDoubleElSF->GetBinError(fDoubleElSF->FindBin(TMath::Abs(eta1),TMath::Abs(eta2)));
 }
 Float_t LeptonSF::GetTrigElMuSF_err(Float_t eta1, Float_t eta2) const { // binned in eta1, eta2
+  if(eta1 > 200) eta1 = 199;
+  if(eta2 > 200) eta2 = 199;
   return fMuEGSF->GetBinError(fMuEGSF->FindBin(TMath::Abs(eta1),TMath::Abs(eta2)));
 }
 

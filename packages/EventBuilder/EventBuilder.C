@@ -69,7 +69,6 @@ void EventBuilder::Initialise(){
   gXSec        = GetParam<Float_t>("xsec");
   gOptions     = GetParam<TString>("_options");
   gSelection   = GetSelection(selection);
-  gPUWeigth    = gOptions.Contains("PUweight")? true : false;
   gChannel = -1;
   nProcessedEvents = 0;
   

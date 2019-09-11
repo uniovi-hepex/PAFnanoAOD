@@ -9,14 +9,13 @@
 //enum eChannels{iUnkChan, iElMu, iMuon, iElec, nChannels};
 const Int_t nChannels = 3;
 enum eLevels  {idilepton, iZVeto, iMETcut, i2jets, i1btag, nLevels};
-const int nWeights = 248;
 const TString gChanLabel[nChannels] = {"ElMu", "Muon","Elec"};
 const TString sCut[nLevels] = {"dilepton", "ZVeto", "MET", "2jets", "1btag"};
 const Int_t nPtBins = 14;
 const Float_t ptBins[nPtBins+1] = {30, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 200, 300, 400, 600};
 
-enum eSysts                   {kNorm, kMuonEffUp,  kMuonEffDown,  kElecEffUp,  kElecEffDown,  kMuonEnergyUp,  kMuonEnergyDown,  kElecEnergyUp,  kElecEnergyDown,  kJESUp,  kJESDown,  kJERUp,  kJERDown,  kPUUp,  kPUDown, kTrigUp, kTrigDown,   kUnclMETUp,   kUnclMETDown, kBtagUp,  kBtagDown,  kMistagUp,  kMistagDown, nSysts};
-const TString gSyst[nSysts] = {"",    "MuonEffUp", "MuonEffDown", "ElecEffUp", "ElecEffDown", "MuonEnergyUp", "MuonEnergyDown", "ElecEnergyUp", "ElecEnergyDown", "JESUp", "JESDown", "JERUp", "JERDown", "PUUp", "PUDown", "TrigUp", "TrigDown", "UnclMETUp", "UnclMETDown", "BtagUp", "BtagDown", "MistagUp", "MistagDown"};
+enum eSysts                   {kNorm, kMuonEffUp,  kMuonEffDown,  kElecEffUp,  kElecEffDown,  kMuonEnergyUp,  kMuonEnergyDown,  kElecEnergyUp,  kElecEnergyDown,  kJESUp,  kJESDown,  kJERUp,  kJERDown,  kPUUp,  kPUDown, kTrigUp, kTrigDown,   kUnclMETUp,   kUnclMETDown, kBtagUp,  kBtagDown,  kMistagUp,  kMistagDown, kISRUp, kISRDown, kFSRUp, kFSRDown, kPrefireUp, kPrefireDown, nSysts};
+const TString gSyst[nSysts] = {"",    "MuonEffUp", "MuonEffDown", "ElecEffUp", "ElecEffDown", "MuonEnergyUp", "MuonEnergyDown", "ElecEnergyUp", "ElecEnergyDown", "JESUp", "JESDown", "JERUp", "JERDown", "PUUp", "PUDown", "TrigUp", "TrigDown", "UnclMETUp", "UnclMETDown", "BtagUp", "BtagDown", "MistagUp", "MistagDown", "ISRUp", "ISRDown", "FSRUp", "FSRDown", "PrefireUp", "PrefireDown"};
 
 
 class TopAnalysis : public PAFChainItemSelector{
@@ -44,9 +43,9 @@ class TopAnalysis : public PAFChainItemSelector{
     BTagSFUtil *fBTagSFlUp;
     BTagSFUtil *fBTagSFlDo;
     Int_t era;
+    Int_t nPDFweights;
 
     TTree* fTree;
-    Float_t TLHEWeight[254];
     TString GetSuffix(int iCh, int iCut, int iSyst = 0);
     void SetLeptonVariables();
     void SetJetVariables();
@@ -70,6 +69,9 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t PUSF;
     Float_t PUSF_Up;
     Float_t PUSF_Down;
+    Float_t PrefWeight;
+    Float_t PrefWeightUp;
+    Float_t PrefWeightDo;
     Int_t   gChannel;
     Bool_t  TPassMETFilters;
     Bool_t  TPassTrigger;
@@ -172,10 +174,9 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t TBtagPt;
 
     Int_t   TNISRJets;
-    Float_t TMETJESUp;
-    Float_t TMETJESDown;
-    Float_t TMT2llJESUp;
-    Float_t TMT2llJESDown;
+    Float_t TMETJESUp; Float_t TMETJESDown; Float_t TMETJERUp; Float_t TMETJERDown; Float_t TMETUnclUp; Float_t TMETUnclDown;
+    Float_t TMT2JESUp; Float_t TMT2JESDown; Float_t TMT2JERUp; Float_t TMT2JERDown; Float_t TMT2UnclUp; Float_t TMT2UnclDown;
+    Float_t TMT2MESUp; Float_t TMT2MESDown; Float_t TMT2EESUp; Float_t TMT2EESDown;
 
     Float_t  TWeight_LepEffUp;
     Float_t  TWeight_LepEffDown;
@@ -185,10 +186,14 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t  TWeight_MuonEffDown;
     Float_t  TWeight_TrigUp;
     Float_t  TWeight_TrigDown;
-    Float_t  TWeight_FSUp;
     Float_t  TWeight_PUDown;
     Float_t  TWeight_PUUp;
-    Float_t  TWeight_FSDown;
+    Float_t  TWeight_ISRUp;
+    Float_t  TWeight_ISRDown;
+    Float_t  TWeight_FSRUp;
+    Float_t  TWeight_FSRDown;
+    Float_t  TWeight_PrefUp;
+    Float_t  TWeight_PrefDown;
 
     std::vector<Jet> jets;
     Float_t weight;
@@ -198,13 +203,20 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t dileppt, deltaphi, deltaeta;
 
     TString metvar;
+    TString metvarpt;
     TString JetPt;
     Bool_t gPUWeigth;
+    Bool_t gPrefire;
     Bool_t gDoJECunc;
+    Bool_t gDoPDFunc;
+    Bool_t gDoPSunc;
+    Bool_t gDoScaleUnc;
 
 // Histograms
 //=====================================================0
-  TH1F* fHLHEweights[nChannels][nLevels][nSysts];
+  TH1F* fHPDFweights[nChannels][nLevels];
+  TH1F* fHPSweights[nChannels][nLevels];
+  TH1F* fHScaleWeights[nChannels][nLevels];
   TH1F* fHMET[nChannels][nLevels][nSysts];
   TH1F* fHMT2[nChannels][nLevels][nSysts];
   TH1F* fHLep0Eta[nChannels][nLevels][nSysts];

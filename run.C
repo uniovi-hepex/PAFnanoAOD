@@ -83,6 +83,8 @@ void run(TString samp, TString selection, Double_t xsec, Double_t sumofweights, 
   // Analysis selector
   if (selection != "")
     myProject->AddSelectorPackage(selection);
+  if (selection == "TopAnalysis")
+    myProject->AddSelectorPackage("LepEffTop");
   
   // Additional packages
   myProject->AddPackage("Lepton");

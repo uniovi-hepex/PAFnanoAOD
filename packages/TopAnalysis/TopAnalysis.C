@@ -11,13 +11,15 @@ TopAnalysis::TopAnalysis() : PAFChainItemSelector() {
   event           = 0;
   lumiblock       = 0;
 
-  for(Int_t i = 0; i < 254; i++) TLHEWeight[i] = 0;
-  
   for(Int_t ch = 0; ch < nChannels; ch++){
     for(Int_t cut = 0; cut < nLevels; cut++){
+      if(!gIsData){
+        fHPSweights[ch][cut]  = 0;
+        fHPDFweights[ch][cut]  = 0;
+        fHScaleWeights[ch][cut]  = 0;
+      }
       for(Int_t sys = 0; sys < nSyst; sys++){
         if(gIsData && sys!=0) break;
-        fHLHEweights[ch][cut][sys]  = 0;
         fHMET[ch][cut][sys]         = 0;
         fHMT2[ch][cut][sys]         = 0;
         fHLep0Eta[ch][cut][sys]     = 0;
@@ -82,12 +84,17 @@ void TopAnalysis::Initialise(){
   gDoSyst      = true;// gOptions.Contains("doSyst")? true : false;
   year         = GetParam<TString>("year").Atoi();
   gIsTTbar     = false;
-  gIsLHE       = false;
   gSelection   = GetSelection(selection);
   gDoJECunc    = gOptions.Contains("JECunc")? true : false;
+  gDoPDFunc    = gOptions.Contains("PDF")? true : false;
+  gDoPSunc     = gOptions.Contains("PS")? true : false;
+  gDoScaleUnc  = gOptions.Contains("Scale")? true : false;
   gPUWeigth    = gOptions.Contains("PUweight")? true : false;
+  gPrefire     = gOptions.Contains("prefire")? true : false;
   JetPt        = gOptions.Contains("JetPtNom")? "Jet_pt_nom" : "Jet_pt";
   if (gSampleName == "TT" && year == 2016) gIsTTbar = true;
+
+  nPDFweights = gIsTTbar ? 100 : 33;
 
   makeTree   = false;
   makeHistos = true;
@@ -110,6 +117,8 @@ void TopAnalysis::Initialise(){
     useSyst.push_back(kBtagDown);
     useSyst.push_back(kMistagUp);
     useSyst.push_back(kMistagDown);
+    useSyst.push_back(kTrigUp);
+    useSyst.push_back(kTrigDown);
 
     if(gDoJECunc){
       useSyst.push_back(kJESUp);
@@ -121,10 +130,22 @@ void TopAnalysis::Initialise(){
       useSyst.push_back(kPUUp);
       useSyst.push_back(kPUDown);
     }
+    if(gPrefire){
+      useSyst.push_back(kPrefireUp);
+      useSyst.push_back(kPrefireDown);
+    }
+    if(gDoPSunc){
+      useSyst.push_back(kISRUp);
+      useSyst.push_back(kISRDown);
+      useSyst.push_back(kFSRUp);
+      useSyst.push_back(kFSRDown);
+    }
   }
   nSyst = useSyst.size();
   InitHistos();
-  metvar = year == 2017? "METFixEE2017" : "MET";
+  metvar   = year == 2017? "METFixEE2017" : "MET";
+  metvarpt = year == 2017? "METFixEE2017_pt" : "MET_pt";
+  if(year != 2017 and gOptions.Contains("JetPtNom")) metvarpt = "MET_pt_nom";
 
   gIs2017 = false; gIs2016 = false; gIs2018 = false;
   if     (year == 2017) gIs2017 = true;
@@ -136,7 +157,7 @@ void TopAnalysis::Initialise(){
   TString taggerName="DeepFlav"; //"CSVv2"; //"DeepCSV"; // DeepFlav
   TString MeasType = "mujets";
   TString stringWP = "Medium";
-  if(taggerName == "DeepFlav" && year == 2017) MeasType = "comb";
+  //if(taggerName == "DeepFlav" && year == 2017) MeasType = "comb";
   fBTagSFnom = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP,  0, year);
   if(!gIsData){
     fBTagSFbUp = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP,  1, year);
@@ -166,15 +187,18 @@ void TopAnalysis::InsideLoop(){
   NormWeight     = GetParam<Double_t>("NormWeight");
   TrigSF         = GetParam<Float_t>("TriggerSF");
   TrigSFerr      = GetParam<Float_t>("TriggerSFerr");
-  if(!gIs2016){
-    TrigSF = 1; TrigSFerr = 0;
-  }
   if(!gIsData && gPUWeigth){
     PUSF         = Get<Float_t>("puWeight");
     PUSF_Up      = Get<Float_t>("puWeightUp");
     PUSF_Down    = Get<Float_t>("puWeightDown");
   }
   else{PUSF = 1; PUSF_Up = 1; PUSF_Down = 1;}
+  if(!gIsData && gPrefire){
+    PrefWeight   = Get<Float_t>("PrefireWeight");
+    PrefWeightUp = Get<Float_t>("PrefireWeight_Up");
+    PrefWeightDo = Get<Float_t>("PrefireWeight_Down");
+  }
+  else{PrefWeight = 1; PrefWeightUp = 1; PrefWeightDo = 1;}
 
   // Event variables
   gChannel       = GetParam<Int_t>("gChannel");
@@ -214,10 +238,6 @@ void TopAnalysis::InsideLoop(){
               if(nFidubJets >= 1){ // At least 1 b-tag
                 fHFiduYields[GenChannel-1][0] -> Fill(i1btag);
 
-                //Int_t nWTree = Get<Int_t>("nLHEweight");
-                //for(int i = 0; i<nWeights; i++){
-                //  fHWeightsFidu->Fill(i, Get<Float_t>("LHEweight_wgt", i));
-                //}
               }
             }
           }
@@ -273,9 +293,9 @@ void TopAnalysis::InsideLoop(){
       }
     }
   }
+  SetParam("NJets",  njets);
+  SetParam("NBtags", nbtags);
 }
-
-
 
 //#####################################################################
 // Functions
@@ -400,33 +420,50 @@ void TopAnalysis::GetGenJetVariables(std::vector<Jet> genJets, std::vector<Jet> 
 
 void TopAnalysis::GetMET(){
     TRun        = gIsData ? Get<UInt_t>("run") : 1;
-    TMET        = Get<Float_t>(metvar+"_pt"); // MET_pt
+    TMET        = Get<Float_t>(metvarpt); // MET_pt
     TMET_Phi    = Get<Float_t>(metvar+"_phi");  // MET phi
-    if((Int_t) selLeptons.size() >= 2) TMT2        = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMET, TMET_Phi);
+    if((Int_t) selLeptons.size() >= 2) TMT2 = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMET, TMET_Phi);
     TMETJESUp = 0; TMETJESDown = 0; TGenMET = 0; TgenTop1Pt = 0; TgenTop2Pt = 0;
+    TMETJERUp = 0; TMETJERDown = 0; TMETUnclUp = 0; TMETUnclDown = 0;
+    TMT2JESUp = 0; TMT2JESDown = 0; TMT2JERUp = 0; TMT2JERDown = 0; TMT2UnclUp = 0; TMT2UnclDown = 0;
+    TMT2MESUp = 0; TMT2MESDown = 0; TMT2EESUp = 0; TMT2EESDown = 0;
     if(gIsData) TNVert = Get<Int_t>("PV_npvs");
     if(gIsData) return;
     TNVert      = Get<Int_t>("Pileup_nPU");
     TGenMET     = Get<Float_t>("GenMET_pt");
-    //TMETJESUp   = Get<Float_t>("met_jecUp_pt"  );
-    //TMETJESDown = Get<Float_t>("met_jecDown_pt");
-//    TgenTop1Pt  = Get<Float_t>("GenTop_pt"  , 0);;
-//    TgenTop2Pt  = Get<Float_t>("GenTop_pt"  , 1);;
-//  if(gIsLHE)  for(Int_t i = 0; i < Get<Int_t>("nLHEweight"); i++)   TLHEWeight[i] = Get<Float_t>("LHEweight_wgt", i);
+    //TMETJESUp    = Get<Float_t>("met_jecUp_pt"  );
+    //TMETJESDown  = Get<Float_t>("met_jecDown_pt");
+    //TMETJERUp    = Get<Float_t>("met_jecUp_pt"  );
+    //TMETJERDown  = Get<Float_t>("met_jecUp_pt"  );
+    //TMETUnclUp   = Get<Float_t>("met_jecUp_pt"  );
+    //TMETUnclDown = Get<Float_t>("met_jecUp_pt"  );
 }
 
 void TopAnalysis::GetWeights(){
   TWeight_ElecEffUp = 1; TWeight_ElecEffDown = 1; TWeight_MuonEffUp = 1; TWeight_MuonEffDown = 1;
   TWeight_TrigUp = 1; TWeight_TrigDown = 1; TWeight_PUDown = 1; TWeight_PUUp = 1; TWeight = 1;
+  TWeight_ISRUp   = 1; TWeight_ISRDown = 1; TWeight_FSRUp   = 1; TWeight_FSRDown = 1; TWeight_PrefUp = 1; TWeight_PrefDown = 1;
   if(gIsData) return;
   if(TNSelLeps < 2) return;
   Float_t lepSF   = selLeptons.at(0).GetSF( 0)*selLeptons.at(1).GetSF( 0);
   Float_t ElecSF = 1; Float_t MuonSF = 1;
   Float_t ElecSFUp = 1; Float_t ElecSFDo = 1; Float_t MuonSFUp = 1; Float_t MuonSFDo = 1;
   Float_t stat = 0; 
+  Float_t fsrUp = 1; Float_t fsrDo = 1;  Float_t isrUp = 1; Float_t isrDo = 1; 
+
+  if(gDoPSunc){
+    // [0] is ISR=0.5 FSR=1; [1] is ISR=1 FSR=0.5; [2] is ISR=2 FSR=1; [3] is ISR=1 FSR=2
+    isrDo = Get<Float_t>("PSWeight", 0);
+    fsrDo = Get<Float_t>("PSWeight", 1);
+    isrUp = Get<Float_t>("PSWeight", 2);
+    fsrUp = Get<Float_t>("PSWeight", 3);
+  }
+  
+
   //For muons
   //https://twiki.cern.ch/twiki/bin/viewauth/CMS/MuonReferenceEffsRun2
-  //Additional 1% for ID + 0.5% for Isolation + 0.5% single muon triggers
+  // OLD --> Additional 1% for ID + 0.5% for Isolation + 0.5% single muon triggers
+  // 0.5% for iso (AN from Sergio)
 
   if(TChannel == iElec){
     ElecSF   = selLeptons.at(0).GetSF( 0)*selLeptons.at(1).GetSF( 0);
@@ -443,8 +480,8 @@ void TopAnalysis::GetWeights(){
   else{
     if(selLeptons.at(0).isMuon){
       MuonSF   *= selLeptons.at(0).GetSF( 0);
-      MuonSFUp *= selLeptons.at(0).GetSF( 1);
-      MuonSFDo *= selLeptons.at(0).GetSF(-1);
+      MuonSFUp *= selLeptons.at(0).GetSF( 1)+MuonSF*0.005;
+      MuonSFDo *= selLeptons.at(0).GetSF(-1)-MuonSF*0.005;
     }
     else{
       ElecSF   *= selLeptons.at(0).GetSF( 0);
@@ -453,8 +490,8 @@ void TopAnalysis::GetWeights(){
     }
     if(selLeptons.at(1).isMuon){
       MuonSF   *= selLeptons.at(1).GetSF( 0);
-      MuonSFUp *= selLeptons.at(1).GetSF( 1);
-      MuonSFDo *= selLeptons.at(1).GetSF(-1);
+      MuonSFUp *= selLeptons.at(1).GetSF( 1)+MuonSF*0.005;
+      MuonSFDo *= selLeptons.at(1).GetSF(-1)-MuonSF*0.005;
     }
     else{
       ElecSF   *= selLeptons.at(1).GetSF( 0);
@@ -462,19 +499,24 @@ void TopAnalysis::GetWeights(){
       ElecSFDo *= selLeptons.at(1).GetSF(-1);
     }
   }
-  TWeight             = NormWeight*ElecSF*MuonSF*TrigSF*PUSF;
-  TWeight_ElecEffUp   = NormWeight*ElecSFUp*MuonSF*TrigSF*PUSF;
-  TWeight_ElecEffDown = NormWeight*ElecSFDo*MuonSF*TrigSF*PUSF;
-  TWeight_MuonEffUp   = NormWeight*ElecSF*MuonSFUp*TrigSF*PUSF;
-  TWeight_MuonEffDown = NormWeight*ElecSF*MuonSFDo*TrigSF*PUSF;
-  TWeight_TrigUp     = NormWeight*lepSF*(TrigSF+TrigSFerr)*PUSF;
-  TWeight_TrigDown   = NormWeight*lepSF*(TrigSF-TrigSFerr)*PUSF;
-  TWeight_PUDown     = NormWeight*lepSF*TrigSF*PUSF_Up;
-  TWeight_PUUp       = NormWeight*lepSF*TrigSF*PUSF_Down;
+  TWeight             = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeight;
+  TWeight_ElecEffUp   = NormWeight*ElecSFUp*MuonSF*TrigSF*PUSF*PrefWeight;
+  TWeight_ElecEffDown = NormWeight*ElecSFDo*MuonSF*TrigSF*PUSF*PrefWeight;
+  TWeight_MuonEffUp   = NormWeight*ElecSF*MuonSFUp*TrigSF*PUSF*PrefWeight;
+  TWeight_MuonEffDown = NormWeight*ElecSF*MuonSFDo*TrigSF*PUSF*PrefWeight;
+  TWeight_TrigUp     = NormWeight*lepSF*(TrigSF+TrigSFerr)*PUSF*PrefWeight;
+  TWeight_TrigDown   = NormWeight*lepSF*(TrigSF-TrigSFerr)*PUSF*PrefWeight;
+  TWeight_PUDown     = NormWeight*lepSF*TrigSF*PUSF_Up*PrefWeight;
+  TWeight_PUUp       = NormWeight*lepSF*TrigSF*PUSF_Down*PrefWeight;
+  TWeight_ISRUp      = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeight*isrUp;
+  TWeight_ISRDown    = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeight*isrDo;
+  TWeight_FSRUp      = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeight*fsrUp;
+  TWeight_FSRDown    = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeight*fsrDo;
+  TWeight_PrefUp     = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeightUp;
+  TWeight_PrefDown   = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeightDo;
 }
 
 void TopAnalysis::InitHistos(){
-  fHWeightsFidu  = CreateH1F("hPDFweightsFidu","hPDFweightsFidu", nWeights, -0.5, nWeights - 0.5);
   fhDummy = CreateH1F("fhDummy","fhDummy", 1, 0, 2);
   for(Int_t ch = 0; ch < nChannels; ch++){
     fhDummyCh[ch] = CreateH1F("fhDummy_"+gChanLabel[ch],"fhDummy_"+gChanLabel[ch], 1, 0, 2);
@@ -512,10 +554,15 @@ void TopAnalysis::InitHistos(){
   TString suffix;
   for(Int_t ch = 0; ch < nChannels; ch++){
     for(Int_t cut = 0; cut < nLevels; cut++){
+      suffix = GetSuffix(ch, cut, 0);
+      if(!gIsData){
+        if(gDoPDFunc)   fHPDFweights[ch][cut]       = CreateH1F("H_PDFweights_"  +suffix, "PDFweights", nPDFweights, 0.5, nPDFweights+0.5); // 33 as nominal... 100 for 2016 old tune
+        if(gDoScaleUnc) fHScaleWeights[ch][cut]     = CreateH1F("H_ScaleWeights_"+suffix, "ScaleWeights", 9, 0.5, 9.5);
+        if(gDoPSunc)    fHPSweights[ch][cut]        = CreateH1F("H_PSweights_"   +suffix, "PSweights", 4, 0.5, 4.5);
+      }
       for(Int_t sys = 0; sys < nSyst; sys++){
         if(gIsData && sys > 0) break;
         suffix = GetSuffix(ch, cut, sys);
-        fHLHEweights[ch][cut][sys]  = CreateH1F("H_LHEweights"  +suffix, "LHEweights", nWeights, -0.5, nWeights - 0.5);
         fHMET[ch][cut][sys]         = CreateH1F("H_MET_"        +suffix, "MET"       , 3000, 0,300);
         fHMT2[ch][cut][sys]         = CreateH1F("H_MT2_"        +suffix, "MT2"       , 3000, 0,300);
         fHMuonEta[ch][cut][sys]     = CreateH1F("H_MuonEta_"    +suffix, "Lep0Eta"   , 50  ,-2.5 ,2.5);
@@ -556,7 +603,7 @@ void TopAnalysis::InitHistos(){
         fHJetDeepFlav[ch][cut][sys]  = CreateH1F("H_JetAllDeepFlav_" +suffix, "DeepFlav" , 100,0, 1.0);
         fHJet0DeepFlav[ch][cut][sys] = CreateH1F("H_Jet0DeepFlav_" +suffix, "Jet0DeepFlav" , 100,0, 1.0);
         fHJet1DeepFlav[ch][cut][sys] = CreateH1F("H_Jet1DeepFlav_" +suffix, "Jet1DeepFlav" , 100,0, 1.0);
-        fHvertices[ch][cut][sys]    = CreateH1F("H_Vtx_"+suffix, "Vtx", 102, -0.5, 100.5); 
+        fHvertices[ch][cut][sys]    = CreateH1F("H_Vtx_"+suffix, "Vtx", 101, -0.5, 100.5); 
       }
     }
   }
@@ -565,25 +612,25 @@ void TopAnalysis::InitHistos(){
 void TopAnalysis::FillDYHistos(Int_t ch){
   Int_t sys = 0;
   Int_t cut;
-  Float_t EventWeight = TWeight;
+  Float_t EventWeight = weight;
   cut = idilepton;
-  fHDYInvMass[ch][cut][sys]       -> Fill(TMll, EventWeight);
-  fHDYInvMassSF[ch][cut][sys]     -> Fill(TMll, EventWeight);
+  fHDYInvMass[ch][cut][sys]       -> Fill(invmass, EventWeight);
+  fHDYInvMassSF[ch][cut][sys]     -> Fill(invmass, EventWeight);
   cut = iZVeto;
-  fHDYInvMass[ch][cut][sys]       -> Fill(TMll, EventWeight);
-  fHDYInvMassSF[ch][cut][sys]     -> Fill(TMll, EventWeight);
+  fHDYInvMass[ch][cut][sys]       -> Fill(invmass, EventWeight);
+  fHDYInvMassSF[ch][cut][sys]     -> Fill(invmass, EventWeight);
   cut = iMETcut;
-  if(TMET > 40) fHDYInvMassSF[ch][cut][sys]     -> Fill(TMll, EventWeight);
-  fHDYInvMass[ch][cut][sys]       -> Fill(TMll, EventWeight);
+  if(met > 40) fHDYInvMassSF[ch][cut][sys]     -> Fill(invmass, EventWeight);
+  fHDYInvMass[ch][cut][sys]       -> Fill(invmass, EventWeight);
   //  }
-  if(TNJets > 1){
+  if(njets > 1){
     cut = i2jets;
-    if(TMET > 40) fHDYInvMassSF[ch][cut][sys]     -> Fill(TMll, EventWeight);
-    fHDYInvMass[ch][cut][sys]       -> Fill(TMll, EventWeight);
-    if(TNBtags > 0){
+    if(met > 40) fHDYInvMassSF[ch][cut][sys]     -> Fill(invmass, EventWeight);
+    fHDYInvMass[ch][cut][sys]       -> Fill(invmass, EventWeight);
+    if(nbtags > 0){
       cut = i1btag;
-      if(TMET > 40) fHDYInvMassSF[ch][cut][sys]     -> Fill(TMll, EventWeight);
-      fHDYInvMass[ch][cut][sys]       -> Fill(TMll, EventWeight);
+      if(met > 40) fHDYInvMassSF[ch][cut][sys]     -> Fill(invmass, EventWeight);
+      fHDYInvMass[ch][cut][sys]       -> Fill(invmass, EventWeight);
     }
   }
 }
@@ -591,6 +638,22 @@ void TopAnalysis::FillDYHistos(Int_t ch){
 void TopAnalysis::FillHistos(Int_t ch, Int_t cut, Int_t sys){
   if(gIsData && sys != 0) return;
   if(!makeHistos) return;
+
+  if(!gIsData && sys == 0){
+    Int_t i = 0;
+    if(gDoPSunc){
+      for(i = 0; i < Get<Int_t>("nPSWeight"); i++)
+        fHPSweights[ch][cut]->Fill(i+1, Get<Float_t>("PSWeight",i)*weight);
+    }
+    if(gDoPDFunc){
+      for(i = 0; i < Get<Int_t>("nLHEPdfWeight"); i++)
+        fHPDFweights[ch][cut]->Fill(i+1, Get<Float_t>("LHEPdfWeight",i)*weight);
+    }
+    if(gDoScaleUnc){
+      for(i = 0; i < Get<Int_t>("nLHEScaleWeight"); i++)
+        fHScaleWeights[ch][cut]->Fill(i+1, Get<Float_t>("LHEScaleWeight",i)*weight);
+    }
+  } 
 
   // Global
   fHMET[ch][cut][sys]         -> Fill(met, weight);
@@ -778,7 +841,6 @@ void TopAnalysis::SetEventVariables(){
 
   fTree->Branch("TEvent",          &event,           "TEvent/l");
   fTree->Branch("TLuminosityBlock",&lumiblock,       "TLuminosityBlock/i");
-  fTree->Branch("TLHEWeight",      TLHEWeight,       "TLHEWeight[254]/F");
   fTree->Branch("TPassMETFilters", &TPassMETFilters, "TPassMETFilters/B");
   fTree->Branch("TPassTrigger",    &TPassTrigger,    "TPassTrigger/B");
   fTree->Branch("TRun",            &TRun,            "TRun/i");
@@ -816,12 +878,13 @@ void TopAnalysis::SetVariables(int sys){
   // Jets
   njets = 0; nbtags = 0;
   jets.clear(); Jet jet; TLorentzVector t; 
-  float pt, eta, phi, m; bool isbtag; float csv, deepcsv;
+  float pt, eta, phi, m; bool isbtag; float csv, deepcsv, deepflav;
   Int_t nJets = Get<Int_t>("nJet");
   Int_t jetid, flav;
   for(int i = 0; i < nJets; i++){
     pt = Get<Float_t>(JetPt,i); eta = Get<Float_t>("Jet_eta",i); phi = Get<Float_t>("Jet_phi", i); m = Get<Float_t>("Jet_mass",i);
-    csv = Get<Float_t>("Jet_btagCSVV2", i); deepcsv = Get<Float_t>("Jet_btagDeepB", i); jetid = Get<Int_t>("Jet_jetId",i);
+    csv = Get<Float_t>("Jet_btagCSVV2", i); deepcsv = Get<Float_t>("Jet_btagDeepB", i); deepflav = Get<Float_t>("Jet_btagDeepFlavB", i);
+    jetid = Get<Int_t>("Jet_jetId",i);
     flav = -999999; if(!gIsData) flav = Get<Int_t>("Jet_hadronFlavour", i);
 
     // JES and JER ----> Update this to propagate to MET, MT2, etc!!
@@ -842,16 +905,18 @@ void TopAnalysis::SetVariables(int sys){
       pt = Get<Float_t>("Jet_pt_jerDown", i);
       m  = Get<Float_t>("Jet_mass_jerDown", i);
     }
-    if     (sys == kBtagUp)      isbtag = fBTagSFbUp->IsTagged(csv, flav, pt, eta);
-    else if(sys == kBtagDown)    isbtag = fBTagSFbDo->IsTagged(csv, flav, pt, eta);
-    else if(sys == kMistagUp)    isbtag = fBTagSFlUp->IsTagged(csv, flav, pt, eta);
-    else if(sys == kMistagDown)  isbtag = fBTagSFlDo->IsTagged(csv, flav, pt, eta);
-    else                         isbtag = fBTagSFnom->IsTagged(csv, flav, pt, eta);
+    Float_t alg = deepflav;
+    if     (sys == kBtagUp)      isbtag = fBTagSFbUp->IsTagged(alg, flav, pt, eta);
+    else if(sys == kBtagDown)    isbtag = fBTagSFbDo->IsTagged(alg, flav, pt, eta);
+    else if(sys == kMistagUp)    isbtag = fBTagSFlUp->IsTagged(alg, flav, pt, eta);
+    else if(sys == kMistagDown)  isbtag = fBTagSFlDo->IsTagged(alg, flav, pt, eta);
+    else                         isbtag = fBTagSFnom->IsTagged(alg, flav, pt, eta);
     if(pt > 30 && TMath::Abs(eta) <= 2.4 && jetid > 1){ // pt > 30, |eta| < 2.4, id > 1 (2, 6)
       t.SetPtEtaPhiM(pt, eta, phi, m);
       jet = Jet(t, csv);
       jet.isBtag = isbtag;
       jet.SetDeepCSVB(deepcsv);
+      jet.SetDeepFlav(deepflav);
 
       if(Cleaning(jet, selLeptons, 0.4)){
         njets++;
@@ -869,6 +934,12 @@ void TopAnalysis::SetVariables(int sys){
   else if(sys == kTrigDown   ) weight = TWeight_TrigDown;
   else if(sys == kPUUp       ) weight = TWeight_PUUp;   
   else if(sys == kPUDown     ) weight = TWeight_PUDown;
+  else if(sys == kISRUp      ) weight = TWeight_ISRUp;
+  else if(sys == kISRDown    ) weight = TWeight_ISRDown;
+  else if(sys == kFSRUp      ) weight = TWeight_FSRUp;
+  else if(sys == kFSRDown    ) weight = TWeight_FSRDown;
+  else if(sys == kPrefireUp  ) weight = TWeight_PrefUp;
+  else if(sys == kPrefireDown) weight = TWeight_PrefDown;
 }
 
   

@@ -35,11 +35,9 @@ void LeptonSelector::Initialise(){
   //ElecScale = new ElecScaleClass(localPath + "/InputFiles/ElecScale.dat");
 
   if(!gIsData){
-    if(gIs2016){
-      LepSF->loadHisto(iTrigDoubleMuon);
-      LepSF->loadHisto(iTrigDoubleElec);
-      LepSF->loadHisto(iTrigElMu);
-    }
+    LepSF->loadHisto(iTrigDoubleMuon);
+    LepSF->loadHisto(iTrigDoubleElec);
+    LepSF->loadHisto(iTrigElMu);
     LepSF->loadHisto(iElecReco);
     LepSF->loadHisto(iElecId,   iTight);
     LepSF->loadHisto(iMuonIsoTightId,   iTight);
@@ -239,19 +237,17 @@ Bool_t LeptonSelector::isVetoLepton(Lepton lep){
 //============================================== Loose leptons (or other)
 //============================================================================================
 Bool_t LeptonSelector::isLooseLepton(Lepton lep){
+  // Same as tight except no Iso
   Bool_t passId; Bool_t passIso;
-  // Same as good lepton but no looser cut on pT
-  if(lep.isMuon){
+  if (lep.isMuon) {
     passId  = getMuonId(iTight);
-    passIso = getRelIso04POG(iTight);
   }
-  if(lep.isElec){
+  if (lep.isElec) {
     passId = getElecCutBasedId(iTight) && lostHits <= 1;
-    passIso = 1; //getRelIso03POG(iTight); // Isolation already included in CutBasedID!!
-    if(TMath::Abs(etaSC) > 1.4442 && TMath::Abs(etaSC) < 1.566) return false;
+    if (TMath::Abs(etaSC) > 1.4442 && TMath::Abs(etaSC) < 1.566) return false;
   }
-  if(lep.p.Pt() < 18 || TMath::Abs(lep.p.Eta()) > 2.4) return false;
-  if(passId && passIso && ( (lep.isElec && getGoodVertex(iTight)) || (lep.isMuon && getGoodVertex(iMedium) ))) return true;
+  if (lep.p.Pt() < 18 || TMath::Abs(lep.p.Eta()) > 2.4) return false;
+  if (passId && ( (lep.isElec && getGoodVertex(iTight)) || (lep.isMuon && getGoodVertex(iMedium) ))) return true;
   return false;
 }
 
@@ -320,6 +316,7 @@ void LeptonSelector::InsideLoop(){
     tL = Lepton(tP, charge, type);
     if(tL.isMuon){
       tL.SetIso(RelIso04);
+      tL.SetIsIso(RelIso04 < 0.15);
       tL.SetEnergyUnc(GetMuonEnergyScale());
     }
     else{
@@ -330,18 +327,15 @@ void LeptonSelector::InsideLoop(){
     tL.SetSIP3D(sip);
     tL.Setdxy(dxy);
     tL.Setdz(dz);
-/*
-    // Set status: Good, conv, flip, fake
     if(!gIsData){
-      tL.SetGenMatch(kLGMgood);
-      if(abs(mcMatchPDGID) != abs(pdgid))            tL.SetGenMatch(kLGMother);
-      if(mcPromptGamma == 1)                         tL.SetGenMatch(kLGMconv);
-      if( (tL.GetGenMatch() == kLGMtoGenLep || tL.GetGenMatch() == kLGMgood) && charge*mcMatchPDGID > 0 && abs(mcMatchPDGID) == abs(pdgid))  tL.SetGenMatch(kLGMflip); // flip and no fake
-      if(mcMatchID == 0 || mcMatchID == -99)         tL.SetGenMatch(kLGMfake);
-//      if(!mcPrompt)   tL.SetGenMatch(kLGMfake);
+      tL.SetIsPrompt( genPartFlav == 1 || genPartIndex == 15 || gIsData);
+      tL.SetIsFromTau(genPartIndex == 15);
+      tL.SetIsConversion(genPartIndex == 22);
+      tL.SetIsFromB(genPartIndex == 5);
+      tL.SetIsFromC(genPartIndex == 4);
+      tL.SetIsFromL(genPartIndex == 3);
     }
-    */
-//     PAF_DEBUG("LeptonSelector", Form("for event %i, lepton number %i of type %i and charge %i...", evt, i, LepType, charge));
+
     if(isGoodLepton(tL)){
       //if(1){
       tL.SetSF(   LepSF->GetLeptonSF(     pt, eta, tL.type) ); // Set SF and error
@@ -368,40 +362,26 @@ void LeptonSelector::InsideLoop(){
   nGenLeptons   = genLeptons.size();
 
   //=== Trigger SF
-  if(gIs2016){
-    TriggerSF = 1; TriggerSFerr = 0;
-    if(!gIsData){
-      if(nSelLeptons >= 2){
-        if     (selLeptons.at(0).isMuon && selLeptons.at(1).isMuon){
-          if(gIs2017){
-            TriggerSF = LepSF->GetTrigDoubleMuSF(    selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
-            TriggerSFerr = LepSF->GetTrigDoubleMuSF_err(selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
-          }
-          else{
-            TriggerSF = LepSF->GetTrigDoubleMuSF(    selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
-            TriggerSFerr = LepSF->GetTrigDoubleMuSF_err(selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
-          }
+  TriggerSF = 1; TriggerSFerr = 0;
+  if(!gIsData){
+    if(nSelLeptons >= 2){
+      if     (selLeptons.at(0).isMuon && selLeptons.at(1).isMuon){
+        TriggerSF    = LepSF->GetTrigDoubleMuSF(    selLeptons.at(0).p.Pt(), selLeptons.at(1).p.Pt());
+        TriggerSFerr = LepSF->GetTrigDoubleMuSF_err(selLeptons.at(0).p.Pt(), selLeptons.at(1).p.Pt());
+      }
+      else if(selLeptons.at(0).isElec && selLeptons.at(1).isElec){
+        TriggerSF    = LepSF->GetTrigDoubleElSF(    selLeptons.at(0).p.Pt(), selLeptons.at(1).p.Pt());
+        TriggerSFerr = LepSF->GetTrigDoubleElSF_err(selLeptons.at(0).p.Pt(), selLeptons.at(1).p.Pt());
+      }
+      else{
+        Float_t pt0 = selLeptons.at(0).Pt();
+        Float_t pt1 = selLeptons.at(1).Pt();
+        if(pt1 > pt0){
+          pt1 = selLeptons.at(0).Pt();
+          pt0 = selLeptons.at(1).Pt();
         }
-        else if(selLeptons.at(0).isElec && selLeptons.at(1).isElec){
-          if(gIs2017){
-            TriggerSF = LepSF->GetTrigDoubleElSF(    selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
-            TriggerSFerr = LepSF->GetTrigDoubleElSF_err(selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
-          }
-          else{
-            TriggerSF = LepSF->GetTrigDoubleElSF(    selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
-            TriggerSFerr = LepSF->GetTrigDoubleElSF_err(selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
-          }
-        }
-        else{
-          if(gIs2017){
-            TriggerSF = LepSF->GetTrigElMuSF(    selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
-            TriggerSFerr = LepSF->GetTrigElMuSF_err(selLeptons.at(0).p.Eta(), selLeptons.at(0).p.Pt());
-          }
-          else{
-            TriggerSF = LepSF->GetTrigElMuSF(        selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
-            TriggerSFerr = LepSF->GetTrigElMuSF_err(    selLeptons.at(0).p.Eta(), selLeptons.at(1).p.Eta());
-          }
-        }
+        TriggerSF    = LepSF->GetTrigElMuSF(    pt0, pt1);
+        TriggerSFerr = LepSF->GetTrigElMuSF_err(pt0, pt1);
       }
     }
   }

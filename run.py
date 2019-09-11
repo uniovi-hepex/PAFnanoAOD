@@ -95,11 +95,15 @@ def GetSampleList(path, sample):
 def GetOptions(path, sample, options = ""):
   if not path.endswith('/'): path += '/'
   if not sample.endswith(".root"): sample += '.root'
+  doPrefire   = 'prefire,'  if IsVarInTree(path+sample, 'PrefireWeight') else ''
   doPUweight  = 'PUweight,' if IsVarInTree(path+sample, 'puWeight') else ''
+  doPS        = 'PS,'       if IsVarInTree(path+sample, 'nPSWeight') else ''
+  doScale     = 'Scale,'    if IsVarInTree(path+sample, 'nLHEScaleWeight') else ''
+  doPDF       = 'PDF,'      if IsVarInTree(path+sample, 'nLHEPdfWeight') else ''
   doJECunc    = 'JECunc,'   if IsVarInTree(path+sample, 'Jet_pt_jesTotalUp') else ''
   useJetPtNom = 'JetPtNom,' if IsVarInTree(path+sample, 'Jet_pt_nom') else ''
   useLepGood  = 'LepGood,'  if IsVarInTree(path+sample, 'nLepGood') else ''
-  options += doPUweight + doJECunc + useJetPtNom + useLepGood + options
+  options += doPUweight + doPrefire + doPS + doScale + doPDF + doJECunc + useJetPtNom + useLepGood + options
   if options.endswith(','): options = options[:-1]
   return options
 
@@ -241,7 +245,11 @@ def RunPAF(samples, selection, xsec, nSumOfWeights, year, outname, nSlots = 1, o
   myProject.AddSelectorPackage("EventBuilder");
 
   # Analysis selector
-  if selection != "": myProject.AddSelectorPackage(selection)
+  if selection != "": 
+    myProject.AddSelectorPackage(selection)
+  #if selection == 'TopAnalysis':
+  #  myProject.AddSelectorPackage("LepEffTop")
+ 
 
   # Additional packages
   myProject.AddPackage("Lepton");
@@ -349,11 +357,11 @@ if __name__ == "__main__":
   prefix      = args.prefix
   outname     = args.outname
   outpath     = args.outpath
-  nEvents     = args.nEvents
   nSlots      = args.nSlots
   FirstEvent  = args.firstEvent
   sendJobs    = args.sendJobs
   queue       = args.queue
+  nEvents     = int(args.nEvents)
   fixedchunk  = int(args.fixedchunk)
   ncores      = nSlots
   doCheck     = args.check
@@ -430,8 +438,8 @@ if __name__ == "__main__":
     if args.prefix     != 'Tree' : prefix      = args.prefix
     if args.outname    != ''     : outname     = args.outname
     if args.outpath    != ''     : outpath     = args.outpath
-    if args.nEvents    != 0      : nEvents     = args.nEvents
-    if args.firstEvent != 0      : FirstEvent  = args.firstEvent
+    if args.nEvents    != 0      : nEvents     = int(args.nEvents)
+    if args.firstEvent != 0      : FirstEvent  = int(args.firstEvent)
     if args.queue      != "short": queue       = args.queue
 
     if args.nSlots     != -1:
