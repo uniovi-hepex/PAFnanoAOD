@@ -15,7 +15,7 @@ BTagSFUtil::BTagSFUtil(const string& MeasurementType,
   gIsFastSim = FastSimDataset == ""? false : true;
   //rand_ = new TRandom3(Seed);
   TString CSVFileName = Form("%s/csv/%s_%i.csv", BTagSFPath.Data(), BTagAlgorithm.c_str(), year);
-  //if(year == 2016 && BTagAlgorithm.c_str() == "CSVv2") CSVFileName = Form("%s/CSVv2_2016_Moriond17.csv");
+  if(year == 2016 && BTagAlgorithm.c_str() == "CSVv2") TString CSVFileName = Form("%s/csv/CSVv2_2016_Moriond17.csv",BTagSFPath.Data());
 
   //if(gIsFastSim) CSVFileName = Form("%s/%s_FastSim.csv", BTagSFPath.Data(), BTagAlgorithm.c_str());
   //  string CSVFileName = (string) pathtocsv.Data() + BTagAlgorithm + ".csv";

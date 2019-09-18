@@ -593,4 +593,3 @@ Float_t LeptonSF::GetFSSFerr(Float_t pt, Float_t eta, Int_t id){
   else         SFerr = fElecFastSim ->GetBinError(fElecFastSim  ->FindBin(pt, eta));
   return SFerr;
 }
-

@@ -92,7 +92,7 @@ void TopAnalysis::Initialise(){
   gPUWeigth    = gOptions.Contains("PUweight")? true : false;
   gPrefire     = gOptions.Contains("prefire")? true : false;
   JetPt        = gOptions.Contains("JetPtNom")? "Jet_pt_nom" : "Jet_pt";
-  if (gSampleName == "TT" && year == 2016) gIsTTbar = true;
+  if ((gSampleName == "TT"  || gSampleName == "TT_SemiLeptonic" || gSampleName.BeginsWith("TT_")) && year == 2016) gIsTTbar = true;
 
   nPDFweights = gIsTTbar ? 100 : 33;
 
@@ -154,9 +154,9 @@ void TopAnalysis::Initialise(){
   // b tagging
   TString pwd  = GetParam<TString>("WorkingDir");
   TString BTagSFPath = Form("%s/packages/BTagSFUtil", pwd.Data());
-  TString taggerName="DeepFlav"; //"CSVv2"; //"DeepCSV"; // DeepFlav
+  TString taggerName="DeepFlav"; //"CSVv2"; //"DeepCSV"; // DeepFlav   //quitar dejar DeepFlav
   TString MeasType = "mujets";
-  TString stringWP = "Medium";
+  TString stringWP = "Medium";//"Medium"; //quitar dejar medium
   //if(taggerName == "DeepFlav" && year == 2017) MeasType = "comb";
   fBTagSFnom = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP,  0, year);
   if(!gIsData){
@@ -217,6 +217,7 @@ void TopAnalysis::InsideLoop(){
   fhDummy->Fill(1);
   if(gIsTTbar) FillCorrHistos(); 
   if(gIsTTbar && genLeptons.size() < 2) return; // Dilepton selection for ttbar!!!
+  //if(gIsTTbar && genLeptons.size() >= 2) return; // Dilepton selection for ttbar!!! //quitar y dejar la de arriba
 
   // Number of events in fiducial region
   if(!gIsData && makeHistos) {
@@ -908,7 +909,7 @@ void TopAnalysis::SetVariables(int sys){
       pt = Get<Float_t>("Jet_pt_jerDown", i);
       m  = Get<Float_t>("Jet_mass_jerDown", i);
     }
-    Float_t alg = deepflav;
+    Float_t alg = deepflav; 
     if     (sys == kBtagUp)      isbtag = fBTagSFbUp->IsTagged(alg, flav, pt, eta);
     else if(sys == kBtagDown)    isbtag = fBTagSFbDo->IsTagged(alg, flav, pt, eta);
     else if(sys == kMistagUp)    isbtag = fBTagSFlUp->IsTagged(alg, flav, pt, eta);
