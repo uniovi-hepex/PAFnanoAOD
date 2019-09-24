@@ -84,6 +84,7 @@ void TopAnalysis::Initialise(){
   gDoSyst      = true;// gOptions.Contains("doSyst")? true : false;
   year         = GetParam<TString>("year").Atoi();
   gIsTTbar     = false;
+  gIsTTany     = false;
   gSelection   = GetSelection(selection);
   gDoJECunc    = gOptions.Contains("JECunc")? true : false;
   gDoPDFunc    = gOptions.Contains("PDF")? true : false;
@@ -93,6 +94,7 @@ void TopAnalysis::Initialise(){
   gPrefire     = gOptions.Contains("prefire")? true : false;
   JetPt        = gOptions.Contains("JetPtNom")? "Jet_pt_nom" : "Jet_pt";
   if ((gSampleName == "TT" || gSampleName.BeginsWith("TT_")) && year == 2016) gIsTTbar = true;
+  if (gIsTTbar || gSampleName.BeginsWith("TTTo2L2Nu")) gIsTTany = true;
 
   nPDFweights = gIsTTbar ? 100 : 33;
 
@@ -214,7 +216,6 @@ void TopAnalysis::InsideLoop(){
   //GetJetVariables(selJets, Jets15);
 
   fhDummy->Fill(1);
-  if(gIsTTbar) FillCorrHistos();
   if(gIsTTbar && genLeptons.size() < 2) return; // Dilepton selection for ttbar!!!
 
   // Number of events in fiducial region
@@ -248,6 +249,10 @@ void TopAnalysis::InsideLoop(){
 
   // Event Selection
   // ===================================================================================================================
+  if(gIsTTany){
+    SetVariables();
+    FillCorrHistos();
+  }
   if (TNSelLeps >= 2 && TPassTrigger && TPassMETFilters) {
     for(Int_t sys = 0; sys < nSyst; sys++){
       if(!gDoSyst && sys > 0) break;
@@ -744,10 +749,11 @@ void TopAnalysis::FillHistos(Int_t ch, Int_t cut, Int_t sys){
 void TopAnalysis::FillCorrHistos(){
   Float_t pTreco; Float_t pTgen; Float_t dR = 0.3; Float_t dPtoPt; Bool_t isBtag; Bool_t isBJet;
   Float_t bin0; Float_t bin1;
-  for(Int_t i = 0; i < TNJets; i++){
-    pTreco = selJets.at(i).Pt(); pTgen = mcJets.at(i).Pt();
+  Int_t njets = jets.size();
+  for(Int_t i = 0; i < njets; i++){
+    pTreco = jets.at(i).Pt(); pTgen = jets.at(i).GetGenPt();
     dPtoPt = fabs(pTreco - pTgen)/pTreco;
-    isBtag = selJets.at(i).isBtag; isBJet =  mcJets.at(i).isBtag;
+    isBtag = jets.at(i).isBtag; isBJet = jets.at(i).flavmc == 5;
 
     hJetPtReco ->Fill(pTreco);
     hJetPtGen  ->Fill(pTgen);
@@ -870,11 +876,13 @@ void TopAnalysis::SetVariables(int sys){
   met = TMET; mt2 = TMT2; ht = THT; nvert = TNVert; invmass = TMll;
 
   // Leptons
-  lep0pt = TLep0Pt; lep1pt = TLep1Pt; lep0eta = TLep0Eta; lep1eta = TLep1Eta; 
-  lep0iso = selLeptons.at(0).GetIso(); lep1iso = selLeptons.at(1).GetIso();
-  dileppt = (selLeptons.at(0).p + selLeptons.at(1).p).Pt();
-  deltaphi = selLeptons.at(0).p.DeltaPhi(selLeptons.at(1).p);
-  deltaeta = selLeptons.at(0).p.Eta() - selLeptons.at(1).p.Eta();
+  if(nleps >= 2){
+    lep0pt = TLep0Pt; lep1pt = TLep1Pt; lep0eta = TLep0Eta; lep1eta = TLep1Eta; 
+    lep0iso = selLeptons.at(0).GetIso(); lep1iso = selLeptons.at(1).GetIso();
+    dileppt = (selLeptons.at(0).p + selLeptons.at(1).p).Pt();
+    deltaphi = selLeptons.at(0).p.DeltaPhi(selLeptons.at(1).p);
+    deltaeta = selLeptons.at(0).p.Eta() - selLeptons.at(1).p.Eta();
+  }
 
   // Jets
   njets = 0; nbtags = 0;
@@ -886,6 +894,10 @@ void TopAnalysis::SetVariables(int sys){
     pt = Get<Float_t>(JetPt,i); eta = Get<Float_t>("Jet_eta",i); phi = Get<Float_t>("Jet_phi", i); m = Get<Float_t>("Jet_mass",i);
     csv = Get<Float_t>("Jet_btagCSVV2", i); deepcsv = Get<Float_t>("Jet_btagDeepB", i); deepflav = Get<Float_t>("Jet_btagDeepFlavB", i);
     jetid = Get<Int_t>("Jet_jetId",i);
+    Int_t nGenJets = Get<Int_t>("nGenJet");
+    Int_t genJetIdx = Get<Int_t>("Jet_genJetIdx", i);
+    Float_t genPt = -999;
+    if(genJetIdx > 0 and genJetIdx < nJets) genPt = Get<Float_t>("GenJet_pt", genJetIdx);
     flav = -999999; if(!gIsData) flav = Get<Int_t>("Jet_hadronFlavour", i);
 
     // JES and JER ----> Update this to propagate to MET, MT2, etc!!
@@ -918,6 +930,7 @@ void TopAnalysis::SetVariables(int sys){
       jet.isBtag = isbtag;
       jet.SetDeepCSVB(deepcsv);
       jet.SetDeepFlav(deepflav);
+      jet.SetGenPt(genPt);
 
       if(Cleaning(jet, selLeptons, 0.4)){
         njets++;

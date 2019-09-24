@@ -50,7 +50,7 @@ class TopAnalysis : public PAFChainItemSelector{
     void SetLeptonVariables();
     void SetJetVariables();
     void SetEventVariables();
-    void SetVariables(int sys);
+    void SetVariables(int sys = 0);
 
     Bool_t makeHistos = false;
     Bool_t makeTree   = false;
@@ -302,6 +302,7 @@ class TopAnalysis : public PAFChainItemSelector{
     TString gSampleName;
     TString gOptions;
     Bool_t  gIsTTbar;
+    Bool_t  gIsTTany;
     Bool_t  gIsLHE;
 
     ClassDef(TopAnalysis, 0);
