@@ -249,7 +249,7 @@ void TopAnalysis::InsideLoop(){
 
   // Event Selection
   // ===================================================================================================================
-  if(gIsTTany){
+  if(gIsTTbar){
     SetVariables();
     FillCorrHistos();
   }
