@@ -108,11 +108,6 @@ void LepEffTop::InsideLoop(){
 void LepEffTop::FillAll(Int_t i, Int_t j, Int_t k){
   Float_t SF = Elec.GetSF()*Muon.GetSF()*TriggerSF;
   Float_t weight = NormWeight*SF*PUSF*PrefWeight;
-  cout << "weight     = " << weight << endl;
-  cout << "NormWeight = " << NormWeight << endl;
-  cout << "SF         = " << SF << endl;
-  cout << "PU         = " << PUSF << endl;
-  cout << "PrefWeight = " << PrefWeight << endl;
   hMuonPt [i][j][k]->Fill(Muon.Pt(),  weight);
   hMuonEta[i][j][k]->Fill(Muon.Eta(), weight);
   hMuonPhi[i][j][k]->Fill(Muon.Phi(), weight);
@@ -120,7 +115,9 @@ void LepEffTop::FillAll(Int_t i, Int_t j, Int_t k){
 }
 
 void LepEffTop::FillHistos(){
-  if(Muon.IsIso()){ // Passing
+  //cout << Form("Muon iso: %1.4f", Muon.GetIso());
+  if(Muon.GetIso() < 0.15){ // Passing
+    //cout << "... pass ISO!!! (passing)"<< endl;
     if(!isSS){ // OS
       if(Muon.IsPrompt()){ // Prompt
         FillAll(kPass, kPrompt, kOS);
@@ -139,6 +136,7 @@ void LepEffTop::FillHistos(){
     }
   }
   else{ // Failing
+    cout << "... NO pass ISO!!! (failing)"<< endl;
     if(!isSS){ // OS
       if(Muon.IsPrompt()){ // Prompt
         FillAll(kFail, kPrompt, kOS);

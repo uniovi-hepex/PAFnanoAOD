@@ -92,7 +92,9 @@ void TopAnalysis::Initialise(){
   gPUWeigth    = gOptions.Contains("PUweight")? true : false;
   gPrefire     = gOptions.Contains("prefire")? true : false;
   JetPt        = gOptions.Contains("JetPtNom")? "Jet_pt_nom" : "Jet_pt";
-  if ((gSampleName == "TT"  || gSampleName == "TT_SemiLeptonic" || gSampleName.BeginsWith("TT_")) && year == 2016) gIsTTbar = true;
+
+  if ((gSampleName == "TT" || gSampleName.BeginsWith("TT_")) && year == 2016) gIsTTbar = true;
+
 
   nPDFweights = gIsTTbar ? 100 : 33;
 
@@ -503,7 +505,6 @@ void TopAnalysis::GetWeights(){
       ElecSFDo *= selLeptons.at(1).GetSF(-1);
     }
   }
-
   TWeight             = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeight;
   TWeight_ElecEffUp   = NormWeight*ElecSFUp*MuonSF*TrigSF*PUSF*PrefWeight;
   TWeight_ElecEffDown = NormWeight*ElecSFDo*MuonSF*TrigSF*PUSF*PrefWeight;
@@ -769,7 +770,7 @@ void TopAnalysis::FillCorrHistos(){
 }
 
 void TopAnalysis::SetLeptonVariables(){
-  fTree->Branch("TNVetoLeps",   &TNVetoLeps,   "TNVetoLeps/I");
+  //fTree->Branch("TNVetoLeps",   &TNVetoLeps,   "TNVetoLeps/I");
   fTree->Branch("TNSelLeps",    &TNSelLeps,    "TNSelLeps/I");
   fTree->Branch("TChannel",     &TChannel,     "TChannel/I");
   fTree->Branch("TIsSS",        &TIsSS,        "TIsSS/B");
@@ -789,13 +790,15 @@ void TopAnalysis::SetLeptonVariables(){
 
 void TopAnalysis::SetJetVariables(){
   fTree->Branch("TNJets",        &TNJets,      "TNJets/I");
-  fTree->Branch("TNFwdJets",     &TNFwdJets,   "TNFwdJets/I");
+  //fTree->Branch("TNFwdJets",     &TNFwdJets,   "TNFwdJets/I");
   fTree->Branch("TNBtags",       &TNBtags,     "TNBtags/I");
+
   /*fTree->Branch("TJet_Csv",      TJet_Csv,     "TJet_Csv[TNJets]/F");
   fTree->Branch("TJet_Pt",       TJet_Pt,      "TJet_Pt[TNJets]/F");
   fTree->Branch("TJet_Eta",      TJet_Eta,     "TJet_Eta[TNJets]/F");
   fTree->Branch("TJet_Phi",      TJet_Phi,     "TJet_Phi[TNJets]/F");
   fTree->Branch("TJet_M",        TJet_M,       "TJet_M[TNJets]/F");*/
+
   fTree->Branch("TJet0Pt",       &TJet0Pt,     "TJet0Pt/F");
   fTree->Branch("TJet0Eta",      &TJet0Eta,    "TJet0Eta/F");
   fTree->Branch("TJet0Phi",      &TJet0Phi,    "TJet0Phi/F");
@@ -822,9 +825,11 @@ void TopAnalysis::SetJetVariables(){
   fTree->Branch("TNBtagsJESUp",   &TNBtagsJESUp, "TNBtagsJESUp/I");
   fTree->Branch("TNBtagsJESDown",  &TNBtagsJESDown, "TNBtagsJESDown/I");
 
+
   /*fTree->Branch("TJetJESUp_Pt",      TJetJESUp_Pt,      "TJetJESUp_Pt[TNJetsJESUp]/F");
   fTree->Branch("TJetJESDown_Pt",    TJetJESDown_Pt,    "TJetJESDown_Pt[TNJetsJESDown]/F");
   fTree->Branch("TJetJER_Pt",        TJetJER_Pt,        "TJetJER_Pt[TNJetsJERUp]/F");*/
+
 
   fTree->Branch("THT",          &THT,          "THT/F");
   fTree->Branch("THTJESUp",     &THTJESUp,     "THTJESUp/F");
@@ -851,9 +856,10 @@ void TopAnalysis::SetEventVariables(){
   fTree->Branch("TRun",            &TRun,            "TRun/i");
   fTree->Branch("TNVert",          &TNVert,          "TNVert/I");
   fTree->Branch("TMET",            &TMET,            "TMET/F");
-  fTree->Branch("TGenMET",         &TGenMET,         "TGenMET/F");
-  fTree->Branch("TgenTop1Pt",   &TgenTop1Pt,   "TgenTop1Pt/F");
-  fTree->Branch("TgenTop2Pt",   &TgenTop2Pt,   "TgenTop2Pt/F");
+  fTree->Branch("TMT2",            &TMT2,            "TMT2/F");
+  //fTree->Branch("TGenMET",         &TGenMET,         "TGenMET/F");
+  //fTree->Branch("TgenTop1Pt",   &TgenTop1Pt,   "TgenTop1Pt/F");
+  //fTree->Branch("TgenTop2Pt",   &TgenTop2Pt,   "TgenTop2Pt/F");
   fTree->Branch("TMET_Phi",     &TMET_Phi,     "TMET_Phi/F");
   fTree->Branch("TMETJESUp",    &TMETJESUp,    "TMETJESUp/F");
   fTree->Branch("TMETJESDown",  &TMETJESDown,  "TMETJESDown/F");
