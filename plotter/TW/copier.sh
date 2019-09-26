@@ -3,7 +3,7 @@
 #
 
 # TODO: copiar tolos plots
-plotspath="/nfs/fanae/user/ireneaj/www/TFG/results/"
+plotspath="/nfs/fanae/user/vrbouza/www/Proyectos/tw_inclusivo_run2/results/"
 dos="MCData/"
 indstr="index.php"
 cnstr="CondN/"
