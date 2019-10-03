@@ -65,6 +65,7 @@ void run(TString samp, TString selection, Double_t xsec, Double_t sumofweights, 
   myProject->SetInputParam("selection",  selection);
   myProject->SetInputParam("WorkingDir", workingdir);
   myProject->SetInputParam("xsec",       xsec);
+  myProject->SetInputParam("path",       path);
   myProject->SetInputParam("_options",   options);
   myProject->SetInputParam("year",       TString(Form("%i",year)));
   
@@ -80,6 +81,7 @@ void run(TString samp, TString selection, Double_t xsec, Double_t sumofweights, 
     myProject->AddSelectorPackage("LepEffTop");
   
   // Additional packages
+  myProject->AddPackage("SUSYnorm");
   myProject->AddPackage("Lepton");
   myProject->AddPackage("Jet");
   myProject->AddPackage("mt2");
