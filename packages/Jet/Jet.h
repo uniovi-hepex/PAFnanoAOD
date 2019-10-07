@@ -26,6 +26,7 @@ class Jet{
     Float_t deepcsv; 
     Float_t deepcsvC;
     Float_t deepflav;
+    Float_t genPt;
 
     // For systematics
     Float_t pTJESUp;
@@ -43,6 +44,8 @@ class Jet{
     Float_t Phi(){ return p.Phi();}
     Float_t E(){ return p.E();}
     void SetMCjet(TLorentzVector p){ mcp = p;}
+    void SetGenPt(Float_t pt){ genPt = pt;}
+    Float_t GetGenPt(){ return genPt;}
     void SetDeepCSVB(float v);
     void SetDeepCSVC(float v);
     void SetDeepFlav(float v);
