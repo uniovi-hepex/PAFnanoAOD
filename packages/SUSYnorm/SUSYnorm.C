@@ -7,11 +7,13 @@
 SUSYnorm::SUSYnorm(TString _path, TString _filename): fhSMS(0) {
   path  = _path;
   filename = _filename;
+
   hname = "hSMS";
   loadHisto();
 };
 
 void SUSYnorm::loadHisto(){
+
   vector<TString> files = GetAllFiles(path, filename);
   fhSMS = (TH2D*)GetHistoFromFiles2(files, hname);
 }
