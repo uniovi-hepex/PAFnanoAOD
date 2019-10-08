@@ -339,6 +339,7 @@ if __name__ == "__main__":
   parser.add_argument('--firstEvent',       default=0          , help = 'First event')
   parser.add_argument('--nEvents',          default=0          , help = 'Number of events')
   parser.add_argument('--nSlots',     '-n', default=-1         , help = 'Number of slots')
+  parser.add_argument('--nChunks',    '-N', default=-1         , help = 'Number of chunks')
   parser.add_argument('--fixedchunk', '-f', default=-1         , help = 'Chunk to be produced alone. It requires to specify the number of chunks in the configuration file. IMPORTANT: is the CHUNK number (from 0 to N-1).')
   parser.add_argument('--check'           , action='store_true', help = 'Check the output trees')
   parser.add_argument('--resubmit'        , action='store_true', help = 'Resubmit jobs')
@@ -448,6 +449,10 @@ if __name__ == "__main__":
     elif nSlots == -1:
       nSlots = 1
 
+    if args.nChunks != -1:
+      nChunks = int(args.nChunks)
+      for k in nslots.keys(): chunkdir[k] = nChunks
+
     if args.sample     != '':
       sample = args.sample
       if not sample in samplefiles.keys():
@@ -525,3 +530,4 @@ if __name__ == "__main__":
         RunSamplePAF(selection, path, sample, year, xsec, ncores, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs, queue)
   else: # no config file...
     RunSamplePAF(selection, path, sample, year, xsec, nSlots, outname, outpath, options, nEvents, FirstEvent, prefix, verbose, pretend, dotest, sendJobs, queue)
+

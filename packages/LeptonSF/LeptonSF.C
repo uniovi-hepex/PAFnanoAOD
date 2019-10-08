@@ -291,7 +291,7 @@ void LeptonSF::loadHisto(Int_t iHisto, Int_t wp){
 
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>> Triggers
   else if(iHisto == iTrigDoubleMuon){
-    filename = "TriggerSFfromReza";
+    filename ="TriggerSFfromReza";
     if(gIs2016){
       histoname = "trigSF2016_Muon"; 
     }
@@ -304,7 +304,7 @@ void LeptonSF::loadHisto(Int_t iHisto, Int_t wp){
     fDoubleMuSF = (TH2F*) GetHistogramFromFileF(path_to_SF_histos + filename + ".root", histoname, "fDoubleMuSF"); 
   }
   else if(iHisto == iTrigDoubleElec){
-    filename = "TriggerSFfromReza";
+    filename ="TriggerSFfromReza";
     if(gIs2016){
       histoname = "trigSF2016_Elec";
     }
@@ -593,4 +593,3 @@ Float_t LeptonSF::GetFSSFerr(Float_t pt, Float_t eta, Int_t id){
   else         SFerr = fElecFastSim ->GetBinError(fElecFastSim  ->FindBin(pt, eta));
   return SFerr;
 }
-

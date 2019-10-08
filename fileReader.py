@@ -1,4 +1,4 @@
-import os, sys, argparse, copy
+import os, sys, argparse
 from ROOT import TFile, TTree, TH1F
 
 defaultPath = '/afs/cern.ch/work/j/jrgonzal/public/Run2017G/skim2l'
@@ -19,6 +19,8 @@ def findValidRootfiles(path, sampleName = '', getOnlyNumberedFiles = False, verb
   elif isinstance(sampleName, list):
     for s in sampleName:
       files += findValidRootfiles(path, s, getOnlyNumberedFiles, verbose, FullPaths)
+      #if len(files) == 0:
+      #  files += findValidRootfiles(path, 'Tree_'+s, getOnlyNumberedFiles, verbose, FullPaths)
     return files
   if not path[-1] == '/': path += '/'
   if verbose: print ' >> Looking for files in path: ' + path
@@ -36,7 +38,10 @@ def findValidRootfiles(path, sampleName = '', getOnlyNumberedFiles = False, verb
     if verbose: print ' >> Adding file: ', f
     files.append(f)
   if FullPaths: files = [path + x for x in files]
-  if len(files) == 0: print '[ERROR]: Not files "' + sampleName + '" found in: ' + path
+  if len(files) == 0: 
+    files = findValidRootfiles(path, 'Tree_' + sampleName, getOnlyNumberedFiles, verbose, FullPaths)
+  if len(files) == 0: 
+    print '[ERROR]: Not files "' + sampleName + '" found in: ' + path
   return files
 
 def GetFiles(path, name, verbose = False):
@@ -52,12 +57,21 @@ def GetNGenEvents(fname):
   elif isinstance(fname, str):
     f = TFile.Open(fname)
     h = f.Get('Count')
-    numr = h.GetBinContent(1)
-    f.Close()
-    del f, h
-
-    return numr
+    return h.GetBinContent(1)
   else: print '[ERROR] [GetNGenEvents]: wrong input' 
+
+def GetHisto(fname, hname):
+  ''' Returns a histogram from files fname '''
+  if isinstance(fname, list):
+    h0 = GetHisto(fname[0], hname)
+    for fi in fname[1:]: h0.Add(GetHisto(fi, hname))
+    return h0
+  else:
+    f = TFile.Open(fname)
+    h = f.Get(hname)
+    h.SetDirectory(0)
+    f.Close()
+    return h
 
 def GetSumWeights(fname):
   ''' Returns number of events from the 'SumWeights' histograms '''
@@ -66,12 +80,9 @@ def GetSumWeights(fname):
     for f in fname: c+=GetSumWeights(f)
     return c
   elif isinstance(fname, str):
-    f    = TFile.Open(fname)
-    h    = f.Get('SumWeights')
-    sumw = h.GetBinContent(1)
-    f.Close()
-    del f, h
-    return sumw
+    f = TFile.Open(fname)
+    h = f.Get('SumWeights')
+    return h.GetBinContent(1)
   else: print '[ERROR] [GetSumWeights]: wrong input' 
 
 def GetHistoFromSetOfFiles(fname, histoname):
@@ -86,25 +97,19 @@ def GetHistoFromSetOfFiles(fname, histoname):
       print '[ERROR] [GetHistoFromSetOfFiles] Histogram \'%s\' does not exist in file %s !!'%(hitoname, fnmae)
     h = f.Get(histoname)
     h.SetDirectory(0)
-    hcl = copy.deepcopy(h.Clone(h.GetName()))
-    f.Close()
-    del h, f
-    return hcl
+    return h
   else: print '[ERROR] [GetHistoFromSetOfFiles]: wrong input' 
 
-def GetEntries(fname):
+def GetEntries(fname, treeName = 'Events'):
   ''' Returns number of events from the tree 'Events' in a file '''
   if isinstance(fname, list):
     c = 0
-    for f in fname: c+=GetEntries(f)
+    for f in fname: c+=GetEntries(f, treeName)
     return c
   elif isinstance(fname, str):
     f = TFile.Open(fname)
-    t = f.Get('Events')
-    entrs = t.GetEntries()
-    f.Close()
-    del f, t
-    return entrs
+    t = f.Get(treeName)
+    return t.GetEntries()
   else: print '[ERROR] [GetEntries]: wrong input' 
 
 def GuessIsData(fname):
@@ -112,11 +117,8 @@ def GuessIsData(fname):
   if isinstance(fname, list): fname = fname[0] # Assume all files are the same process/dataset
   f = TFile.Open(fname)
   t = f.Get('Events')
-  bl = True
-  if hasattr(t,'genWeight'): bl = False
-  f.Close()
-  del f, t
-  return bl
+  if hasattr(t,'genWeight'): return False
+  return True
 
 def guessPathAndName(p):
   ''' Guess path and sample name for a given rootfile '''
@@ -170,40 +172,38 @@ def getDicFiles(inFolder):
   groupFilesInDic(listOfFiles,files)
   return listOfFiles
   
-def GetAllInfoFromFile(fname):
+def GetAllInfoFromFile(fname, treeName = 'Events'):
   ''' Returns a list with all the info of a file ''' 
   if isinstance(fname, list):
     nEvents = 0
     nGenEvents = 0
     nSumOfWeights = 0
     isData = False
-    for f in fname:
-      iE, iG, iS, isData = GetAllInfoFromFile(f)
-      nEvents       += iE
-      nGenEvents    += iG
+    for f in fname: 
+      iE, iG, iS, isData = GetAllInfoFromFile(f, treeName)
+      nEvents += iE
+      nGenEvents += iG
       nSumOfWeights += iS
     return [nEvents, nGenEvents, nSumOfWeights, isData]
   elif isinstance(fname, str):
-    f  = TFile.Open(fname)
-    t  = f.Get('Events')
+    f = TFile.Open(fname)
+    t = f.Get(treeName)
     hs = f.Get('SumWeights')
     hc = f.Get('Count')
-    nEvents       = t.GetEntries()
-    nGenEvents    = hc.GetBinContent(1) if isinstance(hc,TH1F) else 1
+    nEvents = t.GetEntries()
+    nGenEvents = hc.GetBinContent(1) if isinstance(hc,TH1F) else 1
     nSumOfWeights = hs.GetBinContent(1) if isinstance(hs,TH1F) else 1
-    isData        = not hasattr(t,'genWeight')
-    del t, hs, hc
-    f.Close(); del f
+    isData = not hasattr(t,'genWeight')
     return [nEvents, nGenEvents, nSumOfWeights, isData]
   else: print '[ERROR] [GetAllInfoFromFile]: wrong input' 
 
-def GetProcessInfo(path, process=''):
+def GetProcessInfo(path, process='', treeName = 'Events'):
   ''' Prints all info from a process in path '''
   if isinstance(path, list): 
     files = path
     path, process, k = guessPathAndName(files[0])
   else: files = GetFiles(path, process)
-  nEvents, nGenEvents, nSumOfWeights, isData = GetAllInfoFromFile(files)
+  nEvents, nGenEvents, nSumOfWeights, isData = GetAllInfoFromFile(files, treeName)
   fileType = '(Data)' if isData else ('(MC)')
   print '\n##################################################################'
   print ' path: ' + path
@@ -218,15 +218,24 @@ def GetProcessInfo(path, process=''):
   print '##################################################################\n'
 
 def IsVarInTree(fname, var, treeName = 'Events'):
+  ''' Check if a given file and tree contains a branch '''
   if not os.path.isfile(fname):
     print 'ERROR: %s does not exists!'%fname
     return False
   f = TFile.Open(fname)
   t = f.Get(treeName)
-  bl = hasattr(t, var)
-  del t
-  f.Close(); del f
-  return bl
+  return hasattr(t, var)
+
+def GetValOfVarInTree(fname, var, treeName = 'Events'):
+  ''' Check the value of a var in a tree '''
+  if not os.path.isfile(fname):
+    print 'ERROR: %s does not exists!'%fname
+    return False
+  f = TFile.Open(fname)
+  t = f.Get(treeName)
+  t.GetEntry(1)
+  return getattr(t,var)
+
 
 ##################################
 # Extra functions to work check .root files from terminal
@@ -248,8 +257,10 @@ def main():
  pr.add_argument('path', help='Input folder', type = str, default = defaultPath)
  pr.add_argument('--sample', type = str, default = '')
  pr.add_argument('-p','--inspect', action='store_true', help='Print branches')
+ pr.add_argument('-t','--treeName', default='Events', help='Name of the tree')
  args = pr.parse_args()
  if args.sample:  sample = args.sample
+ treeName = args.treeName
  printb = args.inspect
  path = args.path
  if os.path.isdir(path) and not path[-1] == '/': path += '/'
@@ -266,12 +277,12 @@ def main():
    else:
      totfile = path + sample + '_' + n + '.root' if int(n) >= 0 else path + sample + '.root'
      if os.path.isfile(totfile): 
-       GetProcessInfo([totfile])
+       GetProcessInfo([totfile], treeName = treeName)
        exit()
      else:
-       GetProcessInfo(path, sample)
+       GetProcessInfo(path, sample, treeName)
  else:
-   GetProcessInfo(path, sample)
+   GetProcessInfo(path, sample, treeName)
    exit()
 
 if __name__ == '__main__':
