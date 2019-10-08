@@ -786,13 +786,13 @@ void TWAnalysis::GetGenJetVariables() {
 
 
 void TWAnalysis::GetMETandGenMET() {
-  if      (year == 2017) {
+  if (year == 2017) {
     TMET        = Get<Float_t>("METFixEE2017_pt");
     TMET_Phi    = Get<Float_t>("METFixEE2017_phi");
   }
-  else if (year == 2018) { // CAMBIAR PA QUE SEA LISTO Y DETECTE EL NOM CUANDO LO HAYA
-    TMET        = Get<Float_t>("MET_pt_nom");
-    TMET_Phi    = Get<Float_t>("MET_phi_nom");
+  else {
+    TMET        = Get<Float_t>("MET_pt");
+    TMET_Phi    = Get<Float_t>("MET_phi");
   }
 
   if (gIsData) return;
@@ -1517,8 +1517,6 @@ void TWAnalysis::CalculateSFAndWeights() {
         ElecSFDo *= (Double_t)selLeptons.at(1).GetSF(-1);
       }
     }
-
-//     cout << "Btag SF: " << BtagSF << endl;
 
     // Weight calculations
     TWeight               = TWeight_normal * ElecSF   * MuonSF * TrigSF * PUSF * BtagSF;
