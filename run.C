@@ -65,7 +65,7 @@ void run(TString samp, TString selection, Double_t xsec, Double_t sumofweights, 
   myProject->SetInputParam("selection",  selection);
   myProject->SetInputParam("WorkingDir", workingdir);
   myProject->SetInputParam("xsec",       xsec);
-  myProject->SetInputParam("path",       path);
+  myProject->SetInputParam("path", path); //quitar
   myProject->SetInputParam("_options",   options);
   myProject->SetInputParam("year",       TString(Form("%i",year)));
   
@@ -88,6 +88,6 @@ void run(TString samp, TString selection, Double_t xsec, Double_t sumofweights, 
   myProject->AddPackage("Functions");
   myProject->AddPackage("LeptonSF");
   myProject->AddPackage("BTagSFUtil");
-  
+  myProject->AddPackage("SUSYnorm"); //quitar
   myProject->Run();
 }

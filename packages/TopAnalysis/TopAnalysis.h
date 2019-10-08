@@ -5,7 +5,7 @@
 #include "BTagSFUtil.h"
 #include <iostream>
 #include <vector>
-
+#include "SUSYnorm.h"
 //enum eChannels{iUnkChan, iElMu, iMuon, iElec, nChannels};
 const Int_t nChannels = 3;
 enum eLevels  {idilepton, iZVeto, iMETcut, i2jets, i1btag, nLevels};
@@ -103,6 +103,8 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t TWeight;   // Total nominal weight
     Float_t TMll;      // Invariant mass
     Float_t TDilep_Pt;
+    Float_t TDeltaEta;
+    Float_t TDeltaPhi;
     Float_t TMuon_Pt;
     Float_t TElec_Pt;
     Float_t TMuon_Eta;
@@ -177,7 +179,8 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t TMETJESUp; Float_t TMETJESDown; Float_t TMETJERUp; Float_t TMETJERDown; Float_t TMETUnclUp; Float_t TMETUnclDown;
     Float_t TMT2JESUp; Float_t TMT2JESDown; Float_t TMT2JERUp; Float_t TMT2JERDown; Float_t TMT2UnclUp; Float_t TMT2UnclDown;
     Float_t TMT2MESUp; Float_t TMT2MESDown; Float_t TMT2EESUp; Float_t TMT2EESDown;
-
+    
+    Float_t m_stop; Float_t m_LSP; Int_t sumWeights; Int_t ngenPart; Int_t iSt; Int_t iLSP; Double_t xsec; Int_t j;Float_t norm;//quitar
     Float_t  TWeight_LepEffUp;
     Float_t  TWeight_LepEffDown;
     Float_t  TWeight_ElecEffUp;
@@ -194,7 +197,8 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t  TWeight_FSRDown;
     Float_t  TWeight_PrefUp;
     Float_t  TWeight_PrefDown;
-
+    
+    
     std::vector<Jet> jets;
     Float_t weight;
     Float_t met, ht, nvert, mt2, invmass; 
@@ -291,7 +295,6 @@ class TopAnalysis : public PAFChainItemSelector{
   Bool_t gIs2016;
   Bool_t gIs2017;
   Bool_t gIs2018;
-
   protected:
 
     Int_t year;
@@ -300,8 +303,11 @@ class TopAnalysis : public PAFChainItemSelector{
     Bool_t  gDoSyst;
     Int_t   gSelection;
     TString gSampleName;
+    
     TString gOptions;
     Bool_t  gIsTTbar;
+    Bool_t  gIsSignal; //quitar
+    SUSYnorm* snorm;
     Bool_t  gIsTTany;
     Bool_t  gIsLHE;
 

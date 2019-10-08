@@ -4,15 +4,17 @@
 
 #include <iostream>
 
-SUSYnorm::SUSYnorm(TString _path, TString _sname): fhSMS(0) {
+SUSYnorm::SUSYnorm(TString _path, TString _filename): fhSMS(0) {
   path  = _path;
-  sname = _sname;
+  filename = _filename;
+
   hname = "hSMS";
   loadHisto();
 };
 
 void SUSYnorm::loadHisto(){
-  vector<TString> files = GetAllFiles(path, sname);
+
+  vector<TString> files = GetAllFiles(path, filename);
   fhSMS = (TH2D*)GetHistoFromFiles2(files, hname);
 }
 

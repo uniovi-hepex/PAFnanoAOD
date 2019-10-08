@@ -213,7 +213,7 @@ Bool_t LeptonSelector::isGoodLepton(Lepton lep){
   Bool_t passId; Bool_t passIso;
   if (lep.isMuon) {
     passId  = getMuonId(iTight);
-    passIso = getRelIso04POG(iTight);
+    passIso = getRelIso04POG(iTight);   //quitar true
   }
   if (lep.isElec) {
     passId = getElecCutBasedId(iTight) && lostHits <= 1;
@@ -360,7 +360,7 @@ void LeptonSelector::InsideLoop(){
   nLooseLeptons = looseLeptons.size();
   nGenLeptons   = genLeptons.size();
 
-  //=== Trigger SF
+  //=== Trigger SF  
   TriggerSF = 1; TriggerSFerr = 0;
   if(!gIsData){
     if(nSelLeptons >= 2){

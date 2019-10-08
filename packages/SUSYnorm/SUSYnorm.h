@@ -18,14 +18,14 @@ const Float_t lumiGH    = 16.1454;
 
 class SUSYnorm {
  public:
-  SUSYnorm(TString path, TString sname);
+  SUSYnorm(TString path, TString filename);
   ~SUSYnorm() {}
   void loadHisto();
   //Double_t GetStopXSec(Float_t mStop);
   Double_t GetStopXSec(Int_t mStop);
   Double_t GetSUSYnorm(Float_t mStop, Float_t mLSP);
 
-  vector<TString> GetAllFiles(TString path, TString  filename = "", Bool_t verbose = 0);
+  vector<TString> GetAllFiles(TString path, TString  filename = "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCUETP8M2T4_madgra", Bool_t verbose =1);
   TH1* GetHistoFromFiles(vector<TString> Files, TString histoName);
   TH2* GetHistoFromFiles2(vector<TString> Files, TString histoName);
   
@@ -33,7 +33,7 @@ class SUSYnorm {
   // Muon SFs
   TH2D*  fhSMS;
   TString path;
-  TString sname;
+  TString filename;
   TString hname;
 };
 #endif
