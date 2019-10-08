@@ -18,7 +18,7 @@ Lumi17      = 41.53    # In femtobarns
 Lumi18      = 59.74    # In femtobarns
 uncLumi     = 0.025    # In %
 
-Lumi        = Lumi18   # TEMPORAAAAAAAAAAL
+Lumi        = Lumi18   # Legacy setting. By default, 2018's lumi
 
 sigma_ttbar   = 831.76
 sigma_dilep   = 88.28769753
@@ -582,11 +582,11 @@ varList['LooseCentral1_Pt'] = {
     'yaxis'       : 'd#sigma/d(leading jet #it{p}_{T}) (GeV)',
     'yaxisfid'    : '(1/#sigma_{fid.})d#sigma/d(leading loose jet #it{p}_{T}) (adim.)',
     'yaxisfidbin' : '(1/#sigma_{fid.})d#sigma/d(leading loose jet #it{p}_{T}) (1/GeV)',
-    'genbinning'  : [30, 50, 70, 90, 125, 150],
-    'recobinning' : [30, 40, 45, 50, 55, 60, 65, 70, 90, 125, 150],
+    'genbinning'  : [0, 50, 70, 90, 125, 30],
+    'recobinning' : [0, 40, 45, 50, 55, 60, 65, 70, 90, 125, 30],
 
-    'descbinning' : [10., 200.],
-    'ndescbins'   : 14,
+    'descbinning' : [0., 30.],
+    #'ndescbins'   : 14,
     'legpos'      : (0.7, 0.55, 0.90, 0.93),
     'legposdesc'  : (0.7, 0.55, 0.90, 0.93),
     #"legpos_unf"  : "TC",
@@ -1263,8 +1263,8 @@ varList['Sys_Muncertainties'] = {
 varList['Sys_Pt'] = {
     'xaxis'       : 'p_{T}(\\ell_{1}, \\ell_{2}, j,\\slash{E}_{T})',
     'yaxis'       : 'd#sigma (pb)',
-    'genbinning'  : [0., 20., 40., 70., 150.],
-    'recobinning' : [0., 10., 20., 30., 40., 50., 60., 70., 150.],
+    'genbinning'  : [0., 20., 40., 70., 300.],
+    'recobinning' : [0., 10., 20., 30., 40., 50., 60., 70., 300.],
     'var'         : 'TSys_Pt',
     'var_response': 'Sys_Pt',
     'var_gen'     : 'TDressSys_Pt',
