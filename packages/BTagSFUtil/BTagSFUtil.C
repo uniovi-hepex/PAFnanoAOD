@@ -190,25 +190,26 @@ float BTagSFUtil::JetTagEfficiency(int JetFlavor, float JetPt, float JetEta) {
 
 }
 
-float BTagSFUtil::GetJetSF(float JetDiscriminant, int JetFlavor, float JetPt, float JetEta) {
 
-  float Btag_SF;
+Float_t BTagSFUtil::GetJetSF(Float_t JetDiscriminant, Int_t JetFlavor, Float_t JetPt, Float_t JetEta) {
+  Float_t Btag_SF;
 
   // if (JetPt < 20. && abs(JetEta) < 2.4 && JetDiscriminant > 0. && JetDiscriminant < 1.)  
   //   cout << "WARNING: BTagSFUtil: Found jet with pT " << JetPt << " GeV, smaller than 20 GeV. From BTagRecommendation80XReReco: do NOT go lower than 20 GeV." << endl << "Please check your jet pT thresholds. BTagSF for 20 GeV with double uncertainty has been applied." << endl;
 
-  if (abs(JetFlavor)==5) 
-    Btag_SF = reader_b->eval_auto_bounds(SystematicFlagBC, BTagEntry::FLAV_B, JetEta, JetPt, JetDiscriminant);
-  else if (abs(JetFlavor)==4) 
-    Btag_SF = reader_c->eval_auto_bounds(SystematicFlagBC, BTagEntry::FLAV_C, JetEta, JetPt, JetDiscriminant);
-  else Btag_SF = reader_l->eval_auto_bounds(SystematicFlagL, BTagEntry::FLAV_UDSG, JetEta, JetPt, JetDiscriminant);
+  if      (abs(JetFlavor) == 5)
+    Btag_SF = reader_b->eval_auto_bounds(SystematicFlagBC, BTagEntry::FLAV_B,    TMath::Abs(JetEta), TMath::Min(JetPt, ptMax - 1), JetDiscriminant);
+  else if (abs(JetFlavor) == 4)
+    Btag_SF = reader_c->eval_auto_bounds(SystematicFlagBC, BTagEntry::FLAV_C,    TMath::Abs(JetEta), TMath::Min(JetPt, ptMax - 1), JetDiscriminant);
+  else
+    Btag_SF = reader_l->eval_auto_bounds(SystematicFlagL,  BTagEntry::FLAV_UDSG, TMath::Abs(JetEta), TMath::Min(JetPt, ptMax - 1), JetDiscriminant);
   
 //  if (IsFastSimDataset)
 //    Btag_SF *= FastSimCorrectionFactor(JetFlavor, JetPt, JetEta);
   
   return Btag_SF;
-
 }
+
 
 bool BTagSFUtil::IsTagged(float JetDiscriminant, int JetFlavor, float JetPt, float JetEta, UInt_t Seed) {
   bool isBTagged = JetDiscriminant>TaggerCut;
@@ -283,20 +284,17 @@ void  BTagSFUtil::LoadHistos(const TString& path, int year, const TString& tagge
   btagmceffL->SetDirectory(0);
 }
 
-float BTagSFUtil::TagEfficiencyB(float JetPt, float JetEta){
-  if(JetPt > ptMax) JetPt = ptMax-1;
-  int bin = btagmceff->FindBin(JetPt, JetEta);
-  btagmceff->GetBinContent(bin);
+
+Float_t BTagSFUtil::TagEfficiencyB(Float_t JetPt, Float_t JetEta) {
+  return btagmceff->GetBinContent(btagmceff->FindBin(TMath::Min(JetPt, ptMax - 1), TMath::Abs(JetEta)));
 }
 
-float BTagSFUtil::TagEfficiencyC(float JetPt, float JetEta){
-  if(JetPt > ptMax) JetPt = ptMax-1;
-  int bin = btagmceffC->FindBin(JetPt, JetEta);
-  btagmceffC->GetBinContent(bin);
+
+Float_t BTagSFUtil::TagEfficiencyC(Float_t JetPt, Float_t JetEta) {
+  return btagmceffC->GetBinContent(btagmceff->FindBin(TMath::Min(JetPt, ptMax - 1), TMath::Abs(JetEta)));
 }
 
-float BTagSFUtil::TagEfficiencyLight(float JetPt, float JetEta){
-  if(JetPt > ptMax) JetPt = ptMax-1;
-  int bin = btagmceffL->FindBin(JetPt, JetEta);
-  btagmceffL->GetBinContent(bin);
+
+Float_t BTagSFUtil::TagEfficiencyLight(Float_t JetPt, Float_t JetEta) {
+  return btagmceffL->GetBinContent(btagmceff->FindBin(TMath::Min(JetPt, ptMax - 1), TMath::Abs(JetEta)));
 }

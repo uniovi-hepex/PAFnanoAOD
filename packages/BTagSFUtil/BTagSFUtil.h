@@ -14,8 +14,8 @@ class BTagSFUtil{
  public:
     
   BTagSFUtil(const string& MeasurementType, 
-	     const TString& BTagSFPath, const string& BTagAlgorithm, 
-	     const TString& OperatingPoint, int SystematicIndex = 0, int year = 2017, TString FastSimDataset = "");
+             const TString& BTagSFPath, const string& BTagAlgorithm,
+             const TString& OperatingPoint, int SystematicIndex = 0, int year = 2017, TString FastSimDataset = "");
   ~BTagSFUtil();
 
   float GetJetSF(float JetDiscriminant, int JetFlavor, float JetPt, float JetEta);
@@ -23,7 +23,7 @@ class BTagSFUtil{
   void IsFastSim(Bool_t is = 1){ gIsFastSim = is;}
   Float_t GetFastSimBtagSF(Int_t flav, Float_t eta, Float_t pt, Float_t csv, Float_t sys = 0);
   float JetTagEfficiency(int JetFlavor, float JetPt, float JetEta);
-  float ptMax = 140;
+  Float_t ptMax  = 140;
 
  private:
 
