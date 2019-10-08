@@ -81,13 +81,12 @@ void run(TString samp, TString selection, Double_t xsec, Double_t sumofweights, 
     myProject->AddSelectorPackage("LepEffTop");
   
   // Additional packages
-  myProject->AddPackage("SUSYnorm");
   myProject->AddPackage("Lepton");
   myProject->AddPackage("Jet");
   myProject->AddPackage("mt2");
   myProject->AddPackage("Functions");
   myProject->AddPackage("LeptonSF");
   myProject->AddPackage("BTagSFUtil");
-  myProject->AddPackage("SUSYnorm"); //quitar
+  myProject->AddPackage("SUSYnorm");
   myProject->Run();
 }
