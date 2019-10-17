@@ -90,8 +90,8 @@ void run(TString samp, TString selection, Double_t xsec, Double_t sumofweights, 
   // Additional packages
   myProject->AddPackage("Lepton");
   myProject->AddPackage("Jet");
-  myProject->AddPackage("mt2");
   myProject->AddPackage("Functions");
+  if (selection == "TopAnalysis") myProject->AddPackage("mt2");
   myProject->AddPackage("LeptonSF");
   myProject->AddPackage("BTagSFUtil");
   

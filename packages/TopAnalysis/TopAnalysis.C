@@ -224,9 +224,9 @@ void TopAnalysis::InsideLoop(){
   if(gIsSignal){
 	  Float_t norm = snorm->GetSUSYnorm(m_stop,m_LSP);
 	  xsec = snorm->GetStopXSec(m_stop);
-	  NormWeight = xsec/norm;
-	  cout << Form("m_stop:%f y m_LSP=%f  xsec: %f, %f\n", m_stop, m_LSP,  xsec,NormWeight);
-}
+	  NormWeight = norm != 0 ? xsec/norm : 0;
+	  //cout << Form("m_stop:%f y m_LSP=%f  xsec: %f, %f\n", m_stop, m_LSP,  xsec,NormWeight);
+  }
   if(!gIsData && gPUWeigth){
     PUSF         = Get<Float_t>("puWeight");
     PUSF_Up      = Get<Float_t>("puWeightUp");
@@ -329,7 +329,7 @@ void TopAnalysis::InsideLoop(){
                   fHyields[gChannel][sys] -> Fill(i1btag, weight);
                   FillHistos(gChannel, i1btag, sys);
                 }
-                if (!isSS && makeTree && TChannel == iElMu) fTree->Fill();
+                if (!isSS && sys == 0 && makeTree && TChannel == iElMu) fTree->Fill();
               }
             }
           }
@@ -658,6 +658,7 @@ void TopAnalysis::InitHistos(){
 }
 
 void TopAnalysis::FillDYHistos(Int_t ch){
+  if(!makeHistos) return;
   Int_t sys = 0;
   Int_t cut;
   Float_t EventWeight = weight;
@@ -790,6 +791,7 @@ void TopAnalysis::FillHistos(Int_t ch, Int_t cut, Int_t sys){
 }
 
 void TopAnalysis::FillCorrHistos(){
+  if(!makeHistos) return;
   Float_t pTreco; Float_t pTgen; Float_t dR = 0.3; Float_t dPtoPt; Bool_t isBtag; Bool_t isBJet;
   Float_t bin0; Float_t bin1;
   Int_t njets = jets.size();

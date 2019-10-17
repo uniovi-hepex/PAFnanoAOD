@@ -640,3 +640,53 @@ int mt2::nsols(  double Dsq)
    return nsol;
   
 }
+
+Float_t getMT2(TLorentzVector plep1, TLorentzVector plep2, TLorentzVector pmet, Float_t mass){
+  double pa[3]; double pb[3]; double pmiss[3];
+  pmiss[0] = 0.; // irrelevant
+  pmiss[1] = pmet.Px(); pmiss[2] = pmet.Py();
+  pa[0] = 0.; pa[1] = plep1.Px(); pa[2] = plep1.Py();
+  pb[0] = 0.; pb[1] = plep2.Px(); pb[2] = plep2.Py();
+  mt2 MT2bisect;
+  MT2bisect.set_momenta(pa, pb, pmiss);
+  MT2bisect.set_mn(mass); // testmass
+  Float_t MT2 = MT2bisect.get_mt2();
+  return MT2;
+}
+
+Float_t getMT2ll(Lepton l1, Lepton l2, Float_t met, Float_t met_phi){
+  TLorentzVector pmet;
+  pmet.SetPtEtaPhiM(met, 0, met_phi, 0);
+  Float_t MT2 = getMT2(l1.p, l2.p, pmet, 0);
+  return MT2;
+}
+
+Float_t getMT2llLepScale(Lepton l1, Lepton l2, Float_t met, Float_t met_phi, int id, int dir){
+  TLorentzVector pmet;
+  pmet.SetPtEtaPhiM(met, 0, met_phi, 0);
+  TLorentzVector p1 = l1.p;
+  TLorentzVector p2 = l2.p;
+  int id1 = l1.isMuon? 13 : 11;
+  int id2 = l2.isMuon? 13 : 11;
+  float scale;
+  float pt; float eta; float phi; float M;
+
+  if(id1 == id){
+    pt    = l1.Pt(); eta = l1.Eta(); phi = l1.Phi(); M = l1.p.M();
+    scale = l1.GetEnergyUnc();
+    if(dir > 0) pt = pt*(scale+1);
+    if(dir < 0) pt = pt*(scale-1);
+    p1.SetPtEtaPhiM(pt, eta, phi, M);
+  } 
+  if(id2 == id){
+    pt    = l2.Pt(); eta = l2.Eta(); phi = l2.Phi(); M = l2.p.M();
+    scale = l2.GetEnergyUnc();
+    if(dir > 0) pt = pt*(scale+1);
+    if(dir < 0) pt = pt*(scale-1);
+    p2.SetPtEtaPhiM(pt, eta, phi, M);
+  } 
+
+  Float_t MT2 = getMT2(p1, p2, pmet, 0);
+  return MT2;
+}
+

@@ -1,5 +1,8 @@
 #ifndef MT2_BISECT_H
 #define MT2_BISECT_H 1
+#include "TLorentzVector.h"
+#include "Lepton.h"
+#include "Jet.h"
 
 
 /*The user can change the desired precision below, the larger one of the following two definitions is used. Relative precision less than 0.00001 is not guaranteed to be achievable--use with caution*/ 
@@ -80,5 +83,8 @@ int mt2::signchange_p( long double t1, long double t2, long double t3, long doub
   return nsc;
 }
 
+Float_t getMT2(TLorentzVector plep1, TLorentzVector plep2, TLorentzVector pmet, Float_t mass);
+Float_t getMT2ll(Lepton l1, Lepton l2, Float_t met, Float_t met_phi);
+Float_t getMT2llLepScale(Lepton l1, Lepton l2, Float_t met, Float_t met_phi, int id, int dir);
 
 #endif
