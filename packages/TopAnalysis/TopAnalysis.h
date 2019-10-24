@@ -102,7 +102,7 @@ class TopAnalysis : public PAFChainItemSelector{
     //Variables
     ULong64_t event;
     UInt_t    lumiblock;
-    Float_t TWeight;   // Total nominal weight
+    Double_t TWeight;   // Total nominal weight
     Float_t TMll;      // Invariant mass
     Float_t TDilep_Pt;
     Float_t TDeltaEta;
@@ -202,7 +202,7 @@ class TopAnalysis : public PAFChainItemSelector{
     
     
     std::vector<Jet> jets;
-    Float_t weight;
+    Double_t weight;
     Float_t met, ht, nvert, mt2, invmass; 
     Int_t   nleps, njets, nbtags;
     Float_t lep0pt, lep1pt, lep0eta, lep1eta, lep0iso, lep1iso;
@@ -225,7 +225,7 @@ class TopAnalysis : public PAFChainItemSelector{
   TH1F* fHScaleWeights[nChannels][nLevels];
   TH1F* fHMET[nChannels][nLevels][nSysts];
   TH1F* fHMT2[nChannels][nLevels][nSysts];
-  TH1F* fHLep0Eta[nChannels][nLevels][nSysts];
+  TH1D* fHLep0Eta[nChannels][nLevels][nSysts];
   TH1F* fHLep1Eta[nChannels][nLevels][nSysts];
   TH1F* fHMuonEta[nChannels][nLevels][nSysts];
   TH1F* fHElecEta[nChannels][nLevels][nSysts];
@@ -284,7 +284,7 @@ class TopAnalysis : public PAFChainItemSelector{
   TH1F* fhDummy_njets[nChannels];
   TH1F* fhDummy_nbtags[nChannels];
   TH1F*  fHWeightsFidu;
-  TH1F*  fHyields[nChannels][nSysts];
+  TH1D*  fHyields[nChannels][nSysts];
   TH1F*  fHFiduYields[nChannels][nSysts];
   TH1F*  fHSSyields[nChannels][nSysts];
 
