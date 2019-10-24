@@ -54,6 +54,7 @@ class TopAnalysis : public PAFChainItemSelector{
 
     Bool_t makeHistos = false;
     Bool_t makeTree   = false;
+    Bool_t miniTree   = false;
     vector<int> useSyst = vector<int>();
     Int_t nSyst;
 
