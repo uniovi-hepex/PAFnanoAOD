@@ -768,8 +768,8 @@ void TWTTbarAnalysis::GetMETandGenMET() {
 void TWTTbarAnalysis::ResetTWTTbarVariables() {
   ElecSF    = 1;  MuonSF   = 1; ElecSFUp  = 1;  ElecSFDo = 1;  MuonSFUp = 1;  MuonSFDo = 1; lepSF = 1;
   
-  TPassMinDressSel        = false;
-  TPassMinRecoSel         = false;
+  TPassMinDressSel       = false;
+  TPassMinRecoSel        = false;
   TPassReco              = false;
   TPassRecoJESUp         = false;
   TPassRecoJESDown       = false;

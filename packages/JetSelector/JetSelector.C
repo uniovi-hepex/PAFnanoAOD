@@ -185,7 +185,7 @@ void JetSelector::InsideLoop(){
   Float_t errHdn    = 0.;
   Float_t errLup    = 0.;
   Float_t errLdn    = 0.;
-  
+
   // Loop over all the jets
   for (Int_t i = 0; i < nJet; i++) {
     // Get all jet variables
@@ -226,13 +226,19 @@ void JetSelector::InsideLoop(){
           vetoJets.push_back(tJ);
           
           if (!gIsData) {
-            if ( tJ.p.Pt() < 20.) continue;
-            Float_t eff   = fBTagSFnom->JetTagEfficiency(tJ.flavmc, tJ.p.Pt(), tJ.p.Eta());
-            Float_t sf    = fBTagSFnom->GetJetSF(tJ.csv, tJ.flavmc, tJ.p.Pt(), tJ.p.Eta());
-            Float_t sfHUp = fBTagSFbUp->GetJetSF(tJ.csv, tJ.flavmc, tJ.p.Pt(), tJ.p.Eta());
-            Float_t sfHDn = fBTagSFbDo->GetJetSF(tJ.csv, tJ.flavmc, tJ.p.Pt(), tJ.p.Eta());
-            Float_t sfLUp = fBTagSFlUp->GetJetSF(tJ.csv, tJ.flavmc, tJ.p.Pt(), tJ.p.Eta());
-            Float_t sfLDn = fBTagSFlDo->GetJetSF(tJ.csv, tJ.flavmc, tJ.p.Pt(), tJ.p.Eta());
+            if (tJ.p.Pt() <= 20.001 || TMath::Abs(tJ.p.Eta()) >= 2.4) continue;
+            Float_t cutval = -99;
+
+            if      (taggerName == "CSVv2")    cutval = tJ.csv;
+            else if (taggerName == "DeepCSV")  cutval = tJ.GetDeepCSVB();
+            else if (taggerName == "DeepFlav") cutval = tJ.GetDeepFlav();
+
+            Float_t eff    = fBTagSFnom->JetTagEfficiency(tJ.flavmc, tJ.p.Pt(), tJ.p.Eta());
+            Float_t sf     = fBTagSFnom->GetJetSF(cutval, tJ.flavmc, tJ.p.Pt(), tJ.p.Eta());
+            Float_t sfHUp  = fBTagSFbUp->GetJetSF(cutval, tJ.flavmc, tJ.p.Pt(), tJ.p.Eta());
+            Float_t sfHDn  = fBTagSFbDo->GetJetSF(cutval, tJ.flavmc, tJ.p.Pt(), tJ.p.Eta());
+            Float_t sfLUp  = fBTagSFlUp->GetJetSF(cutval, tJ.flavmc, tJ.p.Pt(), tJ.p.Eta());
+            Float_t sfLDn  = fBTagSFlDo->GetJetSF(cutval, tJ.flavmc, tJ.p.Pt(), tJ.p.Eta());
 
             if (tJ.isBtag) {
               mcTag   *= eff;

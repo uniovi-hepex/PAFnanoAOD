@@ -18,10 +18,10 @@ Datasets/
 *temp*/
 jobs/*
 inputdata.root
-plotter/TWTTbar/temp*/*
-plotter/TWTTbar/results/*
-plotter/TWTTbar/logs/*
-plotter/TWTTbar/old/*
+plotter/TW*/temp*/*
+plotter/TW*/results/*
+plotter/TW*/logs/*
+plotter/TW*/old/*
 
 #Higgs combine output :)
 higgsCombine*.root

@@ -1280,6 +1280,7 @@ void Plot::DrawStack(TString tag, Bool_t doNorm) {
   c->Print( dir + plotname + ".png", "png");
   c->Print( dir + plotname + ".eps", "eps");
   c->SaveAs( dir + plotname + ".root");
+  c->SaveAs( dir + plotname + ".C");
   delete c;
   if (!Xerrorbars) {
     delete ex1; delete ex2;
