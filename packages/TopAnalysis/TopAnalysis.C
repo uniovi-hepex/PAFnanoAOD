@@ -948,7 +948,7 @@ void TopAnalysis::SetVariables(int sys){
   // that you choose
   // Global
   nleps = selLeptons.size(); weight = TWeight;
-  met = TMET; mt2 = TMT2; ht = THT; nvert = TNVert; invmass = TMll;
+  met = TMET; mt2 = TMT2; nvert = TNVert; invmass = TMll;
   // Leptons
   if(nleps >= 2){
     lep0pt = TLep0Pt; lep1pt = TLep1Pt; lep0eta = TLep0Eta; lep1eta = TLep1Eta; 
@@ -959,7 +959,7 @@ void TopAnalysis::SetVariables(int sys){
   }
 
   // Jets
-  njets = 0; nbtags = 0;
+  njets = 0; nbtags = 0; ht = 0;
   jets.clear(); Jet jet; TLorentzVector t; 
   float pt, eta, phi, m; bool isbtag; float csv, deepcsv, deepflav;
   Int_t nJets = Get<Int_t>("nJet");
@@ -1010,10 +1010,11 @@ void TopAnalysis::SetVariables(int sys){
         njets++;
         if(jet.isBtag) nbtags++; 
         jets.push_back(jet);
+        ht += jet.Pt();
       }
     }
   }
-  TNJets = njets; TNBtags = nbtags;
+  TNJets = njets; TNBtags = nbtags; THT = ht;
 
   if     (sys == kMuonEffUp  ) weight = TWeight_MuonEffUp;
   else if(sys == kMuonEffDown) weight = TWeight_MuonEffDown;
