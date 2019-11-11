@@ -115,7 +115,6 @@ class TopAnalysis : public PAFChainItemSelector{
     Int_t   TNVert;
     Float_t TMET;      // MET
     Float_t TMT2;      // MET
-    Float_t TGenMET;     
     Float_t TMET_Phi;  // MET phi
     Float_t TgenTop1Pt = 0;
     Float_t TgenTop2Pt = 0;
@@ -134,6 +133,22 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t TLep1Phi;
     Float_t TLep1M;
     Int_t   TLep1Id;
+
+    Float_t TGenLep0Pt;    
+    Float_t TGenLep0Eta;
+    Float_t TGenLep0Phi;
+    Float_t TGenLep1Pt;    
+    Float_t TGenLep1Eta;
+    Float_t TGenLep1Phi;
+    Float_t TGenMET;
+    Float_t TGenMET_phi;
+
+    Float_t TTop0Pt;
+    Float_t TTop0Eta;
+    Float_t TTop0Phi;
+    Float_t TTop1Pt;
+    Float_t TTop1Eta;
+    Float_t TTop1Phi;
 
     Int_t TNJets;            // Jets...
     Int_t TNFwdJets; 
