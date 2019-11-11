@@ -45,7 +45,7 @@ class TopAnalysis : public PAFChainItemSelector{
     BTagSFUtil *fBTagSFlDo;
     Int_t era;
     Int_t nPDFweights;
-
+    Int_t   TNVert;
     TTree* fTree;
     TString GetSuffix(int iCh, int iCut, int iSyst = 0);
     void SetLeptonVariables();
@@ -58,6 +58,7 @@ class TopAnalysis : public PAFChainItemSelector{
     Bool_t miniTree   = false;
     vector<int> useSyst = vector<int>();
     Int_t nSyst;
+    Double_t PUreweights(Int_t NVtx);
 
     void GetLeptonVariables(std::vector<Lepton> selLeptons, std::vector<Lepton> VetoLeptons);
     void GetJetVariables(std::vector<Jet> selJets, std::vector<Jet> cleanedJets15, Float_t ptCut = 30);
@@ -65,7 +66,7 @@ class TopAnalysis : public PAFChainItemSelector{
     void GetMET();
     void GetWeights();
     Int_t nFiduJets; Int_t nFidubJets; 
-
+   
     Float_t TrigSF;
     Float_t TrigSFerr;
     Float_t PUSF;
@@ -112,7 +113,7 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t TMuon_Eta;
     Float_t TElec_Eta;
     UInt_t  TRun;
-    Int_t   TNVert;
+    //Int_t   TNVert;
     Float_t TMET;      // MET
     Float_t TMT2;      // MET
     Float_t TGenMET;     

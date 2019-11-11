@@ -24,8 +24,8 @@ class SUSYnorm {
   //Double_t GetStopXSec(Float_t mStop);
   Double_t GetStopXSec(Int_t mStop);
   Double_t GetSUSYnorm(Float_t mStop, Float_t mLSP);
-
-  vector<TString> GetAllFiles(TString path, TString  filename = "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCP5_MLM_p", Bool_t verbose =1);
+  
+  vector<TString> GetAllFiles(TString path, TString  filename = "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCUETP8M2T4_madgra", Bool_t verbose =1);
   TH1* GetHistoFromFiles(vector<TString> Files, TString histoName);
   TH2* GetHistoFromFiles2(vector<TString> Files, TString histoName);
   

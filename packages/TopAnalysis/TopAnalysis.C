@@ -121,7 +121,7 @@ void TopAnalysis::Initialise(){
 
 	  //snorm = new SUSYnorm(path, gSampleName);
     cout<<path<<endl;
-    snorm = new SUSYnorm(path , "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCP5_MLM_p");//"SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCUETP8M2T4_madgra");
+    snorm = new SUSYnorm(path ,  "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCUETP8M2T4_madgra");//"SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCP5_MLM_p");
   }
      
   // Uncertainties
@@ -161,10 +161,14 @@ void TopAnalysis::Initialise(){
   }
   nSyst = useSyst.size();
   InitHistos();
-  metvar   = year == 2017? "METFixEE2017" : "MET";
+  metvar   = year == 2017? "METFixEE2017" : "MET";  //QUITAR: descomentar esats 3 lineas y borrar las 2 siguientes
   metvarpt = year == 2017? "METFixEE2017_pt" : "MET_pt";
   if(year != 2017 and gOptions.Contains("JetPtNom")) metvarpt = "MET_pt_nom";
-
+  //metvar="MET";
+  //metvarpt="MET_pt";
+  
+  
+  
   gIs2017 = false; gIs2016 = false; gIs2018 = false;
   if     (year == 2017) gIs2017 = true;
   else if(year == 2018) gIs2018 = true;
@@ -225,7 +229,8 @@ void TopAnalysis::InsideLoop(){
 	  NormWeight = norm != 0 ? xsec/norm*Get<Float_t>("genWeight") : 0;
 
   }
-
+  
+  
   if(!gIsData && gPUWeigth){
     PUSF         = Get<Float_t>("puWeight");
     PUSF_Up      = Get<Float_t>("puWeightUp");
@@ -250,6 +255,7 @@ void TopAnalysis::InsideLoop(){
   GetMET();
   GetWeights();
   GetJetVariables(selJets, Jets15); //quitar: esto estaba comentado (lo descomente pa minitrees de stop)
+
 
   fhDummy->Fill(1);
   if(gIsTTbar && makeHistos) FillCorrHistos(); 
@@ -335,6 +341,7 @@ void TopAnalysis::InsideLoop(){
                 }
 
                 if (!isSS && sys == 0 && makeTree && TChannel == iElMu) fTree->Fill();
+                //if (!isSS && sys == 0 && makeTree && TChannel == iElMu && met >= 50 && mt2 >=80) fTree->Fill();
 
               }
             }
@@ -483,7 +490,7 @@ void TopAnalysis::GetMET(){
     TMT2MESUp = 0; TMT2MESDown = 0; TMT2EESUp = 0; TMT2EESDown = 0;
     if(gIsData) TNVert = Get<Int_t>("PV_npvs");
     if(gIsData) return;
-    TNVert      = Get<Int_t>("Pileup_nPU");
+    TNVert      = Get<Int_t>("Pileup_nPU"); 
     TGenMET     = Get<Float_t>("GenMET_pt");
     //TMETJESUp    = Get<Float_t>("met_jecUp_pt"  );
     //TMETJESDown  = Get<Float_t>("met_jecDown_pt");
@@ -492,6 +499,9 @@ void TopAnalysis::GetMET(){
     //TMETUnclUp   = Get<Float_t>("met_jecUp_pt"  );
     //TMETUnclDown = Get<Float_t>("met_jecUp_pt"  );
 }
+
+
+
 
 void TopAnalysis::GetWeights(){
   TWeight_ElecEffUp = 1; TWeight_ElecEffDown = 1; TWeight_MuonEffUp = 1; TWeight_MuonEffDown = 1;
@@ -504,7 +514,6 @@ void TopAnalysis::GetWeights(){
   Float_t ElecSFUp = 1; Float_t ElecSFDo = 1; Float_t MuonSFUp = 1; Float_t MuonSFDo = 1;
   Float_t stat = 0; 
   Float_t fsrUp = 1; Float_t fsrDo = 1;  Float_t isrUp = 1; Float_t isrDo = 1; 
-
   if(gDoPSunc){
     // [0] is ISR=0.5 FSR=1; [1] is ISR=1 FSR=0.5; [2] is ISR=2 FSR=1; [3] is ISR=1 FSR=2
     isrDo = Get<Float_t>("PSWeight", 0);
@@ -914,6 +923,8 @@ void TopAnalysis::SetEventVariables(){
   fTree->Branch("TWeight_FSRDown",         &TWeight_FSRDown,        "TWeight_FSRDown/F");
   fTree->Branch("TWeight_PrefUp",           &TWeight_PrefUp,          "TWeight_PrefUp/F");
   fTree->Branch("TWeight_PrefDown",         &TWeight_PrefDown,        "TWeight_PrefDown/F");
+  fTree->Branch("TNVert",          &TNVert,          "TNVert/I");
+  fTree->Branch("TMET_Phi",     &TMET_Phi,     "TMET_Phi/F");
 
   if(!miniTree){
     fTree->Branch("TEvent",          &event,           "TEvent/l");

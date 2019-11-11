@@ -124,6 +124,8 @@ Double_t SUSYnorm::GetSUSYnorm(Float_t mStop, Float_t mLSP){
   return fhSMS->GetBinContent(bin);
 }
 
+
+
 Double_t SUSYnorm::GetStopXSec(Int_t StopMass){
   if      (StopMass == 100) return 1770;
   else if (StopMass == 105) return 1450;
