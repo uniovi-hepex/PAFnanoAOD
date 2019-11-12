@@ -277,6 +277,8 @@ void TopAnalysis::InsideLoop(){
   // GenLeptons
   TGenLep0Pt = 0; TGenLep0Eta = 0; TGenLep0Phi = 0;
   TGenLep1Pt = 0; TGenLep1Eta = 0; TGenLep1Phi = 0;
+  TLorentzVector gLep0 = TLorentzVector();
+  TLorentzVector gLep1 = TLorentzVector();
   if(genLeptons.size() >= 1){
     TGenLep0Pt  = genLeptons.at(0).Pt(); 
     TGenLep0Eta = genLeptons.at(0).Eta(); 
@@ -288,6 +290,7 @@ void TopAnalysis::InsideLoop(){
     TGenLep1Phi = genLeptons.at(1).Phi(); 
   }
   TGenMET = Get<Float_t>("GenMET_pt"); TGenMET_phi = Get<Float_t>("GenMET_phi");
+  TGenMT2 = genLeptons.size() >= 2 ? getMT2ll(genLeptons.at(0), genLeptons.at(1), TGenMET, TGenMET_phi) : -1;
 
   // Number of events in fiducial region
   if(!gIsData && makeHistos) {
@@ -946,6 +949,9 @@ void TopAnalysis::SetEventVariables(){
   fTree->Branch("TWeight_PrefUp",           &TWeight_PrefUp,          "TWeight_PrefUp/F");
   fTree->Branch("TWeight_PrefDown",         &TWeight_PrefDown,        "TWeight_PrefDown/F");
   fTree->Branch("TNVert",          &TNVert,          "TNVert/I");
+  fTree->Branch("TGenMET",         &TGenMET,         "TGenMET/F");
+  fTree->Branch("TGenMET_phi",     &TGenMET_phi,      "TGenMET_phi/F");
+  fTree->Branch("TGenMT2",         &TGenMT2,         "TGenMT2/F");
 
   if(!miniTree){
     fTree->Branch("TEvent",          &event,           "TEvent/l");
@@ -953,7 +959,6 @@ void TopAnalysis::SetEventVariables(){
     fTree->Branch("TPassMETFilters", &TPassMETFilters, "TPassMETFilters/B");
     fTree->Branch("TPassTrigger",    &TPassTrigger,    "TPassTrigger/B");
     fTree->Branch("TRun",            &TRun,            "TRun/i");
-    //fTree->Branch("TGenMET",         &TGenMET,         "TGenMET/F");
     //fTree->Branch("TgenTop1Pt",   &TgenTop1Pt,   "TgenTop1Pt/F");
     //fTree->Branch("TgenTop2Pt",   &TgenTop2Pt,   "TgenTop2Pt/F");
     fTree->Branch("TMETJESUp",    &TMETJESUp,    "TMETJESUp/F");
