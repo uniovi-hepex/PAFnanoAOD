@@ -121,7 +121,7 @@ void TopAnalysis::Initialise(){
 
 	  //snorm = new SUSYnorm(path, gSampleName);
     cout<<path<<endl;
-    snorm = new SUSYnorm(path ,  "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCUETP8M2T4_madgra");//"SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCP5_MLM_p");
+    snorm = new SUSYnorm(path ,  "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCP5_MLM_p"); //"SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCUETP8M2T4_madgra");
   }
      
   // Uncertainties
@@ -193,17 +193,30 @@ void TopAnalysis::InsideLoop(){
   event     = Get<ULong64_t>("event");
   lumiblock = Get<UInt_t>("luminosityBlock");
 
-  if (gIsSignal){
+  TTop0Pt = 0; TTop0Eta = 0; TTop0Phi = 0;
+  TTop1Pt = 0; TTop1Eta = 0; TTop1Phi = 0;
+  if (gIsSignal || gIsTTany){
     ngenPart=Get<Int_t>("nGenPart");
     int i; iSt = 0; iLSP = 0;
     for(Int_t i = 0; i < ngenPart; i++){
       Int_t genpdgId = Get<Int_t>("GenPart_pdgId", i);
-
+      if     (genpdgId == -6 and Get<Int_t>("GenPart_status", i) == 22){
+        TTop0Pt  = Get<Float_t>("GenPart_pt",  i);
+        TTop0Eta = Get<Float_t>("GenPart_eta", i);
+        TTop0Phi = Get<Float_t>("GenPart_phi", i);
+      }
+      else if(genpdgId ==  6 and Get<Int_t>("GenPart_status", i) == 22){
+        TTop1Pt  = Get<Float_t>("GenPart_pt",  i);
+        TTop1Eta = Get<Float_t>("GenPart_eta", i);
+        TTop1Phi = Get<Float_t>("GenPart_phi", i);
+      }
       if(genpdgId == 1000006)  iSt=i; 
       if(genpdgId == 1000022)  iLSP=i; 
     }
-    m_stop = Get<Float_t>("GenPart_mass", iSt);
-    m_LSP  = Get<Float_t>("GenPart_mass", iLSP);
+    if(gIsSignal){
+      m_stop = Get<Float_t>("GenPart_mass", iSt);
+      m_LSP  = Get<Float_t>("GenPart_mass", iLSP);
+    }
   }
 
   // Vectors with the objects
@@ -267,6 +280,21 @@ void TopAnalysis::InsideLoop(){
   //  if(m_stop != 205) return;
   //  if(m_LSP  !=  20) return;
   //}
+
+  // GenLeptons
+  TGenLep0Pt = 0; TGenLep0Eta = 0; TGenLep0Phi = 0;
+  TGenLep1Pt = 0; TGenLep1Eta = 0; TGenLep1Phi = 0;
+  if(genLeptons.size() >= 1){
+    TGenLep0Pt  = genLeptons.at(0).Pt(); 
+    TGenLep0Eta = genLeptons.at(0).Eta(); 
+    TGenLep0Phi = genLeptons.at(0).Phi(); 
+  }
+  if(genLeptons.size() >= 2){
+    TGenLep1Pt  = genLeptons.at(1).Pt(); 
+    TGenLep1Eta = genLeptons.at(1).Eta(); 
+    TGenLep1Phi = genLeptons.at(1).Phi(); 
+  }
+  TGenMET = Get<Float_t>("GenMET_pt"); TGenMET_phi = Get<Float_t>("GenMET_phi");
 
   // Number of events in fiducial region
   if(!gIsData && makeHistos) {
@@ -340,8 +368,10 @@ void TopAnalysis::InsideLoop(){
                   FillHistos(gChannel, i1btag, sys);
                 }
 
+
                 if (!isSS && sys == 0 && makeTree && TChannel == iElMu) fTree->Fill();
                 //if (!isSS && sys == 0 && makeTree && TChannel == iElMu && met >= 50 && mt2 >=80) fTree->Fill();
+
 
               }
             }
@@ -379,8 +409,8 @@ void TopAnalysis::GetLeptonVariables(std::vector<Lepton> selLeptons, std::vector
   gChannel = gChannel -1; // gchannel used for chan index of histograms
 
   Int_t id0 = 0; Int_t id1 = 0;
-  TLep0Pt = 0; TLep0Eta = 0; TLep0Phi = 0; TLep0M = 0; TLep0Id = 0;
-  TLep1Pt = 0; TLep1Eta = 0; TLep1Phi = 0; TLep1M = 0; TLep1Id = 0;
+  TLep0Pt = 0; TLep0Eta = 0; TLep0Phi = 0; TLep0M = 0; TLep0Id = 0; TLep0Phi = 0;
+  TLep1Pt = 0; TLep1Eta = 0; TLep1Phi = 0; TLep1M = 0; TLep1Id = 0; TLep1Phi = 0;
   if(TNSelLeps >= 2){
     id0 = selLeptons.at(0).isMuon? 13 : 11;
     id1 = selLeptons.at(1).isMuon? 13 : 11;
@@ -479,6 +509,8 @@ void TopAnalysis::GetGenJetVariables(std::vector<Jet> genJets, std::vector<Jet> 
   for(Int_t i = 0; i <  nmcJets; i++) if(mcJets.at(i).p.Pt()  > 30 && TMath::Abs(mcJets.at(i).Eta())    < 2.4 && mcJets.at(i).isBtag)  nFidubJets++;
 }
 
+
+    
 void TopAnalysis::GetMET(){
     TRun        = gIsData ? Get<UInt_t>("run") : 1;
     TMET        = Get<Float_t>(metvarpt); // MET_pt
@@ -841,22 +873,29 @@ void TopAnalysis::SetLeptonVariables(){
   if(!miniTree){
     fTree->Branch("TChannel",     &TChannel,     "TChannel/I");
     fTree->Branch("TIsSS",        &TIsSS,        "TIsSS/B");
-    fTree->Branch("TLep0Phi",     &TLep0Phi,     "TLep0Phi/F");
     fTree->Branch("TLep0M",       &TLep0M,       "TLep0M/F");
-    fTree->Branch("TLep0Id",      &TLep0Id,      "TLep0Id/I");
-    fTree->Branch("TLep1Phi",     &TLep1Phi,     "TLep1Phi/F");
     fTree->Branch("TLep1M",       &TLep1M,       "TLep1M/F");
-    fTree->Branch("TLep1Id",      &TLep1Id,      "TLep1Id/I");
   }
+    fTree->Branch("TLep0Id",      &TLep0Id,      "TLep0Id/I");
+    fTree->Branch("TLep1Id",      &TLep1Id,      "TLep1Id/I");
     fTree->Branch("TMll",         &TMll,         "TMll/F");
     fTree->Branch("TDilep_Pt",    &TDilep_Pt,    "TDilep_Pt/F");
     fTree->Branch("TLep0Pt",      &TLep0Pt,      "TLep0Pt/F");
     fTree->Branch("TLep0Eta",     &TLep0Eta,     "TLep0Eta/F");
+    fTree->Branch("TLep0Phi",     &TLep0Phi,     "TLep0Phi/F");
     fTree->Branch("TNSelLeps",    &TNSelLeps,    "TNSelLeps/I");
     fTree->Branch("TDeltaPhi",    &TDeltaPhi,    "TDeltaPhi/F");
     fTree->Branch("TDeltaEta",    &TDeltaEta,    "TDeltaEta/F");
     fTree->Branch("TLep1Pt",      &TLep1Pt,      "TLep1Pt/F");
     fTree->Branch("TLep1Eta",     &TLep1Eta,     "TLep1Eta/F");
+    fTree->Branch("TLep1Phi",     &TLep1Phi,     "TLep1Phi/F");
+
+    fTree->Branch("TGenLep0Pt",      &TGenLep0Pt,      "TGenLep0Pt/F");
+    fTree->Branch("TGenLep0Eta",     &TGenLep0Eta,     "TGenLep0Eta/F");
+    fTree->Branch("TGenLep0Phi",     &TGenLep0Phi,     "TGenLep0Phi/F");
+    fTree->Branch("TGenLep1Pt",      &TGenLep1Pt,      "TGenLep1Pt/F");
+    fTree->Branch("TGenLep1Eta",     &TGenLep1Eta,     "TGenLep1Eta/F");
+    fTree->Branch("TGenLep1Phi",     &TGenLep1Phi,     "TGenLep1Phi/F");
 }
 
 void TopAnalysis::SetJetVariables(){
@@ -908,6 +947,7 @@ void TopAnalysis::SetJetVariables(){
 void TopAnalysis::SetEventVariables(){
   fTree->Branch("TWeight",      &TWeight,      "TWeight/D");
   fTree->Branch("TMET",            &TMET,            "TMET/F");
+  fTree->Branch("TMET_Phi",     &TMET_Phi,     "TMET_Phi/F");
   fTree->Branch("TMT2",            &TMT2,            "TMT2/F");
   fTree->Branch("TWeight_ElecEffUp",      &TWeight_ElecEffUp,     "TWeight_ElecEffUp/F");
   fTree->Branch("TWeight_ElecEffDown",    &TWeight_ElecEffDown,   "TWeight_ElecEffDown/F");
@@ -924,26 +964,33 @@ void TopAnalysis::SetEventVariables(){
   fTree->Branch("TWeight_PrefUp",           &TWeight_PrefUp,          "TWeight_PrefUp/F");
   fTree->Branch("TWeight_PrefDown",         &TWeight_PrefDown,        "TWeight_PrefDown/F");
   fTree->Branch("TNVert",          &TNVert,          "TNVert/I");
-  fTree->Branch("TMET_Phi",     &TMET_Phi,     "TMET_Phi/F");
-
+  fTree->Branch("TGenMET",         &TGenMET,         "TGenMET/F");
+  fTree->Branch("TGenMET_Phi",         &TGenMET_Phi,         "TGenMET_Phi/F");
+  
   if(!miniTree){
     fTree->Branch("TEvent",          &event,           "TEvent/l");
     fTree->Branch("TLuminosityBlock",&lumiblock,       "TLuminosityBlock/i");
     fTree->Branch("TPassMETFilters", &TPassMETFilters, "TPassMETFilters/B");
     fTree->Branch("TPassTrigger",    &TPassTrigger,    "TPassTrigger/B");
     fTree->Branch("TRun",            &TRun,            "TRun/i");
-    fTree->Branch("TNVert",          &TNVert,          "TNVert/I");
     //fTree->Branch("TGenMET",         &TGenMET,         "TGenMET/F");
     //fTree->Branch("TgenTop1Pt",   &TgenTop1Pt,   "TgenTop1Pt/F");
     //fTree->Branch("TgenTop2Pt",   &TgenTop2Pt,   "TgenTop2Pt/F");
-    fTree->Branch("TMET_Phi",     &TMET_Phi,     "TMET_Phi/F");
     fTree->Branch("TMETJESUp",    &TMETJESUp,    "TMETJESUp/F");
     fTree->Branch("TMETJESDown",  &TMETJESDown,  "TMETJESDown/F");
   }
 
-  if (gIsSignal){
-    fTree->Branch("Tm_stop", &m_stop, "Tm_stop/F");  //quitar
-    fTree->Branch("Tm_LSP", &m_LSP, "Tm_LSP/F");  //quitar
+  if (gIsSignal || gIsTTany){
+    fTree->Branch("TTop0Pt",  &TTop0Pt,  "TTop0Pt/F");
+    fTree->Branch("TTop0Eta", &TTop0Eta, "TTop0Eta/F");
+    fTree->Branch("TTop0Phi", &TTop0Phi, "TTop0Phi/F");
+    fTree->Branch("TTop1Pt",  &TTop1Pt,  "TTop1Pt/F");
+    fTree->Branch("TTop1Eta", &TTop1Eta, "TTop1Eta/F");
+    fTree->Branch("TTop1Phi", &TTop1Phi, "TTop1Phi/F");
+    if(gIsSignal){
+      fTree->Branch("Tm_stop", &m_stop, "Tm_stop/F");
+      fTree->Branch("Tm_LSP", &m_LSP, "Tm_LSP/F");  
+    }
   }
 }
 
