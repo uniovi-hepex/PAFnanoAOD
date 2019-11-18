@@ -45,7 +45,8 @@ class TopAnalysis : public PAFChainItemSelector{
     BTagSFUtil *fBTagSFlDo;
     Int_t era;
     Int_t nPDFweights;
-
+    Int_t   TNVert;
+    Float_t   TNVert_pu;
     TTree* fTree;
     TString GetSuffix(int iCh, int iCut, int iSyst = 0);
     void SetLeptonVariables();
@@ -65,7 +66,7 @@ class TopAnalysis : public PAFChainItemSelector{
     void GetMET();
     void GetWeights();
     Int_t nFiduJets; Int_t nFidubJets; 
-
+    
     Float_t TrigSF;
     Float_t TrigSFerr;
     Float_t PUSF;
@@ -112,7 +113,7 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t TMuon_Eta;
     Float_t TElec_Eta;
     UInt_t  TRun;
-    Int_t   TNVert;
+    //Int_t   TNVert;
     Float_t TMET;      // MET
     Float_t TMT2;      // MET
     Float_t TMET_Phi;  // MET phi
@@ -219,7 +220,8 @@ class TopAnalysis : public PAFChainItemSelector{
     
     std::vector<Jet> jets;
     Double_t weight;
-    Float_t met, ht, nvert, mt2, invmass; 
+    Float_t nvert_pu;
+    Float_t met, ht, nvert,mt2, invmass; 
     Int_t   nleps, njets, nbtags;
     Float_t lep0pt, lep1pt, lep0eta, lep1eta, lep0iso, lep1iso;
     Float_t dileppt, deltaphi, deltaeta;
@@ -286,6 +288,7 @@ class TopAnalysis : public PAFChainItemSelector{
   TH1F* fHJet0DeepFlav[nChannels][nLevels][nSysts];
   TH1F* fHJet1DeepFlav[nChannels][nLevels][nSysts];
   TH1F* fHvertices[nChannels][nLevels][nSysts]; 
+  TH1F* fHvertices_pu[nChannels][nLevels][nSysts]; 
 
   TH1F* fhDummy;
   TH1F* fhDummyCh[nChannels];
