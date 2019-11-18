@@ -162,7 +162,7 @@ void TopAnalysis::Initialise(){
   }
   nSyst = useSyst.size();
   InitHistos();
-  metvar   = year == 2017? "METFixEE2017" : "MET";  //QUITAR: descomentar esats 3 lineas y borrar las 2 siguientes
+  metvar   = year == 2017? "METFixEE2017" : "MET";
   metvarpt = year == 2017? "METFixEE2017_pt" : "MET_pt";
   if(year != 2017 and gOptions.Contains("JetPtNom")) metvarpt = "MET_pt_nom";
   //metvar="MET";
@@ -521,14 +521,18 @@ void TopAnalysis::GetMET(){
     TRun        = gIsData ? Get<UInt_t>("run") : 1;
     TMET        = Get<Float_t>(metvarpt); // MET_pt
     TMET_Phi    = Get<Float_t>(metvar+"_phi");  // MET phi
-    if((Int_t) selLeptons.size() >= 2) TMT2 = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMET, TMET_Phi);
+    TMETorig    = Get<Float_t>("MET_pt"); TMT2orig = 0;
+    if((Int_t) selLeptons.size() >= 2){
+      TMT2 = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMET, TMET_Phi);
+      if(gIs2017) TMT2orig = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMETorig, Get<Float_t>("MET_phi"));
+    }
     TMETJESUp = 0; TMETJESDown = 0; TGenMET = 0; TgenTop1Pt = 0; TgenTop2Pt = 0;
     TMETJERUp = 0; TMETJERDown = 0; TMETUnclUp = 0; TMETUnclDown = 0;
     TMT2JESUp = 0; TMT2JESDown = 0; TMT2JERUp = 0; TMT2JERDown = 0; TMT2UnclUp = 0; TMT2UnclDown = 0;
-    TMT2MESUp = 0; TMT2MESDown = 0; TMT2EESUp = 0; TMT2EESDown = 0;
+    TMT2MESUp = 0; TMT2MESDown = 0; TMT2EESUp = 0; TMT2EESDown = 0; TNVert_pu = 0;
     if(gIsData) TNVert = Get<Int_t>("PV_npvs");
+    else        TNVert = Get<Int_t>("Pileup_nPU");
     if(gIsData) return;
-    TNVert      = Get<Int_t>("Pileup_nPU");
     TNVert_pu      = Get<Float_t>("Pileup_nTrueInt"); 
     TGenMET     = Get<Float_t>("GenMET_pt");
     //TMETJESUp    = Get<Float_t>("met_jecUp_pt"  );
@@ -961,27 +965,33 @@ void TopAnalysis::SetEventVariables(){
   fTree->Branch("TMET",            &TMET,            "TMET/F");
   fTree->Branch("TMET_Phi",     &TMET_Phi,     "TMET_Phi/F");
   fTree->Branch("TMT2",            &TMT2,            "TMT2/F");
-  fTree->Branch("TWeight_ElecEffUp",      &TWeight_ElecEffUp,     "TWeight_ElecEffUp/F");
-  fTree->Branch("TWeight_ElecEffDown",    &TWeight_ElecEffDown,   "TWeight_ElecEffDown/F");
-  fTree->Branch("TWeight_MuonEffUp",      &TWeight_MuonEffUp,     "TWeight_MuonEffUp/F");
-  fTree->Branch("TWeight_MuonEffDown",    &TWeight_MuonEffDown,   "TWeight_MuonEffDown/F");
-  fTree->Branch("TWeight_TrigUp",         &TWeight_TrigUp,        "TWeight_TrigUp/F");
-  fTree->Branch("TWeight_TrigDown",       &TWeight_TrigDown,      "TWeight_TrigDown/F");
-  fTree->Branch("TWeight_PUUp",           &TWeight_PUUp,          "TWeight_PUUp/F");
-  fTree->Branch("TWeight_PUDown",         &TWeight_PUDown,        "TWeight_PUDown/F");
-  fTree->Branch("TWeight_ISRUp",          &TWeight_ISRUp,          "TWeight_ISRUp/F");
-  fTree->Branch("TWeight_ISRDown",        &TWeight_ISRDown,        "TWeight_ISRDown/F");
-  fTree->Branch("TWeight_FSRUp",           &TWeight_FSRUp,          "TWeight_FSRUp/F");
-  fTree->Branch("TWeight_FSRDown",         &TWeight_FSRDown,        "TWeight_FSRDown/F");
-  fTree->Branch("TWeight_PrefUp",           &TWeight_PrefUp,          "TWeight_PrefUp/F");
-  fTree->Branch("TWeight_PrefDown",         &TWeight_PrefDown,        "TWeight_PrefDown/F");
-  fTree->Branch("TNVert",          &TNVert,          "TNVert/I");
-  fTree->Branch("TNVert_pu",          &TNVert_pu,          "TNVert_pu/F");
   if(!gIsData){
-  fTree->Branch("TGenMET",         &TGenMET,         "TGenMET/F");
-  fTree->Branch("TGenMET_phi",     &TGenMET_phi,      "TGenMET_phi/F");
-  fTree->Branch("TGenMT2",         &TGenMT2,         "TGenMT2/F");
-}
+    fTree->Branch("TWeight_ElecEffUp",      &TWeight_ElecEffUp,     "TWeight_ElecEffUp/F");
+    fTree->Branch("TWeight_ElecEffDown",    &TWeight_ElecEffDown,   "TWeight_ElecEffDown/F");
+    fTree->Branch("TWeight_MuonEffUp",      &TWeight_MuonEffUp,     "TWeight_MuonEffUp/F");
+    fTree->Branch("TWeight_MuonEffDown",    &TWeight_MuonEffDown,   "TWeight_MuonEffDown/F");
+    fTree->Branch("TWeight_TrigUp",         &TWeight_TrigUp,        "TWeight_TrigUp/F");
+    fTree->Branch("TWeight_TrigDown",       &TWeight_TrigDown,      "TWeight_TrigDown/F");
+    fTree->Branch("TWeight_PUUp",           &TWeight_PUUp,          "TWeight_PUUp/F");
+    fTree->Branch("TWeight_PUDown",         &TWeight_PUDown,        "TWeight_PUDown/F");
+    fTree->Branch("TWeight_ISRUp",          &TWeight_ISRUp,          "TWeight_ISRUp/F");
+    fTree->Branch("TWeight_ISRDown",        &TWeight_ISRDown,        "TWeight_ISRDown/F");
+    fTree->Branch("TWeight_FSRUp",           &TWeight_FSRUp,          "TWeight_FSRUp/F");
+    fTree->Branch("TWeight_FSRDown",         &TWeight_FSRDown,        "TWeight_FSRDown/F");
+    fTree->Branch("TWeight_PrefUp",           &TWeight_PrefUp,          "TWeight_PrefUp/F");
+    fTree->Branch("TWeight_PrefDown",         &TWeight_PrefDown,        "TWeight_PrefDown/F");
+    fTree->Branch("TNVert_pu",       &TNVert_pu,          "TNVert_pu/F");
+  }
+  fTree->Branch("TNVert",          &TNVert,          "TNVert/I");
+  if(gIs2017){
+    fTree->Branch("TMETorig",            &TMETorig,            "TMETorig/F");
+    fTree->Branch("TMT2orig",            &TMT2orig,            "TMT2orig/F");
+  }
+  if(!gIsData){
+    fTree->Branch("TGenMET",         &TGenMET,         "TGenMET/F");
+    fTree->Branch("TGenMET_phi",     &TGenMET_phi,      "TGenMET_phi/F");
+    fTree->Branch("TGenMT2",         &TGenMT2,         "TGenMT2/F");
+  }
   if(!miniTree){
     fTree->Branch("TEvent",          &event,           "TEvent/l");
     fTree->Branch("TLuminosityBlock",&lumiblock,       "TLuminosityBlock/i");
@@ -1040,10 +1050,12 @@ void TopAnalysis::SetVariables(int sys){
     pt = Get<Float_t>(JetPt,i); eta = Get<Float_t>("Jet_eta",i); phi = Get<Float_t>("Jet_phi", i); m = Get<Float_t>("Jet_mass",i);
     csv = Get<Float_t>("Jet_btagCSVV2", i); deepcsv = Get<Float_t>("Jet_btagDeepB", i); deepflav = Get<Float_t>("Jet_btagDeepFlavB", i);
     jetid = Get<Int_t>("Jet_jetId",i);
-    Int_t nGenJets = Get<Int_t>("nGenJet");
-    Int_t genJetIdx = Get<Int_t>("Jet_genJetIdx", i);
     Float_t genPt = -999;
-    if(genJetIdx > 0 and genJetIdx < nJets) genPt = Get<Float_t>("GenJet_pt", genJetIdx);
+    if(!gIsData){
+      Int_t nGenJets = Get<Int_t>("nGenJet");
+      Int_t genJetIdx = Get<Int_t>("Jet_genJetIdx", i);
+      if(genJetIdx > 0 and genJetIdx < nJets) genPt = Get<Float_t>("GenJet_pt", genJetIdx);    
+    }
     flav = -999999; if(!gIsData) flav = Get<Int_t>("Jet_hadronFlavour", i);
 
     // JES and JER ----> Update this to propagate to MET, MT2, etc!!
