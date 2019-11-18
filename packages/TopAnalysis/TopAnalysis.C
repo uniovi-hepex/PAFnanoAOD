@@ -68,6 +68,7 @@ TopAnalysis::TopAnalysis() : PAFChainItemSelector() {
         fHJet0DeepFlav[ch][cut][sys]       = 0;
         fHJet1DeepFlav[ch][cut][sys]       = 0;
         fHvertices[ch][cut][sys]     = 0;
+        fHvertices_pu[ch][cut][sys]     = 0;
         if(cut == 0){
           fHyields[ch][sys]     = 0;
           fHFiduYields[ch][sys]     = 0;
@@ -121,7 +122,7 @@ void TopAnalysis::Initialise(){
 
 	  //snorm = new SUSYnorm(path, gSampleName);
     cout<<path<<endl;
-    snorm = new SUSYnorm(path ,  "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCP5_MLM_p"); //"SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCUETP8M2T4_madgra");
+    snorm = new SUSYnorm(path ,  "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCUETP8M2T4_madgra"); //"SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCP5_MLM_p");
   }
      
   // Uncertainties
@@ -192,7 +193,6 @@ void TopAnalysis::Initialise(){
 void TopAnalysis::InsideLoop(){
   event     = Get<ULong64_t>("event");
   lumiblock = Get<UInt_t>("luminosityBlock");
-
   TTop0Pt = 0; TTop0Eta = 0; TTop0Phi = 0;
   TTop1Pt = 0; TTop1Eta = 0; TTop1Phi = 0;
   if (gIsSignal || gIsTTany){
@@ -269,7 +269,6 @@ void TopAnalysis::InsideLoop(){
   GetWeights();
   GetJetVariables(selJets, Jets15); //quitar: esto estaba comentado (lo descomente pa minitrees de stop)
 
-
   fhDummy->Fill(1);
   if(gIsTTbar && makeHistos) FillCorrHistos(); 
 
@@ -284,6 +283,10 @@ void TopAnalysis::InsideLoop(){
   // GenLeptons
   TGenLep0Pt = 0; TGenLep0Eta = 0; TGenLep0Phi = 0;
   TGenLep1Pt = 0; TGenLep1Eta = 0; TGenLep1Phi = 0;
+
+  TLorentzVector gLep0 = TLorentzVector();
+  TLorentzVector gLep1 = TLorentzVector();
+
   if(genLeptons.size() >= 1){
     TGenLep0Pt  = genLeptons.at(0).Pt(); 
     TGenLep0Eta = genLeptons.at(0).Eta(); 
@@ -294,7 +297,10 @@ void TopAnalysis::InsideLoop(){
     TGenLep1Eta = genLeptons.at(1).Eta(); 
     TGenLep1Phi = genLeptons.at(1).Phi(); 
   }
-  TGenMET = Get<Float_t>("GenMET_pt"); TGenMET_phi = Get<Float_t>("GenMET_phi");
+  if(!gIsData){
+    TGenMET = Get<Float_t>("GenMET_pt"); TGenMET_phi = Get<Float_t>("GenMET_phi");
+    TGenMT2 = genLeptons.size() >= 2 ? getMT2ll(genLeptons.at(0), genLeptons.at(1), TGenMET, TGenMET_phi) : -1;    
+}
 
   // Number of events in fiducial region
   if(!gIsData && makeHistos) {
@@ -335,9 +341,10 @@ void TopAnalysis::InsideLoop(){
     for(Int_t sys = 0; sys < nSyst; sys++){
       if(!gDoSyst && sys > 0) break;
       if(gIsData  && sys > 0) break;
-     
       // Get values or the corresponding variation
+ 
       SetVariables(useSyst.at(sys));
+
       if (invmass > 20 && lep0pt > 25 && lep1pt > 20) {
         if(isSS) fHSSyields[gChannel][sys] -> Fill(idilepton, weight);
         else {
@@ -368,7 +375,6 @@ void TopAnalysis::InsideLoop(){
                   FillHistos(gChannel, i1btag, sys);
                 }
 
-
                 if (!isSS && sys == 0 && makeTree && TChannel == iElMu) fTree->Fill();
                 //if (!isSS && sys == 0 && makeTree && TChannel == iElMu && met >= 50 && mt2 >=80) fTree->Fill();
 
@@ -377,7 +383,7 @@ void TopAnalysis::InsideLoop(){
             }
           }
         }
-      }
+    }
     }
   }
   SetParam("NJets",  njets);
@@ -522,7 +528,8 @@ void TopAnalysis::GetMET(){
     TMT2MESUp = 0; TMT2MESDown = 0; TMT2EESUp = 0; TMT2EESDown = 0;
     if(gIsData) TNVert = Get<Int_t>("PV_npvs");
     if(gIsData) return;
-    TNVert      = Get<Int_t>("Pileup_nPU"); 
+    TNVert      = Get<Int_t>("Pileup_nPU");
+    TNVert_pu      = Get<Float_t>("Pileup_nTrueInt"); 
     TGenMET     = Get<Float_t>("GenMET_pt");
     //TMETJESUp    = Get<Float_t>("met_jecUp_pt"  );
     //TMETJESDown  = Get<Float_t>("met_jecDown_pt");
@@ -639,6 +646,9 @@ void TopAnalysis::InitHistos(){
       fHSSyields[ch][sys]   = CreateH1F("H_SSYields_"+suf,"", nLevels, -0.5, nLevels-0.5);
     }
   }
+
+          
+
   if(!makeHistos) return;
   hJetPtReco  = CreateH1F("H_JetPtReco",  "H_JetPtReco",  nPtBins, (Float_t*) ptBins);
   hJetPtGen   = CreateH1F("H_JetPtGen",   "H_JetPtGen",   nPtBins, (Float_t*)ptBins);
@@ -702,6 +712,8 @@ void TopAnalysis::InitHistos(){
         fHJet0DeepFlav[ch][cut][sys] = CreateH1F("H_Jet0DeepFlav_" +suffix, "Jet0DeepFlav" , 100,0, 1.0);
         fHJet1DeepFlav[ch][cut][sys] = CreateH1F("H_Jet1DeepFlav_" +suffix, "Jet1DeepFlav" , 100,0, 1.0);
         fHvertices[ch][cut][sys]    = CreateH1F("H_Vtx_"+suffix, "Vtx", 101, -0.5, 100.5); 
+        fHvertices_pu[ch][cut][sys]    = CreateH1F("H_VtxPu_"+suffix, "Vtx", 101, -0.5, 100.5);
+
       }
     }
   }
@@ -764,7 +776,7 @@ void TopAnalysis::FillHistos(Int_t ch, Int_t cut, Int_t sys){
   fHNJets[ch][cut][sys]        -> Fill(njets, weight);
   fHNBtagJets[ch][cut][sys]    -> Fill(nbtags, weight);
   fHvertices[ch][cut][sys]      -> Fill(nvert, weight);
-
+  fHvertices_pu[ch][cut][sys]      -> Fill(nvert_pu, weight);
   // Leptons
   fHLep0Eta[ch][cut][sys]     -> Fill(lep0eta, weight);
   fHLep1Eta[ch][cut][sys]     -> Fill(lep1eta, weight);
@@ -964,16 +976,18 @@ void TopAnalysis::SetEventVariables(){
   fTree->Branch("TWeight_PrefUp",           &TWeight_PrefUp,          "TWeight_PrefUp/F");
   fTree->Branch("TWeight_PrefDown",         &TWeight_PrefDown,        "TWeight_PrefDown/F");
   fTree->Branch("TNVert",          &TNVert,          "TNVert/I");
+  fTree->Branch("TNVert_pu",          &TNVert_pu,          "TNVert_pu/F");
+  if(!gIsData){
   fTree->Branch("TGenMET",         &TGenMET,         "TGenMET/F");
-  fTree->Branch("TGenMET_Phi",         &TGenMET_Phi,         "TGenMET_Phi/F");
-  
+  fTree->Branch("TGenMET_phi",     &TGenMET_phi,      "TGenMET_phi/F");
+  fTree->Branch("TGenMT2",         &TGenMT2,         "TGenMT2/F");
+}
   if(!miniTree){
     fTree->Branch("TEvent",          &event,           "TEvent/l");
     fTree->Branch("TLuminosityBlock",&lumiblock,       "TLuminosityBlock/i");
     fTree->Branch("TPassMETFilters", &TPassMETFilters, "TPassMETFilters/B");
     fTree->Branch("TPassTrigger",    &TPassTrigger,    "TPassTrigger/B");
     fTree->Branch("TRun",            &TRun,            "TRun/i");
-    //fTree->Branch("TGenMET",         &TGenMET,         "TGenMET/F");
     //fTree->Branch("TgenTop1Pt",   &TgenTop1Pt,   "TgenTop1Pt/F");
     //fTree->Branch("TgenTop2Pt",   &TgenTop2Pt,   "TgenTop2Pt/F");
     fTree->Branch("TMETJESUp",    &TMETJESUp,    "TMETJESUp/F");
@@ -1006,7 +1020,7 @@ void TopAnalysis::SetVariables(int sys){
   // that you choose
   // Global
   nleps = selLeptons.size(); weight = TWeight;
-  met = TMET; mt2 = TMT2; nvert = TNVert; invmass = TMll;
+  met = TMET; mt2 = TMT2; nvert = TNVert; invmass = TMll; nvert_pu = TNVert_pu;
   // Leptons
   if(nleps >= 2){
     lep0pt = TLep0Pt; lep1pt = TLep1Pt; lep0eta = TLep0Eta; lep1eta = TLep1Eta; 
