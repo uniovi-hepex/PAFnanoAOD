@@ -103,9 +103,9 @@ void TopAnalysis::Initialise(){
 
   nPDFweights = gIsTTbar ? 100 : 33;
 
-  makeTree   = true;
-  miniTree = true;
-  makeHistos = false;
+  makeTree   = false;
+  miniTree = false;
+  makeHistos = true;
 
   gIsSignal= false; //quitar
 	if ((gSampleName.BeginsWith("stop"))) gIsSignal = true; //quitar
@@ -337,15 +337,21 @@ void TopAnalysis::InsideLoop(){
     SetVariables();
     if(makeHistos) FillCorrHistos();
   }
+    cout << "Hola " << endl;
+
   if (TNSelLeps >= 2 && TPassTrigger && TPassMETFilters) {
     for(Int_t sys = 0; sys < nSyst; sys++){
       if(!gDoSyst && sys > 0) break;
       if(gIsData  && sys > 0) break;
       // Get values or the corresponding variation
- 
+   cout << "holaaa" << endl;
+
       SetVariables(useSyst.at(sys));
+  cout << "hola " << endl;
 
       if (invmass > 20 && lep0pt > 25 && lep1pt > 20) {
+		    cout << "hola 1" << endl;
+
         if(isSS) fHSSyields[gChannel][sys] -> Fill(idilepton, weight);
         else {
           fHyields[gChannel][sys] -> Fill(idilepton, weight);
@@ -354,6 +360,8 @@ void TopAnalysis::InsideLoop(){
         }
 
         if (TChannel == iElMu || (TMath::Abs(invmass - 91) > 15)  ){ //  Z Veto in ee, µµ
+			  cout << "hola 2" << endl;
+
           if (isSS) fHSSyields[gChannel][sys] -> Fill(iZVeto, weight);
           else {      fHyields[gChannel][sys] -> Fill(iZVeto, weight);
             FillHistos(gChannel, iZVeto, sys);}
@@ -381,7 +389,7 @@ void TopAnalysis::InsideLoop(){
 
               }
             }
-          }
+         }
         }
     }
     }
@@ -721,7 +729,6 @@ void TopAnalysis::InitHistos(){
 
 void TopAnalysis::FillDYHistos(Int_t ch){
   if(!makeHistos) return;
-
   cout << "BEGIN DY Histos " << endl;
   Int_t sys = 0;
   Int_t cut;
@@ -1040,10 +1047,11 @@ void TopAnalysis::SetVariables(int sys){
     pt = Get<Float_t>(JetPt,i); eta = Get<Float_t>("Jet_eta",i); phi = Get<Float_t>("Jet_phi", i); m = Get<Float_t>("Jet_mass",i);
     csv = Get<Float_t>("Jet_btagCSVV2", i); deepcsv = Get<Float_t>("Jet_btagDeepB", i); deepflav = Get<Float_t>("Jet_btagDeepFlavB", i);
     jetid = Get<Int_t>("Jet_jetId",i);
+    if(!gIsData){
     Int_t nGenJets = Get<Int_t>("nGenJet");
     Int_t genJetIdx = Get<Int_t>("Jet_genJetIdx", i);
     Float_t genPt = -999;
-    if(genJetIdx > 0 and genJetIdx < nJets) genPt = Get<Float_t>("GenJet_pt", genJetIdx);
+    if(genJetIdx > 0 and genJetIdx < nJets) genPt = Get<Float_t>("GenJet_pt", genJetIdx);}
     flav = -999999; if(!gIsData) flav = Get<Int_t>("Jet_hadronFlavour", i);
 
     // JES and JER ----> Update this to propagate to MET, MT2, etc!!
