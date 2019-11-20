@@ -162,9 +162,13 @@ void TopAnalysis::Initialise(){
   }
   nSyst = useSyst.size();
   InitHistos();
-  metvar   = year == 2017? "METFixEE2017" : "MET";
-  metvarpt = year == 2017? "METFixEE2017_pt" : "MET_pt";
-  if(year != 2017 and gOptions.Contains("JetPtNom")) metvarpt = "MET_pt_nom";
+  metvar    = year == 2017? "METFixEE2017"     : "MET";
+  metvarphi = year == 2017? "METFixEE2017_phi" : "MET_phi";
+  metvarpt  = year == 2017? "METFixEE2017_pt"  : "MET_pt";
+  if(year != 2017 and gOptions.Contains("JetPtNom")){
+    metvarpt   = "MET_pt_nom";
+    metvarphi  = "MET_phi_nom";
+  }
   //metvar="MET";
   //metvarpt="MET_pt";
   
@@ -523,7 +527,7 @@ void TopAnalysis::GetGenJetVariables(std::vector<Jet> genJets, std::vector<Jet> 
 void TopAnalysis::GetMET(){
     TRun        = gIsData ? Get<UInt_t>("run") : 1;
     TMET        = Get<Float_t>(metvarpt); // MET_pt
-    TMET_Phi    = Get<Float_t>(metvar+"_phi");  // MET phi
+    TMET_Phi    = Get<Float_t>(metvarphi);  // MET phi
     TMETorig    = Get<Float_t>("MET_pt"); TMT2orig = 0;
     if((Int_t) selLeptons.size() >= 2){
       TMT2 = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMET, TMET_Phi);

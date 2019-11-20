@@ -230,6 +230,7 @@ class TopAnalysis : public PAFChainItemSelector{
 
     TString metvar;
     TString metvarpt;
+    TString metvarphi;
     TString JetPt;
     Bool_t gPUWeigth;
     Bool_t gPrefire;
