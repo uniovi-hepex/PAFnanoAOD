@@ -118,7 +118,10 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t TMT2;      // MET
     Float_t TMT2orig;
     Float_t TMETorig;
+    Float_t TMETpuppi;      // MET
+    Float_t TMT2puppi;      // MET
     Float_t TMET_Phi;  // MET phi
+    Float_t TMETpuppi_Phi;  // MET phi
     Float_t TgenTop1Pt = 0;
     Float_t TgenTop2Pt = 0;
 

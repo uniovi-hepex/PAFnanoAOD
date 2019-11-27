@@ -122,7 +122,7 @@ void TopAnalysis::Initialise(){
 
 	  //snorm = new SUSYnorm(path, gSampleName);
     cout<<path<<endl;
-    snorm = new SUSYnorm(path ,  "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCUETP8M2T4_madgra"); //"SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCP5_MLM_p");
+    snorm = new SUSYnorm(path ,  "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCP5_MLM_p");// "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCUETP8M2T4_madgra");
   }
      
   // Uncertainties
@@ -382,7 +382,7 @@ void TopAnalysis::InsideLoop(){
                   FillHistos(gChannel, i1btag, sys);
                 }
 
-                if (!isSS && sys == 0 && makeTree && TChannel == iElMu) fTree->Fill();
+                if (!isSS && sys == 0 && makeTree && TChannel == iElMu) fTree->Fill(); //dejar !isSS
                 //if (!isSS && sys == 0 && makeTree && TChannel == iElMu && met >= 50 && mt2 >=80) fTree->Fill();
 
 
@@ -533,6 +533,12 @@ void TopAnalysis::GetMET(){
       TMT2 = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMET, TMET_Phi);
       if(gIs2017) TMT2orig = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMETorig, Get<Float_t>("MET_phi"));
     }
+    if(gIs2018){
+		TMETpuppi        = Get<Float_t>("PuppiMET_pt"); // MET_pt
+        TMETpuppi_Phi    = Get<Float_t>("PuppiMET_phi");  // MET phi
+        if((Int_t) selLeptons.size() >= 2){
+        TMT2puppi=getMT2ll(selLeptons.at(0), selLeptons.at(1), TMETpuppi, TMETpuppi_Phi);}}
+        
     TMETJESUp = 0; TMETJESDown = 0; TGenMET = 0; TgenTop1Pt = 0; TgenTop2Pt = 0;
     TMETJERUp = 0; TMETJERDown = 0; TMETUnclUp = 0; TMETUnclDown = 0;
     TMT2JESUp = 0; TMT2JESDown = 0; TMT2JERUp = 0; TMT2JERDown = 0; TMT2UnclUp = 0; TMT2UnclDown = 0;
@@ -992,6 +998,12 @@ void TopAnalysis::SetEventVariables(){
   if(gIs2017){
     fTree->Branch("TMETorig",            &TMETorig,            "TMETorig/F");
     fTree->Branch("TMT2orig",            &TMT2orig,            "TMT2orig/F");
+  }
+  if(gIs2018){
+    fTree->Branch("TMETpuppi",            &TMETpuppi,            "TMETpuppi/F");
+    fTree->Branch("TMT2puppi",            &TMT2puppi,            "TMT2puppi/F");
+    fTree->Branch("TMETpuppi_Phi",            &TMETpuppi_Phi,            "TMETpuppi_Phi/F");
+
   }
   if(!gIsData){
     fTree->Branch("TGenMET",         &TGenMET,         "TGenMET/F");
