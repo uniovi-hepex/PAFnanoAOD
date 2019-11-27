@@ -52,6 +52,25 @@ class Jet{
     Float_t GetDeepCSVB();
     Float_t GetDeepCSVC();
     Float_t GetDeepFlav();
+    void SetIsBtag(Bool_t is = true, Int_t dir = 0){
+      if     (dir ==  0) isBtag            = is;
+      else if(dir ==  1) isBtag_BtagUp     = is;
+      else if(dir == -1) isBtag_BtagDown   = is;
+      else if(dir ==  2) isBtag_MisTagUp   = is;
+      else if(dir == -2) isBtag_MisTagDown = is;
+    }
+    Bool_t IsBtag(Float_t dir = 0){
+      if     (dir ==  0) return isBtag;
+      else if(dir ==  1) return isBtag_BtagUp;
+      else if(dir == -1) return isBtag_BtagDown;
+      else if(dir ==  2) return isBtag_MisTagUp;
+      else if(dir == -2) return isBtag_MisTagDown;
+      return isBtag;
+    }
 };
+
+Int_t GetNJets(std::vector<Jet> jets);
+Int_t GetBtags(std::vector<Jet> jets, Int_t dir = 0);
+Float_t GetHT(std::vector<Jet> jets);
 
 #endif

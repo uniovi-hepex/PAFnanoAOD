@@ -31,6 +31,9 @@ void LeptonSelector::Initialise(){
   else if(year == 2018) gIs2018 = true;
   else if(year == 2016) gIs2016 = true;
 
+  gDoElecES    = false;
+  gDoMuonES    = gOptions.Contains("MuonES")? true : false;
+
   LepSF     = new LeptonSF(localPath + "/InputFiles/", year);
   //ElecScale = new ElecScaleClass(localPath + "/InputFiles/ElecScale.dat");
 
@@ -221,6 +224,7 @@ Bool_t LeptonSelector::isGoodLepton(Lepton lep){
     if (TMath::Abs(etaSC) > 1.4442 && TMath::Abs(etaSC) < 1.566) return false;
   }
   if (lep.p.Pt() < 18 || TMath::Abs(lep.p.Eta()) > 2.4) return false;
+  if (!lep.IsPrompt()) return false;
   if (passId && passIso && ( (lep.isElec && getGoodVertex(iTight)) || (lep.isMuon && getGoodVertex(iMedium) ))) return true;
   return false;
 }
@@ -318,23 +322,24 @@ void LeptonSelector::InsideLoop(){
     if(tL.isMuon){
       tL.SetIso(RelIso04);
       tL.SetIsIso(RelIso04 < 0.15);
-      tL.SetEnergyUnc(GetMuonEnergyScale());
+      tL.SetPtUp(ptUp);
+      tL.SetPtDo(ptDo);
     }
     else{
       tL.SetIso(RelIso03);
       tL.SetR9(R9);
-      tL.SetEnergyUnc(0);//ElecScale->GetUnc(tL.Pt(), tL.Eta(), tL.GetR9()));
+      //if(gDoElecES) 
     }
     tL.SetSIP3D(sip);
     tL.Setdxy(dxy);
     tL.Setdz(dz);
     if(!gIsData){
-      tL.SetIsPrompt( genPartFlav == 1 || genPartIndex == 15 || gIsData);
-      tL.SetIsFromTau(genPartIndex == 15);
-      tL.SetIsConversion(genPartIndex == 22);
-      tL.SetIsFromB(genPartIndex == 5);
-      tL.SetIsFromC(genPartIndex == 4);
-      tL.SetIsFromL(genPartIndex == 3);
+      tL.SetIsPrompt( genPartFlav == 1 || genPartFlav == 15 || gIsData);
+      tL.SetIsFromTau(genPartFlav == 15);
+      tL.SetIsConversion(genPartFlav == 22);
+      tL.SetIsFromB(genPartFlav == 5);
+      tL.SetIsFromC(genPartFlav == 4);
+      tL.SetIsFromL(genPartFlav == 3);
     }
 
     if(isGoodLepton(tL)){
@@ -385,6 +390,7 @@ void LeptonSelector::InsideLoop(){
     }
   }
 
+
   selLeptons   = SortLeptonsByPt(selLeptons);
   vetoLeptons  = SortLeptonsByPt(vetoLeptons);
   looseLeptons = SortLeptonsByPt(looseLeptons);
@@ -413,7 +419,14 @@ void LeptonSelector::InsideLoop(){
 void LeptonSelector::GetLeptonVariables(Int_t i, int LepType){ // Once per muon, get all the info
   TString LeptonName = abs(LepType) == 11? "Electron" : "Muon";
   if(LepType == 0) LeptonName = "LepGood";
-  tP.SetPtEtaPhiM(Get<Float_t>(LeptonName + "_pt", i), Get<Float_t>(LeptonName + "_eta", i), Get<Float_t>(LeptonName + "_phi", i), Get<Float_t>(LeptonName + "_mass", i));
+  pt = Get<Float_t>(LeptonName + "_pt", i);
+  ptUp = pt; ptDo = pt;
+  if(LepType == 13 && gDoMuonES){
+    pt   = Get<Float_t>("Muon_corrected_pt", i);
+    ptUp = Get<Float_t>("Muon_correctedUp_pt", i);
+    ptDo = Get<Float_t>("Muon_correctedDown_pt", i);
+  }
+  tP.SetPtEtaPhiM(pt, Get<Float_t>(LeptonName + "_eta", i), Get<Float_t>(LeptonName + "_phi", i), Get<Float_t>(LeptonName + "_mass", i));
 
   // PDG id...
   if(LepType != 0){
@@ -439,7 +452,7 @@ void LeptonSelector::GetLeptonVariables(Int_t i, int LepType){ // Once per muon,
   jetindex      = Get<Int_t>(LeptonName + "_jetIdx", i);  //index of the associated jet (-1 if none)
   if(!gIsData){
     genPartIndex  = Get<Int_t>(LeptonName + "_genPartIdx", i);
-    genPartFlav   = Get<Int_t>(LeptonName + "_genPartFlav", i);
+    genPartFlav   = Get<UChar_t>(LeptonName + "_genPartFlav", i);
   }
 
   RelIso04 = -1; mediumMuonId = -1; SegComp = -1; dEtaSC = -1; HoE = -1; eImpI = -1; 
@@ -452,6 +465,7 @@ void LeptonSelector::GetLeptonVariables(Int_t i, int LepType){ // Once per muon,
     tightVar      = Get<Bool_t>(LeptonName + "_tightId", i);
   }
   else{              // ONLY ELECTRON
+    energyerr      = Get<Float_t>(LeptonName + "_energyErr",i);
     tightVar       = Get<Int_t>(LeptonName + "_cutBased", i);
     dEtaSC         = Get<Float_t>(LeptonName + "_deltaEtaSC", i);
     HoE            = Get<Float_t>(LeptonName + "_hoe", i);

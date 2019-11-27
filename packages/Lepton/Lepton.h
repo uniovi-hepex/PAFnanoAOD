@@ -58,6 +58,8 @@ class Lepton : public TObject{
     void SetIso(Float_t val){ Iso = val;}
     void SetR9(Float_t val){ R9 = val;}
     void SetEnergyUnc(Float_t val){ EnergyUnc = val;}
+    void SetPtUp(Float_t val){ ptUp = val;}
+    void SetPtDo(Float_t val){ ptDo = val;}
     void SetGenMatch(Int_t m){ genMatch = m;}
     void Setdxy(Float_t t){ dxy = t;}
     void Setdz( Float_t t){ dz  = t;}
@@ -77,6 +79,7 @@ class Lepton : public TObject{
     Float_t Eta(){return p.Eta();}
     Float_t Phi(){return p.Phi();}
     Float_t E(){return p.E();}
+    Float_t M(){return p.M();}
     Float_t GetIso(){ return Iso;}
     Float_t GetR9(){return R9;}
     Float_t GetEnergyUnc(){return EnergyUnc;}
@@ -84,6 +87,8 @@ class Lepton : public TObject{
     Float_t Getdxy(){ return dxy;}
     Float_t Getdz(){ return dz;}
     Float_t GetSIP3D(){ return SIP3D;}
+    Float_t GetPtUp(){ return ptUp;}
+    Float_t GetPtDo(){ return ptDo;}
 
     Bool_t IsPrompt(){return isPrompt;}
     Bool_t IsFromTau(){return isFromTau;}
@@ -108,6 +113,8 @@ class Lepton : public TObject{
     Float_t dxy;
     Float_t dz;
     Float_t SIP3D;
+    Float_t ptUp;
+    Float_t ptDo;
 
     Bool_t isIso;
     Bool_t isPrompt;
