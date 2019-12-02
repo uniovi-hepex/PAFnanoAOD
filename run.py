@@ -101,9 +101,10 @@ def GetOptions(path, sample, options = ""):
   doScale     = 'Scale,'    if IsVarInTree(path+sample, 'nLHEScaleWeight') else ''
   doPDF       = 'PDF,'      if IsVarInTree(path+sample, 'nLHEPdfWeight') else ''
   doJECunc    = 'JECunc,'   if IsVarInTree(path+sample, 'Jet_pt_jesTotalUp') else ''
+  doMuonES    = 'MuonES,'   if IsVarInTree(path+sample, 'Muon_corrected_pt') else ''
   useJetPtNom = 'JetPtNom,' if IsVarInTree(path+sample, 'Jet_pt_nom') else ''
   useLepGood  = 'LepGood,'  if IsVarInTree(path+sample, 'nLepGood') else ''
-  options += doPUweight + doPrefire + doPS + doScale + doPDF + doJECunc + useJetPtNom + useLepGood + options
+  options += doPUweight + doPrefire + doPS + doScale + doPDF + doJECunc + useJetPtNom + useLepGood + doMuonES + options
   if options.endswith(','): options = options[:-1]
   return options
 

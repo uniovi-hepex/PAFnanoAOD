@@ -15,7 +15,7 @@ const TString sCut[nLevels] = {"dilepton", "ZVeto", "MET", "2jets", "1btag"};
 const Int_t nPtBins = 14;
 const Float_t ptBins[nPtBins+1] = {30, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 200, 300, 400, 600};
 
-enum eSysts                   {kNorm, kMuonEffUp,  kMuonEffDown,  kElecEffUp,  kElecEffDown,  kMuonEnergyUp,  kMuonEnergyDown,  kElecEnergyUp,  kElecEnergyDown,  kJESUp,  kJESDown,  kJERUp,  kJERDown,  kPUUp,  kPUDown, kTrigUp, kTrigDown,   kUnclMETUp,   kUnclMETDown, kBtagUp,  kBtagDown,  kMistagUp,  kMistagDown, kISRUp, kISRDown, kFSRUp, kFSRDown, kPrefireUp, kPrefireDown, nSysts};
+enum eSysts                   {kNorm, kMuonEffUp,  kMuonEffDown,  kElecEffUp,  kElecEffDown,  kMuonEnergyUp,  kMuonEnergyDown,  kElecEnergyUp,  kElecEnergyDown,  kJESUp,  kJESDown,  kJERUp,  kJERDown,  kPUUp,  kPUDown, kTrigUp, kTrigDown,   kUnclMETUp,   kUnclMETDown, kBtagUp,  kBtagDown,  kMistagUp,  kMistagDown, kISRUp, kISRDown, kFSRUp, kFSRDown, kPrefireUp, kPrefireDown, kTopPt, nSysts};
 const TString gSyst[nSysts] = {"",    "MuonEffUp", "MuonEffDown", "ElecEffUp", "ElecEffDown", "MuonEnergyUp", "MuonEnergyDown", "ElecEnergyUp", "ElecEnergyDown", "JESUp", "JESDown", "JERUp", "JERDown", "PUUp", "PUDown", "TrigUp", "TrigDown", "UnclMETUp", "UnclMETDown", "BtagUp", "BtagDown", "MistagUp", "MistagDown", "ISRUp", "ISRDown", "FSRUp", "FSRDown", "PrefireUp", "PrefireDown"};
 
 
@@ -32,6 +32,8 @@ class TopAnalysis : public PAFChainItemSelector{
     std::vector<Jet> selJets ;
     std::vector<Jet> selJetsJecUp   ;
     std::vector<Jet> selJetsJecDown ;
+    std::vector<Jet> selJetsJERUp   ;
+    std::vector<Jet> selJetsJERDown ;
 
     std::vector<Jet> Jets15  ;
     std::vector<Jet> genJets  ;
@@ -87,6 +89,8 @@ class TopAnalysis : public PAFChainItemSelector{
     void FillCorrHistos();
   
     void get20Jets();
+    Float_t GetTopPtWeight(Float_t Pt1, Float_t Pt2);
+
     Double_t getDilepMETJetPt(const TString& sys = "Norm");
     Double_t getDilepJetPt(const TString& sys = "Norm");
     Double_t getLep1METJetPt(const TString& sys = "Norm");
@@ -105,25 +109,44 @@ class TopAnalysis : public PAFChainItemSelector{
     UInt_t    lumiblock;
     Double_t TWeight;   // Total nominal weight
     Float_t TMll;      // Invariant mass
+    Float_t TMllMuonUp; Float_t TMllMuonDo; Float_t TMllElecUp; Float_t TMllElecDo;
     Float_t TDilep_Pt;
     Float_t TDeltaEta;
     Float_t TDeltaPhi;
-    Float_t TMuon_Pt;
-    Float_t TElec_Pt;
-    Float_t TMuon_Eta;
-    Float_t TElec_Eta;
+    Float_t TMuonPt;
+    Float_t TMuonEta;
+    Float_t TMuonPhi;
+    Float_t TMuonM;
+    Float_t TElecPt;
+    Float_t TElecEta;
+    Float_t TElecPhi;
+    Float_t TElecM;
+    Float_t TMuonPtUp;
+    Float_t TMuonPtDo;
+    Float_t TElecPtUp;
+    Float_t TElecPtDo;
     UInt_t  TRun;
     //Int_t   TNVert;
     Float_t TMET;      // MET
     Float_t TMT2;      // MET
     Float_t TMT2orig;
     Float_t TMETorig;
+
     Float_t TMETpuppi;      // MET
     Float_t TMT2puppi;      // MET
-    Float_t TMET_Phi;  // MET phi
     Float_t TMETpuppi_Phi;  // MET phi
+
+    Float_t TMETPhi;  // MET phi
     Float_t TgenTop1Pt = 0;
     Float_t TgenTop2Pt = 0;
+    Bool_t TPassDilep;
+    Bool_t TPassDilepMuESUp;
+    Bool_t TPassDilepMuESDo;
+    Bool_t TPassDilepElESUp;
+    Bool_t TPassDilepElESDo;
+    Bool_t TPassDilepAny;
+    Bool_t TPassJetsAny;
+    Bool_t TPassBtagAny;
 
     Int_t   TNVetoLeps;
     Int_t   TNSelLeps;
@@ -186,6 +209,7 @@ class TopAnalysis : public PAFChainItemSelector{
     Int_t   TNJetsJESUp;
     Int_t   TNJetsJESDown;
     Int_t   TNJetsJERUp;
+    Int_t   TNJetsJERDown;
     Int_t   TNBtagsBtagUp;
     Int_t   TNBtagsBtagDown;
     Int_t   TNBtagsMisTagUp;
@@ -197,12 +221,17 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t TJetJER_Pt[20];
     Float_t THTJESUp;
     Float_t THTJESDown;
+    Float_t THTJERUp;
+    Float_t THTJERDown;
     Float_t TBtagPt;
 
     Int_t   TNISRJets;
     Float_t TMETJESUp; Float_t TMETJESDown; Float_t TMETJERUp; Float_t TMETJERDown; Float_t TMETUnclUp; Float_t TMETUnclDown;
+    Float_t TMETMuonESUp; Float_t TMETMuonESDown; Float_t TMETElecESUp; Float_t TMETElecESDown;
+    Float_t TMETPhiJESUp; Float_t TMETPhiJESDown; Float_t TMETPhiJERUp; Float_t TMETPhiJERDown; Float_t TMETPhiUnclUp; Float_t TMETPhiUnclDown;
+    Float_t TMETPhiMuonESUp; Float_t TMETPhiMuonESDown; Float_t TMETPhiElecESUp; Float_t TMETPhiElecESDown;
     Float_t TMT2JESUp; Float_t TMT2JESDown; Float_t TMT2JERUp; Float_t TMT2JERDown; Float_t TMT2UnclUp; Float_t TMT2UnclDown;
-    Float_t TMT2MESUp; Float_t TMT2MESDown; Float_t TMT2EESUp; Float_t TMT2EESDown;
+    Float_t TMT2MuonESUp; Float_t TMT2MuonESDown; Float_t TMT2ElecESUp; Float_t TMT2ElecESDown;
     
     Float_t m_stop; Float_t m_LSP; Int_t sumWeights; Int_t ngenPart; Int_t iSt; Int_t iLSP; Double_t xsec; Int_t j;Float_t norm;//quitar
     Float_t  TWeight_LepEffUp;
@@ -221,6 +250,7 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t  TWeight_FSRDown;
     Float_t  TWeight_PrefUp;
     Float_t  TWeight_PrefDown;
+    Float_t  TWeight_TopPt;
     
     
     std::vector<Jet> jets;
@@ -238,6 +268,8 @@ class TopAnalysis : public PAFChainItemSelector{
     Bool_t gPUWeigth;
     Bool_t gPrefire;
     Bool_t gDoJECunc;
+    Bool_t gDoMuonES;
+    Bool_t gDoElecES;
     Bool_t gDoPDFunc;
     Bool_t gDoPSunc;
     Bool_t gDoScaleUnc;
