@@ -258,8 +258,7 @@ void TopAnalysis::InsideLoop(){
     PrefWeight   = Get<Float_t>("PrefireWeight");
     PrefWeightUp = Get<Float_t>("PrefireWeight_Up");
     PrefWeightDo = Get<Float_t>("PrefireWeight_Down");}
-  else{PrefWeight = 1; PrefWeightUp = 1; PrefWeightDo = 1;}
-
+  else{PrefWeight = 1; PrefWeightUp = 1; PrefWeightDo = 1;}  
   // Event variables
   gChannel       = GetParam<Int_t>("gChannel");
   TPassMETFilters = GetParam<Bool_t>("METfilters");
@@ -533,12 +532,13 @@ void TopAnalysis::GetMET(){
       TMT2 = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMET, TMET_Phi);
       if(gIs2017) TMT2orig = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMETorig, Get<Float_t>("MET_phi"));
     }
+/*
     if(gIs2018){
 		TMETpuppi        = Get<Float_t>("PuppiMET_pt"); // MET_pt
         TMETpuppi_Phi    = Get<Float_t>("PuppiMET_phi");  // MET phi
         if((Int_t) selLeptons.size() >= 2){
         TMT2puppi=getMT2ll(selLeptons.at(0), selLeptons.at(1), TMETpuppi, TMETpuppi_Phi);}}
-        
+*/        
     TMETJESUp = 0; TMETJESDown = 0; TGenMET = 0; TgenTop1Pt = 0; TgenTop2Pt = 0;
     TMETJERUp = 0; TMETJERDown = 0; TMETUnclUp = 0; TMETUnclDown = 0;
     TMT2JESUp = 0; TMT2JESDown = 0; TMT2JERUp = 0; TMT2JERDown = 0; TMT2UnclUp = 0; TMT2UnclDown = 0;
@@ -999,12 +999,12 @@ void TopAnalysis::SetEventVariables(){
     fTree->Branch("TMETorig",            &TMETorig,            "TMETorig/F");
     fTree->Branch("TMT2orig",            &TMT2orig,            "TMT2orig/F");
   }
-  if(gIs2018){
+  /*if(gIs2018){
     fTree->Branch("TMETpuppi",            &TMETpuppi,            "TMETpuppi/F");
     fTree->Branch("TMT2puppi",            &TMT2puppi,            "TMT2puppi/F");
     fTree->Branch("TMETpuppi_Phi",            &TMETpuppi_Phi,            "TMETpuppi_Phi/F");
 
-  }
+  }*/
   if(!gIsData){
     fTree->Branch("TGenMET",         &TGenMET,         "TGenMET/F");
     fTree->Branch("TGenMET_phi",     &TGenMET_phi,      "TGenMET_phi/F");
