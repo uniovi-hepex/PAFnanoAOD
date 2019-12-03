@@ -487,6 +487,8 @@ void TopAnalysis::GetLeptonVariables(std::vector<Lepton> selLeptons, std::vector
   TPassDilepElESUp = ( (TMuonPt   > 25 && TElecPtUp > 20) || (TMuonPt   > 20 && TElecPtUp > 25) ) && TMllElecUp > 20; 
   TPassDilepElESDo = ( (TMuonPt   > 25 && TElecPtDo > 20) || (TMuonPt   > 20 && TElecPtDo > 25) ) && TMllElecDo > 20; 
   TPassDilepAny = TPassDilep || TPassDilepMuESUp || TPassDilepMuESDo || TPassDilepElESUp || TPassDilepElESDo;
+  TPassMETAny = (TMET > 50 || TMETJESUp > 50 || TMETJESDown > 50 || TMETJERUp > 50 || TMETJERDown > 50 || TMETMuonESUp > 50 || TMETMuonESDown > 50 || TMETElecESUp > 50 || TMETElecESDown > 50 || TMETUnclUp > 50 || TMETUnclDown > 50);
+  TPassMT2Any = (TMT2 > 50 || TMT2JESUp > 50 || TMT2JESDown > 50 || TMT2JERUp > 50 || TMT2JERDown > 50 || TMT2MuonESUp > 50 || TMT2MuonESDown > 50 || TMT2ElecESUp > 50 || TMT2ElecESDown > 50 || TMT2UnclUp > 50 || TMT2UnclDown > 50);
 }
 
 void TopAnalysis::GetJetVariables(std::vector<Jet> selJets, std::vector<Jet> cleanedJets15, Float_t ptCut){

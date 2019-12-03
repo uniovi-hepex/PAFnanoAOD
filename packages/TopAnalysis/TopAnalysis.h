@@ -142,6 +142,8 @@ class TopAnalysis : public PAFChainItemSelector{
     Bool_t TPassDilepAny;
     Bool_t TPassJetsAny;
     Bool_t TPassBtagAny;
+    Bool_t TPassMETAny;
+    Bool_t TPassMT2Any;
 
     Int_t   TNVetoLeps;
     Int_t   TNSelLeps;
