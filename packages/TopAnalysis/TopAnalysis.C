@@ -264,6 +264,7 @@ void TopAnalysis::InsideLoop(){
     PrefWeightUp = Get<Float_t>("PrefireWeight_Up");
     PrefWeightDo = Get<Float_t>("PrefireWeight_Down");}
   else{PrefWeight = 1; PrefWeightUp = 1; PrefWeightDo = 1;}
+  PUSF = 1; PUSF_Up = 1; PUSF_Down = 1;
 
   // Event variables
   gChannel       = GetParam<Int_t>("gChannel");
@@ -353,7 +354,7 @@ void TopAnalysis::InsideLoop(){
       // Get values or the corresponding variation
  
       SetVariables(useSyst.at(sys));
-      if (!isSS && sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill();
+      if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill();
 
       if (invmass > 20 && lep0pt > 25 && lep1pt > 20) {
         if(isSS) fHSSyields[gChannel][sys] -> Fill(idilepton, weight);
@@ -447,6 +448,15 @@ void TopAnalysis::GetLeptonVariables(std::vector<Lepton> selLeptons, std::vector
     TElecEta = selLeptons.at(indexElec).Eta();
     TElecPhi = selLeptons.at(indexElec).Phi();
     TElecM   = selLeptons.at(indexElec).M();
+
+    TStatus = -1;
+    if      ( selLeptons.at(0).IsPrompt() && selLeptons.at(1).IsPrompt() ) TStatus = 1;
+    else if ( selLeptons.at(0).IsConversion() || selLeptons.at(1).IsConversion() ) TStatus = 22;
+    else if ( selLeptons.at(0).IsFromB() || selLeptons.at(1).IsFromB() ) TStatus = 5;
+    else if ( selLeptons.at(0).IsFromC() || selLeptons.at(1).IsFromC() ) TStatus = 4;
+    else if ( selLeptons.at(0).IsFromL() || selLeptons.at(1).IsFromL() ) TStatus = 3;
+    else TStatus = 0;
+
     TLorentzVector muon = TLorentzVector();
     TLorentzVector elec = TLorentzVector();
     TMllMuonUp = TMll; TMllMuonDo = TMll; TMllElecUp = TMll; TMllElecDo = TMll;
@@ -971,10 +981,11 @@ void TopAnalysis::SetLeptonVariables(){
   //fTree->Branch("TNVetoLeps",   &TNVetoLeps,   "TNVetoLeps/I");
   if(!miniTree){
     fTree->Branch("TChannel",     &TChannel,     "TChannel/I");
-    fTree->Branch("TIsSS",        &TIsSS,        "TIsSS/B");
     fTree->Branch("TLep0M",       &TLep0M,       "TLep0M/F");
     fTree->Branch("TLep1M",       &TLep1M,       "TLep1M/F");
   }
+  fTree->Branch("TIsSS",        &TIsSS,        "TIsSS/B");
+  fTree->Branch("TStatus",      &TStatus,      "TStatus/B");
   fTree->Branch("TLep0Id",      &TLep0Id,      "TLep0Id/I");
   fTree->Branch("TLep1Id",      &TLep1Id,      "TLep1Id/I");
   fTree->Branch("TMll",         &TMll,         "TMll/F");

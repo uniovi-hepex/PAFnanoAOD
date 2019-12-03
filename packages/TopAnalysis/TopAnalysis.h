@@ -146,6 +146,7 @@ class TopAnalysis : public PAFChainItemSelector{
     Int_t   TNVetoLeps;
     Int_t   TNSelLeps;
     Int_t   TChannel;
+    Int_t   TStatus;
     Bool_t   TIsSS;
     Float_t TLep0Pt;    
     Float_t TLep0Eta;
