@@ -354,7 +354,7 @@ void TopAnalysis::InsideLoop(){
       // Get values or the corresponding variation
  
       SetVariables(useSyst.at(sys));
-      if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill();
+      if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();
 
       if (invmass > 20 && lep0pt > 25 && lep1pt > 20) {
         if(isSS) fHSSyields[gChannel][sys] -> Fill(idilepton, weight);
@@ -609,8 +609,8 @@ void TopAnalysis::GetMET(){
     TLorentzVector metmuup = LEStoMET(pmet, muon, muonup);
     TLorentzVector metmudo = LEStoMET(pmet, muon, muondo);
     TMETMuonESDown    = metmudo.Pt();
-    TMETPhiMuonESDown = metmudo.Pt();
-    TMETMuonESUp      = metmuup.Phi();
+    TMETPhiMuonESDown = metmudo.Phi();
+    TMETMuonESUp      = metmuup.Pt();
     TMETPhiMuonESUp   = metmuup.Phi();
     if((Int_t) selLeptons.size() >= 2){
       elec.SetPtEtaPhiM(TElecPt,   TElecEta, TElecPhi, TElecM);
@@ -1010,9 +1010,9 @@ void TopAnalysis::SetLeptonVariables(){
   fTree->Branch("TPassDilep",     &TPassDilep,     "TPassDilep/B");
   if(!gIsData){
     fTree->Branch("TPassDilepMuESUp",     &TPassDilepMuESUp,     "TPassDilepMuESUp/B");
-    fTree->Branch("TPassDilepMuESDo",     &TPassDilepMuESDo,     "TPassDilepMuESDo/B");
+    fTree->Branch("TPassDilepMuESDo",     &TPassDilepMuESDo,     "TPassDilepMuESDown/B");
     fTree->Branch("TPassDilepElESUp",     &TPassDilepElESUp,     "TPassDilepElESUp/B");
-    fTree->Branch("TPassDilepElESDo",     &TPassDilepElESDo,     "TPassDilepElESDo/B");
+    fTree->Branch("TPassDilepElESDo",     &TPassDilepElESDo,     "TPassDilepElESDown/B");
   }
 }
 
