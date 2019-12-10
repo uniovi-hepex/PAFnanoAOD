@@ -123,7 +123,7 @@ void TopAnalysis::Initialise(){
 
 	  //snorm = new SUSYnorm(path, gSampleName);
     cout<<path<<endl;
-    snorm = new SUSYnorm(path ,  "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCUETP8M2T4_madgra"); //"SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCP5_MLM_p");
+    snorm = new SUSYnorm(path ,  "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCP5_MLM_p");//"SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCUETP8M2T4_madgra"); //"SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCP5_MLM_p");
   }
      
   // Uncertainties
@@ -264,7 +264,7 @@ void TopAnalysis::InsideLoop(){
     PrefWeightUp = Get<Float_t>("PrefireWeight_Up");
     PrefWeightDo = Get<Float_t>("PrefireWeight_Down");}
   else{PrefWeight = 1; PrefWeightUp = 1; PrefWeightDo = 1;}
-  PUSF = 1; PUSF_Up = 1; PUSF_Down = 1;
+  //PUSF = 1; PUSF_Up = 1; PUSF_Down = 1;
 
   // Event variables
   gChannel       = GetParam<Int_t>("gChannel");
@@ -482,11 +482,11 @@ void TopAnalysis::GetLeptonVariables(std::vector<Lepton> selLeptons, std::vector
     }
   }
   TPassDilep       = ( (TMuonPt   > 25 && TElecPt   > 20) || (TMuonPt   > 20 && TElecPt   > 25) ) && TMll       > 20;
-  TPassDilepMuESUp = ( (TMuonPtUp > 25 && TElecPt   > 20) || (TMuonPtUp > 20 && TElecPt   > 25) ) && TMllMuonUp > 20;
-  TPassDilepMuESDo = ( (TMuonPtDo > 25 && TElecPt   > 20) || (TMuonPtDo > 20 && TElecPt   > 25) ) && TMllMuonDo > 20; 
-  TPassDilepElESUp = ( (TMuonPt   > 25 && TElecPtUp > 20) || (TMuonPt   > 20 && TElecPtUp > 25) ) && TMllElecUp > 20; 
-  TPassDilepElESDo = ( (TMuonPt   > 25 && TElecPtDo > 20) || (TMuonPt   > 20 && TElecPtDo > 25) ) && TMllElecDo > 20; 
-  TPassDilepAny = TPassDilep || TPassDilepMuESUp || TPassDilepMuESDo || TPassDilepElESUp || TPassDilepElESDo;
+  TPassDilepMuonESUp = ( (TMuonPtUp > 25 && TElecPt   > 20) || (TMuonPtUp > 20 && TElecPt   > 25) ) && TMllMuonUp > 20;
+  TPassDilepMuonESDo = ( (TMuonPtDo > 25 && TElecPt   > 20) || (TMuonPtDo > 20 && TElecPt   > 25) ) && TMllMuonDo > 20; 
+  TPassDilepElecESUp = ( (TMuonPt   > 25 && TElecPtUp > 20) || (TMuonPt   > 20 && TElecPtUp > 25) ) && TMllElecUp > 20; 
+  TPassDilepElecESDo = ( (TMuonPt   > 25 && TElecPtDo > 20) || (TMuonPt   > 20 && TElecPtDo > 25) ) && TMllElecDo > 20; 
+  TPassDilepAny = TPassDilep || TPassDilepMuonESUp || TPassDilepMuonESDo || TPassDilepElecESUp || TPassDilepElecESDo;
   TPassMETAny = (TMET > 50 || TMETJESUp > 50 || TMETJESDown > 50 || TMETJERUp > 50 || TMETJERDown > 50 || TMETMuonESUp > 50 || TMETMuonESDown > 50 || TMETElecESUp > 50 || TMETElecESDown > 50 || TMETUnclUp > 50 || TMETUnclDown > 50);
   TPassMT2Any = (TMT2 > 50 || TMT2JESUp > 50 || TMT2JESDown > 50 || TMT2JERUp > 50 || TMT2JERDown > 50 || TMT2MuonESUp > 50 || TMT2MuonESDown > 50 || TMT2ElecESUp > 50 || TMT2ElecESDown > 50 || TMT2UnclUp > 50 || TMT2UnclDown > 50);
 }
@@ -643,7 +643,7 @@ void TopAnalysis::GetMET(){
 void TopAnalysis::GetWeights(){
   TWeight_ElecEffUp = 1; TWeight_ElecEffDown = 1; TWeight_MuonEffUp = 1; TWeight_MuonEffDown = 1;
   TWeight_TrigUp = 1; TWeight_TrigDown = 1; TWeight_PUDown = 1; TWeight_PUUp = 1; TWeight = 1;
-  TWeight_ISRUp   = 1; TWeight_ISRDown = 1; TWeight_FSRUp   = 1; TWeight_FSRDown = 1; TWeight_PrefUp = 1; TWeight_PrefDown = 1; TWeight_TopPt = 1;
+  TWeight_ISRUp   = 1; TWeight_ISRDown = 1; TWeight_FSRUp   = 1; TWeight_FSRDown = 1; TWeight_PrefUp = 1; TWeight_PrefDown = 1; TWeight_TopPtUp = 1; TWeight_TopPtDown = 1;
   if(gIsData) return;
   if(TNSelLeps < 2) return;
   Float_t lepSF   = selLeptons.at(0).GetSF( 0)*selLeptons.at(1).GetSF( 0);
@@ -717,7 +717,7 @@ void TopAnalysis::GetWeights(){
   TWeight_FSRDown    = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeight*fsrDo;
   TWeight_PrefUp     = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeightUp;
   TWeight_PrefDown   = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeightDo;
-  if(gIsTTany) TWeight_TopPt      = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeight*GetTopPtWeight(TTop0Pt, TTop1Pt);
+  if(gIsTTany) TWeight_TopPtUp    = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeight*GetTopPtWeight(TTop0Pt, TTop1Pt);
 }
 
 void TopAnalysis::InitHistos(){
@@ -986,8 +986,8 @@ void TopAnalysis::SetLeptonVariables(){
     fTree->Branch("TLep0M",       &TLep0M,       "TLep0M/F");
     fTree->Branch("TLep1M",       &TLep1M,       "TLep1M/F");
   }
-  fTree->Branch("TIsSS",        &TIsSS,        "TIsSS/B");
-  fTree->Branch("TStatus",      &TStatus,      "TStatus/B");
+  fTree->Branch("TIsSS",        &TIsSS,        "TIsSS/I");
+  fTree->Branch("TStatus",      &TStatus,      "TStatus/I");
   fTree->Branch("TLep0Id",      &TLep0Id,      "TLep0Id/I");
   fTree->Branch("TLep1Id",      &TLep1Id,      "TLep1Id/I");
   fTree->Branch("TMll",         &TMll,         "TMll/F");
@@ -1007,12 +1007,12 @@ void TopAnalysis::SetLeptonVariables(){
   fTree->Branch("TGenLep1Pt",      &TGenLep1Pt,      "TGenLep1Pt/F");
   fTree->Branch("TGenLep1Eta",     &TGenLep1Eta,     "TGenLep1Eta/F");
   fTree->Branch("TGenLep1Phi",     &TGenLep1Phi,     "TGenLep1Phi/F");
-  fTree->Branch("TPassDilep",     &TPassDilep,     "TPassDilep/B");
+  fTree->Branch("TPassDilep",     &TPassDilep,     "TPassDilep/I");
   if(!gIsData){
-    fTree->Branch("TPassDilepMuESUp",     &TPassDilepMuESUp,     "TPassDilepMuESUp/B");
-    fTree->Branch("TPassDilepMuESDo",     &TPassDilepMuESDo,     "TPassDilepMuESDown/B");
-    fTree->Branch("TPassDilepElESUp",     &TPassDilepElESUp,     "TPassDilepElESUp/B");
-    fTree->Branch("TPassDilepElESDo",     &TPassDilepElESDo,     "TPassDilepElESDown/B");
+    fTree->Branch("TPassDilepMuonESUp",     &TPassDilepMuonESUp,     "TPassDilepMuonESUp/I");
+    fTree->Branch("TPassDilepMuonESDo",     &TPassDilepMuonESDo,     "TPassDilepMuonESDown/I");
+    fTree->Branch("TPassDilepElecESUp",     &TPassDilepElecESUp,     "TPassDilepElecESUp/I");
+    fTree->Branch("TPassDilepElecESDo",     &TPassDilepElecESDo,     "TPassDilepElecESDown/I");
   }
 }
 
@@ -1083,7 +1083,8 @@ void TopAnalysis::SetEventVariables(){
     fTree->Branch("TWeight_FSRDown",         &TWeight_FSRDown,        "TWeight_FSRDown/F");
     fTree->Branch("TWeight_PrefUp",           &TWeight_PrefUp,          "TWeight_PrefUp/F");
     fTree->Branch("TWeight_PrefDown",         &TWeight_PrefDown,        "TWeight_PrefDown/F");
-    if(gIsTTany) fTree->Branch("TWeight_TopPt",         &TWeight_TopPt,        "TWeight_TopPt/F");
+    if(gIsTTany) fTree->Branch("TWeight_TopPtUp",         &TWeight_TopPtUp,        "TWeight_TopPtUp/F");
+    if(gIsTTany) fTree->Branch("TWeight_TopPtDown",         &TWeight_TopPtDown,        "TWeight_TopPtDown/F");
     fTree->Branch("TNVert_pu",       &TNVert_pu,          "TNVert_pu/F");
 
     fTree->Branch("TMETJESUp",      &TMETJESUp,       "TMETJESUp/F");
@@ -1245,7 +1246,7 @@ void TopAnalysis::SetVariables(int sys){
   else if(sys == kFSRDown    ) weight = TWeight_FSRDown;
   else if(sys == kPrefireUp  ) weight = TWeight_PrefUp;
   else if(sys == kPrefireDown) weight = TWeight_PrefDown;
-  else if(sys == kTopPt      ) weight = TWeight_TopPt;
+  else if(sys == kTopPt      ) weight = TWeight_TopPtUp;
 }
 
 Float_t TopAnalysis::GetTopPtWeight(Float_t Pt1, Float_t Pt2){
