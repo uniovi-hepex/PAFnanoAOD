@@ -155,6 +155,12 @@ Float_t LepScaleToMET(vector<Lepton> vlep, Float_t met, Float_t met_phi, Int_t i
   return (vmet+nomLeps-varLeps).Pt();
 }
 
+TLorentzVector LEStoMET(const TLorentzVector &met, const TLorentzVector &origlep, const TLorentzVector &modlep){
+  TLorentzVector newmet = met - origlep + modlep;
+  return newmet;
+}
+
+
 Float_t JERtoMET(vector<Jet> vjets, Float_t met, Float_t met_phi){
   TLorentzVector vmet    = TLorentzVector();
   vmet.SetPtEtaPhiM(met, 0, met_phi, 0);

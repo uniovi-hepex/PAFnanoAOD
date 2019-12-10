@@ -34,6 +34,8 @@ class LeptonSelector : public PAFChainItemSelector{
     Bool_t gIsFastSim;
     Int_t  gSelection;
     Bool_t gDoLepGood; 
+    Bool_t gDoElecES;
+    Bool_t gDoMuonES;
     Bool_t gIs2016;
     Bool_t gIs2017;
     Bool_t gIs2018;
@@ -57,8 +59,11 @@ class LeptonSelector : public PAFChainItemSelector{
     Int_t evt;
     TLorentzVector tP; 
     Float_t pt;
+    Float_t ptUp;
+    Float_t ptDo;
     Float_t eta;
     Float_t energy;
+    Float_t energyerr;
     Int_t   charge; 
     Int_t   type;
     Int_t   pdgid;

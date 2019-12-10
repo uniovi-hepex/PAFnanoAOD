@@ -25,7 +25,8 @@ class JetSelector : public PAFChainItemSelector{
     std::vector<Jet> selJets;
     std::vector<Jet> selJetsJecUp;
     std::vector<Jet> selJetsJecDown;
-    std::vector<Jet> selJetsJER;
+    std::vector<Jet> selJetsJERUp;
+    std::vector<Jet> selJetsJERDown;
     std::vector<Jet> Jets15;
     std::vector<Jet> genJets;
     std::vector<Jet> mcJets;
@@ -85,6 +86,7 @@ class JetSelector : public PAFChainItemSelector{
     TLorentzVector tmcJ; 
     Int_t jetId;
     Int_t flavmc;
+    Int_t flav;
     Float_t csv;
     Float_t deepcsv;
     Float_t deepcsvC;

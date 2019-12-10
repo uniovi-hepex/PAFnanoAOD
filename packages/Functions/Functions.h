@@ -71,6 +71,7 @@ Bool_t Cleaning(TLorentzVector p, vector<TLorentzVector> particles, Float_t minD
 Float_t JEStoMET(vector<Jet> vjets, Float_t met, Float_t met_phi, Int_t dir = 0);
 Float_t JERtoMET(vector<Jet> vjets, Float_t met, Float_t met_phi);
 Float_t LepScaleToMET(vector<Lepton> vlep, Float_t met, Float_t met_phi, Int_t id, Int_t dir);
+TLorentzVector LEStoMET(const TLorentzVector &met, const TLorentzVector &origlep, const TLorentzVector &modlep);
 Float_t getJetJERpt(Jet jet, Float_t rho);
 Float_t p2(Float_t x);
 Jet GetMatchedJet(Jet origJet, std::vector<Jet> jetCollection, Float_t etaRange = 0.3, Float_t ptRange = 10000);
