@@ -110,9 +110,9 @@ void JetSelector::Initialise(){
   genJets  = std::vector<Jet>();
   vetoJets = std::vector<Jet>();
   selJetsJecUp = std::vector<Jet>();
+  selJetsJecDown = std::vector<Jet>();
   selJetsJERUp   = std::vector<Jet>();
   selJetsJERDown   = std::vector<Jet>();
-  selJetsJecDown = std::vector<Jet>();
 }
 
 void JetSelector::GetJetVariables(Int_t i){
@@ -225,8 +225,8 @@ void JetSelector::InsideLoop(){
       if(!gIsData){ // JER, JES...
         pJESUp.SetPtEtaPhiM(Get<Float_t>("Jet_pt_jesTotalUp",   i), tJ.p.Eta(), tJ.p.Phi(), Get<Float_t>("Jet_mass_jesTotalUp",   i));
         pJESDo.SetPtEtaPhiM(Get<Float_t>("Jet_pt_jesTotalDown", i), tJ.p.Eta(), tJ.p.Phi(), Get<Float_t>("Jet_mass_jesTotalDown", i));
-        pJESUp.SetPtEtaPhiM(Get<Float_t>("Jet_pt_jerUp",   i), tJ.p.Eta(), tJ.p.Phi(), Get<Float_t>("Jet_mass_jerUp",   i));
-        pJESDo.SetPtEtaPhiM(Get<Float_t>("Jet_pt_jerDown", i), tJ.p.Eta(), tJ.p.Phi(), Get<Float_t>("Jet_mass_jerDown", i));
+        pJERUp.SetPtEtaPhiM(Get<Float_t>("Jet_pt_jerUp",   i), tJ.p.Eta(), tJ.p.Phi(), Get<Float_t>("Jet_mass_jerUp",   i));
+        pJERDo.SetPtEtaPhiM(Get<Float_t>("Jet_pt_jerDown", i), tJ.p.Eta(), tJ.p.Phi(), Get<Float_t>("Jet_mass_jerDown", i));
         tJESUp = Jet(pJESUp, csv, jetId, flav);
         tJESDo = Jet(pJESDo, csv, jetId, flav);
         tJERUp = Jet(pJERUp, csv, jetId, flav);

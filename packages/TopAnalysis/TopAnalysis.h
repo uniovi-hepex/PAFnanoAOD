@@ -139,11 +139,11 @@ class TopAnalysis : public PAFChainItemSelector{
 
     Float_t TgenTop1Pt = 0;
     Float_t TgenTop2Pt = 0;
-    Bool_t TPassDilep;
-    Bool_t TPassDilepMuESUp;
-    Bool_t TPassDilepMuESDo;
-    Bool_t TPassDilepElESUp;
-    Bool_t TPassDilepElESDo;
+    Int_t  TPassDilep;
+    Int_t  TPassDilepMuonESUp;
+    Int_t  TPassDilepMuonESDo;
+    Int_t  TPassDilepElecESUp;
+    Int_t  TPassDilepElecESDo;
     Bool_t TPassDilepAny;
     Bool_t TPassJetsAny;
     Bool_t TPassBtagAny;
@@ -154,7 +154,7 @@ class TopAnalysis : public PAFChainItemSelector{
     Int_t   TNSelLeps;
     Int_t   TChannel;
     Int_t   TStatus;
-    Bool_t   TIsSS;
+    Int_t   TIsSS;
     Float_t TLep0Pt;    
     Float_t TLep0Eta;
     Float_t TLep0Phi;
@@ -253,7 +253,8 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t  TWeight_FSRDown;
     Float_t  TWeight_PrefUp;
     Float_t  TWeight_PrefDown;
-    Float_t  TWeight_TopPt;
+    Float_t  TWeight_TopPtUp;
+    Float_t  TWeight_TopPtDown;
     
     
     std::vector<Jet> jets;
