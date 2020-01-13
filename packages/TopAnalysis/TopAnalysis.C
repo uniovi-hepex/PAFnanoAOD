@@ -123,8 +123,10 @@ void TopAnalysis::Initialise(){
 
 	  //snorm = new SUSYnorm(path, gSampleName);
     cout<<path<<endl;
-    snorm = new SUSYnorm(path ,  "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCP5_MLM_p");// "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCP5_MLM_p, SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCUETP8M2T4_madgra");
-
+    if(year==2016){
+    snorm = new SUSYnorm(path ,  "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCUETP8M2T4_madgra");// "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCP5_MLM_p, SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCUETP8M2T4_madgra");
+}
+    else{snorm = new SUSYnorm(path ,  "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCP5_MLM_p");}
   }
      
   // Uncertainties
@@ -350,16 +352,18 @@ void TopAnalysis::InsideLoop(){
     if(makeHistos) FillCorrHistos();
   }
 
-  if (TNSelLeps >= 2 && TPassTrigger && TPassMETFilters) {
+  if (TNSelLeps >= 2 && TPassTrigger && TPassMETFilters) { 
+  //if (TPassTrigger && TPassMETFilters) {
     for(Int_t sys = 0; sys < nSyst; sys++){
       if(!gDoSyst && sys > 0) break;
       if(gIsData  && sys > 0) break;
       // Get values or the corresponding variation
 
       SetVariables(useSyst.at(sys));
-      if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();
-      //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill();
-
+      //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();
+      if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill(); //quitar:sincro, dejar esta o la otra
+     
+      //if (!isSS) fHyields[gChannel][sys] -> Fill(iZVeto, weight); //quitar: sincro
       if (invmass > 20 && lep0pt > 25 && lep1pt > 20) {
 
         if(isSS) fHSSyields[gChannel][sys] -> Fill(idilepton, weight);
@@ -372,7 +376,7 @@ void TopAnalysis::InsideLoop(){
         if (TChannel == iElMu || (TMath::Abs(invmass - 91) > 15)  ){ //  Z Veto in ee, µµ
 
           if (isSS) fHSSyields[gChannel][sys] -> Fill(iZVeto, weight);
-          else {      fHyields[gChannel][sys] -> Fill(iZVeto, weight);
+          else {      fHyields[gChannel][sys] -> Fill(iZVeto, weight); //quitar: sincro, descomentar
             FillHistos(gChannel, iZVeto, sys);}
 
           if(TChannel == iElMu || met > 40){   // MET > 40 in ee, µµ
@@ -716,7 +720,7 @@ void TopAnalysis::GetWeights(){
     }
   }
 
-  if(gIsSignal) PUSF = 1;
+  //if(gIsSignal) PUSF = 1;
 
   TWeight             = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeight;
   TWeight_ElecEffUp   = NormWeight*ElecSFUp*MuonSF*TrigSF*PUSF*PrefWeight;
