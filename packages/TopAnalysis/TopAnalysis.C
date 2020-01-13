@@ -487,8 +487,13 @@ void TopAnalysis::GetLeptonVariables(std::vector<Lepton> selLeptons, std::vector
   TPassDilepElecESUp = ( (TMuonPt   > 25 && TElecPtUp > 20) || (TMuonPt   > 20 && TElecPtUp > 25) ) && TMllElecUp > 20; 
   TPassDilepElecESDo = ( (TMuonPt   > 25 && TElecPtDo > 20) || (TMuonPt   > 20 && TElecPtDo > 25) ) && TMllElecDo > 20; 
   TPassDilepAny = TPassDilep || TPassDilepMuonESUp || TPassDilepMuonESDo || TPassDilepElecESUp || TPassDilepElecESDo;
-  TPassMETAny = (TMET > 50 || TMETJESUp > 50 || TMETJESDown > 50 || TMETJERUp > 50 || TMETJERDown > 50 || TMETMuonESUp > 50 || TMETMuonESDown > 50 || TMETElecESUp > 50 || TMETElecESDown > 50 || TMETUnclUp > 50 || TMETUnclDown > 50);
-  TPassMT2Any = (TMT2 > 50 || TMT2JESUp > 50 || TMT2JESDown > 50 || TMT2JERUp > 50 || TMT2JERDown > 50 || TMT2MuonESUp > 50 || TMT2MuonESDown > 50 || TMT2ElecESUp > 50 || TMT2ElecESDown > 50 || TMT2UnclUp > 50 || TMT2UnclDown > 50);
+  TPassMETAny = (TMET > metcut || TMETJESUp > metcut || TMETJESDown > metcut || TMETJERUp > metcut || TMETJERDown > metcut || TMETMuonESUp > metcut || TMETMuonESDown > metcut || TMETElecESUp > metcut || TMETElecESDown > metcut || TMETUnclUp > metcut || TMETUnclDown > metcut);
+  TPassMT2Any = (TMT2 > mt2cut || TMT2JESUp > mt2cut || TMT2JESDown > mt2cut || TMT2JERUp > mt2cut || TMT2JERDown > mt2cut || TMT2MuonESUp > mt2cut || TMT2MuonESDown > mt2cut || TMT2ElecESUp > mt2cut || TMT2ElecESDown > mt2cut || TMT2UnclUp > mt2cut || TMT2UnclDown > mt2cut);
+  if(gIsData){
+    TPassDilepAny = TPassDilep;
+    TPassMETAny = TMET > metcut;
+    TPassMT2Any = TMT2 > mt2cut;
+  }
 }
 
 void TopAnalysis::GetJetVariables(std::vector<Jet> selJets, std::vector<Jet> cleanedJets15, Float_t ptCut){
@@ -532,7 +537,11 @@ void TopAnalysis::GetJetVariables(std::vector<Jet> selJets, std::vector<Jet> cle
     TJet1IsBTag = selJets.at(1).isBtag;
   }
 
-  if(gIsData) return;  // For systematics...
+  if(gIsData){
+    TPassJetsAny = (TNJets >= 2);
+    TPassBtagAny = (TNBtags >= 1);
+    return;  // For systematics...
+  }
   TNBtagsBtagUp     = GetBtags(selJets,  1);
   TNBtagsBtagDown   = GetBtags(selJets, -1);
   TNBtagsMisTagUp   = GetBtags(selJets,  3);
