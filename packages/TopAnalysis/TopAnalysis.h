@@ -104,6 +104,9 @@ class TopAnalysis : public PAFChainItemSelector{
     Double_t getSysM(const TString& sys = "Norm");
     Double_t getM(vector<TLorentzVector>);
 
+    Float_t metcut = 50.;
+    Float_t mt2cut = 80.;
+
     //Variables
     ULong64_t event;
     UInt_t    lumiblock;
