@@ -224,7 +224,7 @@ Bool_t LeptonSelector::isGoodLepton(Lepton lep){
     if (TMath::Abs(etaSC) > 1.4442 && TMath::Abs(etaSC) < 1.566) return false;
   }
   if (lep.p.Pt() < 18 || TMath::Abs(lep.p.Eta()) > 2.4) return false;
-  if (!lep.IsPrompt()) return false;
+  //if (!lep.IsPrompt()) return false;
   if (passId && passIso && ( (lep.isElec && getGoodVertex(iTight)) || (lep.isMuon && getGoodVertex(iMedium) ))) return true;
   return false;
 }

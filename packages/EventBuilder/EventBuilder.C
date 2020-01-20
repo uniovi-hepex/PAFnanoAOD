@@ -276,8 +276,7 @@ Bool_t EventBuilder::PassesDoubleMuonTrigger(){
     }
   }
   else if(gIs2018){
-    pass = Get<Bool_t>("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass8") ||
-      Get<Bool_t>("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8");
+    pass = Get<Bool_t>("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8");
   }
   return pass;
 }
@@ -302,13 +301,12 @@ Bool_t EventBuilder::PassesElMuTrigger(){
       pass =
         Get<Bool_t>("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ") ||
         Get<Bool_t>("HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ") ||
+        Get<Bool_t>("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL") ||
         Get<Bool_t>("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ");
     }
     else{
       pass =
         Get<Bool_t>("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ") ||
-        Get<Bool_t>("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL") ||
-        Get<Bool_t>("HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL") ||
         Get<Bool_t>("HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ") ||
         Get<Bool_t>("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL") ||
         Get<Bool_t>("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ");
@@ -317,8 +315,6 @@ Bool_t EventBuilder::PassesElMuTrigger(){
   else if(gIs2018){
     pass =
       Get<Bool_t>("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ") ||
-      Get<Bool_t>("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL") ||
-      Get<Bool_t>("HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL") ||
       Get<Bool_t>("HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ") ||
       Get<Bool_t>("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL") ||
       Get<Bool_t>("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ");
@@ -335,21 +331,21 @@ Bool_t EventBuilder::PassesSingleElecTrigger(){
   Bool_t pass = false;
   if     (gIs2016){
     if(era == runH) pass =  Get<Bool_t>("HLT_Ele27_WPTight_Gsf");
-    else pass =  Get<Bool_t>("HLT_Ele27_WPTight_Gsf") || Get<Bool_t>("HLT_Ele23_WPLoose_Gsf");
+    else pass =  Get<Bool_t>("HLT_Ele27_WPTight_Gsf");//  || Get<Bool_t>("HLT_Ele23_WPLoose_Gsf");
     //if(era == runH) pass =  1;
     //else pass = Get<Bool_t>("HLT_Ele23_WPLoose_Gsf");
   }
   else if(gIs2017){
     if(gIsData){
-      pass = Get<Bool_t>("HLT_Ele32_WPTight_Gsf_L1DoubleEG") || Get<Bool_t>("HLT_Ele35_WPTight_Gsf");// || Get<Bool_t>("HLT_Ele38_WPTight_Gsf") || Get<Bool_t>("HLT_Ele40_WPTight_Gsf");
+      pass =  Get<Bool_t>("HLT_Ele35_WPTight_Gsf"); // || Get<Bool_t>("HLT_Ele38_WPTight_Gsf") || Get<Bool_t>("HLT_Ele40_WPTight_Gsf");
     }
     else{
-      pass = Get<Bool_t>("HLT_Ele32_WPTight_Gsf_L1DoubleEG") || Get<Bool_t>("HLT_Ele35_WPTight_Gsf");// || Get<Bool_t>("HLT_Ele38_WPTight_Gsf") || Get<Bool_t>("HLT_Ele40_WPTight_Gsf");
+      pass =  Get<Bool_t>("HLT_Ele35_WPTight_Gsf"); // || Get<Bool_t>("HLT_Ele38_WPTight_Gsf") || Get<Bool_t>("HLT_Ele40_WPTight_Gsf");
     }
   }
 
   else if(gIs2018){
-      pass = Get<Bool_t>("HLT_Ele32_WPTight_Gsf_L1DoubleEG") || Get<Bool_t>("HLT_Ele35_WPTight_Gsf") || Get<Bool_t>("HLT_Ele38_WPTight_Gsf");
+      pass = Get<Bool_t>("HLT_Ele32_WPTight_Gsf");
   }
   return pass;
 }
@@ -358,10 +354,10 @@ Bool_t EventBuilder::PassesSingleMuonTrigger(){
   int era = -1; if(gIsData) era = GetRunEra(Get<Int_t>("run"), year);
   Bool_t pass = false;
   if     (gIs2016){
-    pass = Get<Bool_t>("HLT_IsoTkMu24") || Get<Bool_t>("HLT_IsoMu24") || Get<Bool_t>("HLT_IsoTkMu20") || Get<Bool_t>("HLT_IsoMu20") ;
+    pass = Get<Bool_t>("HLT_IsoTkMu24") || Get<Bool_t>("HLT_IsoMu24");// || Get<Bool_t>("HLT_IsoTkMu20") || Get<Bool_t>("HLT_IsoMu20") ;
   }
   else if(gIs2017){
-    pass = Get<Bool_t>("HLT_IsoMu24") || Get<Bool_t>("HLT_IsoMu27") || Get<Bool_t>("HLT_IsoMu24_eta2p1");
+    pass = Get<Bool_t>("HLT_IsoMu27") || Get<Bool_t>("HLT_IsoMu24_eta2p1");
   }
   else if(gIs2018){
     pass = Get<Bool_t>("HLT_IsoMu24");

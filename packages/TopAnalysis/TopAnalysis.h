@@ -104,6 +104,9 @@ class TopAnalysis : public PAFChainItemSelector{
     Double_t getSysM(const TString& sys = "Norm");
     Double_t getM(vector<TLorentzVector>);
 
+    Float_t metcut = 50.;
+    Float_t mt2cut = 80.;
+
     //Variables
     ULong64_t event;
     UInt_t    lumiblock;
@@ -131,27 +134,30 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t TMT2;      // MET
     Float_t TMT2orig;
     Float_t TMETorig;
-
     Float_t TMETpuppi;      // MET
     Float_t TMT2puppi;      // MET
     Float_t TMETpuppi_Phi;  // MET phi
 
     Float_t TMETPhi;  // MET phi
+
     Float_t TgenTop1Pt = 0;
     Float_t TgenTop2Pt = 0;
-    Bool_t TPassDilep;
-    Bool_t TPassDilepMuESUp;
-    Bool_t TPassDilepMuESDo;
-    Bool_t TPassDilepElESUp;
-    Bool_t TPassDilepElESDo;
+    Int_t  TPassDilep;
+    Int_t  TPassDilepMuonESUp;
+    Int_t  TPassDilepMuonESDo;
+    Int_t  TPassDilepElecESUp;
+    Int_t  TPassDilepElecESDo;
     Bool_t TPassDilepAny;
     Bool_t TPassJetsAny;
     Bool_t TPassBtagAny;
+    Bool_t TPassMETAny;
+    Bool_t TPassMT2Any;
 
     Int_t   TNVetoLeps;
     Int_t   TNSelLeps;
     Int_t   TChannel;
-    Bool_t   TIsSS;
+    Int_t   TStatus;
+    Int_t   TIsSS;
     Float_t TLep0Pt;    
     Float_t TLep0Eta;
     Float_t TLep0Phi;
@@ -250,7 +256,8 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t  TWeight_FSRDown;
     Float_t  TWeight_PrefUp;
     Float_t  TWeight_PrefDown;
-    Float_t  TWeight_TopPt;
+    Float_t  TWeight_TopPtUp;
+    Float_t  TWeight_TopPtDown;
     
     
     std::vector<Jet> jets;
