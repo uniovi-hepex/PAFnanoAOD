@@ -106,7 +106,7 @@ void TopAnalysis::Initialise(){
 
   makeTree   = true;
   miniTree = true;
-  makeHistos = false;
+  makeHistos = true;
 
   gIsSignal= false; //quitar
 	if ((gSampleName.BeginsWith("stop"))) gIsSignal = true; //quitar
@@ -287,7 +287,7 @@ void TopAnalysis::InsideLoop(){
   if(gIsTTbar && makeHistos) FillCorrHistos(); 
 
   if(gIsTTbar && genLeptons.size() < 2) return; // Dilepton selection for ttbar!!!
-  //if(gIsTTbar && genLeptons.size() >= 2) return; // Dilepton selection for ttbar!!! //quitar y dejar la de arriba
+  //if(gIsTTbar && genLeptons.size() >= 2) return; // Semilep selection for ttbar!!! //quitar y dejar la de arriba
 
   //if(gIsSignal){
   //  if(m_stop != 205) return;
@@ -361,8 +361,9 @@ void TopAnalysis::InsideLoop(){
 
       SetVariables(useSyst.at(sys));
       //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();
-      if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill(); //quitar:sincro, dejar esta o la otra
-     
+      //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill(); //quitar:sincro, dejar esta o la otra  
+      if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny) fTree->Fill();
+      
       //if (!isSS) fHyields[gChannel][sys] -> Fill(iZVeto, weight); //quitar: sincro
       if (invmass > 20 && lep0pt > 25 && lep1pt > 20) {
 

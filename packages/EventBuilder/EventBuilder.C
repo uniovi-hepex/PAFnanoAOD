@@ -337,10 +337,10 @@ Bool_t EventBuilder::PassesSingleElecTrigger(){
   }
   else if(gIs2017){
     if(gIsData){
-      pass =  Get<Bool_t>("HLT_Ele35_WPTight_Gsf");// || Get<Bool_t>("HLT_Ele38_WPTight_Gsf") || Get<Bool_t>("HLT_Ele40_WPTight_Gsf");
+      pass =  Get<Bool_t>("HLT_Ele35_WPTight_Gsf"); // || Get<Bool_t>("HLT_Ele38_WPTight_Gsf") || Get<Bool_t>("HLT_Ele40_WPTight_Gsf");
     }
     else{
-      pass =  Get<Bool_t>("HLT_Ele35_WPTight_Gsf");// || Get<Bool_t>("HLT_Ele38_WPTight_Gsf") || Get<Bool_t>("HLT_Ele40_WPTight_Gsf");
+      pass =  Get<Bool_t>("HLT_Ele35_WPTight_Gsf"); // || Get<Bool_t>("HLT_Ele38_WPTight_Gsf") || Get<Bool_t>("HLT_Ele40_WPTight_Gsf");
     }
   }
 
