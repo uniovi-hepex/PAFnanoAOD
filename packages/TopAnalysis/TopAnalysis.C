@@ -98,7 +98,7 @@ void TopAnalysis::Initialise(){
   gDoScaleUnc  = gOptions.Contains("Scale")? true : false;
   gPUWeigth    = gOptions.Contains("PUweight")? true : false;
   gPrefire     = gOptions.Contains("prefire")? true : false;
-  JetPt        = gOptions.Contains("JetPtNom")? "Jet_pt_nom" : "Jet_pt";
+  JetPt        = gOptions.Contains("JetPtNom")? "Jet_pt" : "Jet_pt";
   if ((gSampleName == "TT" || gSampleName.BeginsWith("TT_")) && year == 2016) gIsTTbar = true;
   if (gIsTTbar || gSampleName.BeginsWith("TTTo2L2Nu")) gIsTTany = true;
 
@@ -587,6 +587,7 @@ void TopAnalysis::GetMET(){
   TMET        = Get<Float_t>(metvarpt); // MET_pt
   TMETPhi    = Get<Float_t>(metvarphi);  // MET phi
   TMETorig    = Get<Float_t>("MET_pt"); TMT2orig = 0;
+  TMETsig = Get<Float_t>("MET_significance");
   if((Int_t) selLeptons.size() >= 2){
     TMT2 = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMET, TMETPhi);
     if(gIs2017) TMT2orig = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMETorig, Get<Float_t>("MET_phi"));
@@ -942,25 +943,25 @@ void TopAnalysis::FillHistos(Int_t ch, Int_t cut, Int_t sys){
 
   // Jets
   if(njets > 0){ 
-    fHJet0Eta[ch][cut][sys]     -> Fill(jets.at(0).Eta(), weight);
-    fHJet0Pt [ch][cut][sys]     -> Fill(jets.at(0).Pt(), weight);
-    fHJet0CSV[ch][cut][sys]     -> Fill(jets.at(0).csv, weight);
-    fHJet0DeepCSV[ch][cut][sys] -> Fill(jets.at(0).GetDeepCSVB(), weight);
-    fHJet0DeepFlav[ch][cut][sys] -> Fill(jets.at(0).GetDeepFlav(), weight);
+    fHJet0Eta[ch][cut][sys]     -> Fill(selJets.at(0).Eta(), weight);
+    fHJet0Pt [ch][cut][sys]     -> Fill(selJets.at(0).Pt(), weight);
+    fHJet0CSV[ch][cut][sys]     -> Fill(selJets.at(0).csv, weight);
+    fHJet0DeepCSV[ch][cut][sys] -> Fill(selJets.at(0).GetDeepCSVB(), weight);
+    fHJet0DeepFlav[ch][cut][sys] -> Fill(selJets.at(0).GetDeepFlav(), weight);
   }
   if(njets > 1){
-    fHJet1Eta[ch][cut][sys]     -> Fill(jets.at(1).Eta(), weight);
-    fHJet1Pt [ch][cut][sys]     -> Fill(jets.at(1).Pt(), weight);
-    fHJet1CSV[ch][cut][sys]     -> Fill(jets.at(1).csv, weight);
-    fHJet1DeepCSV[ch][cut][sys] -> Fill(jets.at(1).GetDeepCSVB(), weight);
-    fHJet1DeepFlav[ch][cut][sys] -> Fill(jets.at(1).GetDeepFlav(), weight);
+    fHJet1Eta[ch][cut][sys]     -> Fill(selJets.at(1).Eta(), weight);
+    fHJet1Pt [ch][cut][sys]     -> Fill(selJets.at(1).Pt(), weight);
+    fHJet1CSV[ch][cut][sys]     -> Fill(selJets.at(1).csv, weight);
+    fHJet1DeepCSV[ch][cut][sys] -> Fill(selJets.at(1).GetDeepCSVB(), weight);
+    fHJet1DeepFlav[ch][cut][sys] -> Fill(selJets.at(1).GetDeepFlav(), weight);
   }
-  for(Int_t i = 0; i < (Int_t) jets.size(); i++){ 
-    fHJetPt[ch][cut][sys]  ->Fill(jets.at(i).Pt());
-    fHJetEta[ch][cut][sys] ->Fill(jets.at(i).Eta());
-    fHJetCSV[ch][cut][sys] -> Fill(jets.at(i).csv, weight);
-    fHJetDeepCSV[ch][cut][sys] -> Fill(jets.at(i).GetDeepCSVB(), weight);
-    fHJetDeepFlav[ch][cut][sys] -> Fill(jets.at(i).GetDeepFlav(), weight);
+  for(Int_t i = 0; i < (Int_t) selJets.size(); i++){ 
+    fHJetPt[ch][cut][sys]  ->Fill(selJets.at(i).Pt());
+    fHJetEta[ch][cut][sys] ->Fill(selJets.at(i).Eta());
+    fHJetCSV[ch][cut][sys] -> Fill(selJets.at(i).csv, weight);
+    fHJetDeepCSV[ch][cut][sys] -> Fill(selJets.at(i).GetDeepCSVB(), weight);
+    fHJetDeepFlav[ch][cut][sys] -> Fill(selJets.at(i).GetDeepFlav(), weight);
   }
   // Btag histos
   /*
@@ -990,11 +991,11 @@ void TopAnalysis::FillCorrHistos(){
   cout << "PASAAAAAAA FillCorr" << endl;
   Float_t pTreco; Float_t pTgen; Float_t dR = 0.3; Float_t dPtoPt; Bool_t isBtag; Bool_t isBJet;
   Float_t bin0; Float_t bin1;
-  Int_t njets = jets.size();
+  Int_t njets = selJets.size();
   for(Int_t i = 0; i < njets; i++){
-    pTreco = jets.at(i).Pt(); pTgen = jets.at(i).GetGenPt();
+    pTreco = selJets.at(i).Pt(); pTgen = selJets.at(i).GetGenPt();
     dPtoPt = fabs(pTreco - pTgen)/pTreco;
-    isBtag = jets.at(i).isBtag; isBJet = jets.at(i).flavmc == 5;
+    isBtag = selJets.at(i).isBtag; isBJet = selJets.at(i).flavmc == 5;
 
     hJetPtReco ->Fill(pTreco);
     hJetPtGen  ->Fill(pTgen);
@@ -1099,6 +1100,7 @@ void TopAnalysis::SetEventVariables(){
   fTree->Branch("TMET",            &TMET,            "TMET/F");
   fTree->Branch("TMETPhi",     &TMETPhi,     "TMETPhi/F");
   fTree->Branch("TMT2",            &TMT2,            "TMT2/F");
+  fTree->Branch("TMETsig", &TMETsig, "TMETsig/F");
   if(!gIsData){
     fTree->Branch("TWeight_ElecEffUp",      &TWeight_ElecEffUp,     "TWeight_ElecEffUp/F");
     fTree->Branch("TWeight_ElecEffDown",    &TWeight_ElecEffDown,   "TWeight_ElecEffDown/F");
@@ -1268,8 +1270,8 @@ void TopAnalysis::SetVariables(int sys){
       }
     }
   }
-  TNJets = njets; TNBtags = nbtags; THT = ht;
-
+ //TNJets = njets; TNBtags = nbtags; THT = ht;
+  njets= TNJets ; nbtags=TNBtags ; ht=THT;
   if     (sys == kMuonEffUp  ) weight = TWeight_MuonEffUp;
   else if(sys == kMuonEffDown) weight = TWeight_MuonEffDown;
   else if(sys == kElecEffUp  ) weight = TWeight_ElecEffUp;
