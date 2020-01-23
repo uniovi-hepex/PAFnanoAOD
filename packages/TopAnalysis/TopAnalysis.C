@@ -98,7 +98,7 @@ void TopAnalysis::Initialise(){
   gDoScaleUnc  = gOptions.Contains("Scale")? true : false;
   gPUWeigth    = gOptions.Contains("PUweight")? true : false;
   gPrefire     = gOptions.Contains("prefire")? true : false;
-  JetPt        = gOptions.Contains("JetPtNom")? "Jet_pt_nom" : "Jet_pt";
+  JetPt        = gOptions.Contains("JetPtNom")? "Jet_pt" : "Jet_pt";
   if ((gSampleName == "TT" || gSampleName.BeginsWith("TT_")) && year == 2016) gIsTTbar = true;
   if (gIsTTbar || gSampleName.BeginsWith("TTTo2L2Nu")) gIsTTany = true;
 
@@ -106,7 +106,7 @@ void TopAnalysis::Initialise(){
 
   makeTree   = true;
   miniTree = true;
-  makeHistos = false;
+  makeHistos = true;
 
   gIsSignal= false; //quitar
 	if ((gSampleName.BeginsWith("stop"))) gIsSignal = true; //quitar
@@ -123,7 +123,10 @@ void TopAnalysis::Initialise(){
 
 	  //snorm = new SUSYnorm(path, gSampleName);
     cout<<path<<endl;
-    snorm = new SUSYnorm(path ,  "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCP5_MLM_p");//"SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCUETP8M2T4_madgra"); //"SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCP5_MLM_p");
+    if(year==2016){
+    snorm = new SUSYnorm(path ,  "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCUETP8M2T4_madgra");// "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCP5_MLM_p, SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCUETP8M2T4_madgra");
+}
+    else{snorm = new SUSYnorm(path ,  "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCP5_MLM_p");}
   }
      
   // Uncertainties
@@ -263,6 +266,7 @@ void TopAnalysis::InsideLoop(){
     PrefWeight   = Get<Float_t>("PrefireWeight");
     PrefWeightUp = Get<Float_t>("PrefireWeight_Up");
     PrefWeightDo = Get<Float_t>("PrefireWeight_Down");}
+
   else{PrefWeight = 1; PrefWeightUp = 1; PrefWeightDo = 1;}
   //PUSF = 1; PUSF_Up = 1; PUSF_Down = 1;
 
@@ -283,7 +287,7 @@ void TopAnalysis::InsideLoop(){
   if(gIsTTbar && makeHistos) FillCorrHistos(); 
 
   if(gIsTTbar && genLeptons.size() < 2) return; // Dilepton selection for ttbar!!!
-  //if(gIsTTbar && genLeptons.size() >= 2) return; // Dilepton selection for ttbar!!! //quitar y dejar la de arriba
+  //if(gIsTTbar && genLeptons.size() >= 2) return; // Semilep selection for ttbar!!! //quitar y dejar la de arriba
 
   //if(gIsSignal){
   //  if(m_stop != 205) return;
@@ -347,16 +351,22 @@ void TopAnalysis::InsideLoop(){
     SetVariables();
     if(makeHistos) FillCorrHistos();
   }
-  if (TNSelLeps >= 2 && TPassTrigger && TPassMETFilters) {
+
+  if (TNSelLeps >= 2 && TPassTrigger && TPassMETFilters) { 
+  //if (TPassTrigger && TPassMETFilters) {
     for(Int_t sys = 0; sys < nSyst; sys++){
       if(!gDoSyst && sys > 0) break;
       if(gIsData  && sys > 0) break;
       // Get values or the corresponding variation
- 
-      SetVariables(useSyst.at(sys));
-      if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();
 
+      SetVariables(useSyst.at(sys));
+      //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();
+      //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill(); //quitar:sincro, dejar esta o la otra  
+      if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny) fTree->Fill();
+      
+      //if (!isSS) fHyields[gChannel][sys] -> Fill(iZVeto, weight); //quitar: sincro
       if (invmass > 20 && lep0pt > 25 && lep1pt > 20) {
+
         if(isSS) fHSSyields[gChannel][sys] -> Fill(idilepton, weight);
         else {
           fHyields[gChannel][sys] -> Fill(idilepton, weight);
@@ -365,8 +375,9 @@ void TopAnalysis::InsideLoop(){
         }
 
         if (TChannel == iElMu || (TMath::Abs(invmass - 91) > 15)  ){ //  Z Veto in ee, µµ
+
           if (isSS) fHSSyields[gChannel][sys] -> Fill(iZVeto, weight);
-          else {      fHyields[gChannel][sys] -> Fill(iZVeto, weight);
+          else {      fHyields[gChannel][sys] -> Fill(iZVeto, weight); //quitar: sincro, descomentar
             FillHistos(gChannel, iZVeto, sys);}
 
           if(TChannel == iElMu || met > 40){   // MET > 40 in ee, µµ
@@ -385,11 +396,12 @@ void TopAnalysis::InsideLoop(){
                   fHyields[gChannel][sys] -> Fill(i1btag, weight);
                   FillHistos(gChannel, i1btag, sys);
                 }
+
                 //if (!isSS && sys == 0 && makeTree && TChannel == iElMu) fTree->Fill();
                 //if (!isSS && sys == 0 && makeTree && TChannel == iElMu && met >= 50 && mt2 >=80) fTree->Fill();
               }
             }
-          }
+         }
         }
     }
     }
@@ -575,10 +587,19 @@ void TopAnalysis::GetMET(){
   TMET        = Get<Float_t>(metvarpt); // MET_pt
   TMETPhi    = Get<Float_t>(metvarphi);  // MET phi
   TMETorig    = Get<Float_t>("MET_pt"); TMT2orig = 0;
+  TMETsig = Get<Float_t>("MET_significance");
   if((Int_t) selLeptons.size() >= 2){
     TMT2 = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMET, TMETPhi);
     if(gIs2017) TMT2orig = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMETorig, Get<Float_t>("MET_phi"));
   }
+  
+  
+  if(gIs2018){
+		TMETpuppi        = Get<Float_t>("PuppiMET_pt"); // MET_pt
+        TMETpuppi_Phi    = Get<Float_t>("PuppiMET_phi");  // MET phi
+        if((Int_t) selLeptons.size() >= 2){
+        TMT2puppi=getMT2ll(selLeptons.at(0), selLeptons.at(1), TMETpuppi, TMETpuppi_Phi);}}
+   
   TLorentzVector pmet; pmet.SetPtEtaPhiM(TMET, 0, TMETPhi, 0);
 
   TNVert_pu = 0; TgenTop1Pt = 0; TgenTop2Pt = 0; TGenMET = 0; 
@@ -643,6 +664,7 @@ void TopAnalysis::GetMET(){
       TMT2ElecESUp   = getMT2ll(muon, elecup, TMETElecESUp,   TMETPhiElecESUp);
       TMT2ElecESDown = getMT2ll(muon, elecdo, TMETElecESDown, TMETPhiElecESDown);
     }
+
   }
 }
 
@@ -709,7 +731,7 @@ void TopAnalysis::GetWeights(){
     }
   }
 
-  if(gIsSignal) PUSF = 1;
+  //if(gIsSignal) PUSF = 1;
 
   TWeight             = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeight;
   TWeight_ElecEffUp   = NormWeight*ElecSFUp*MuonSF*TrigSF*PUSF*PrefWeight;
@@ -831,7 +853,6 @@ void TopAnalysis::InitHistos(){
 
 void TopAnalysis::FillDYHistos(Int_t ch){
   if(!makeHistos) return;
-
   cout << "BEGIN DY Histos " << endl;
   Int_t sys = 0;
   Int_t cut;
@@ -922,25 +943,25 @@ void TopAnalysis::FillHistos(Int_t ch, Int_t cut, Int_t sys){
 
   // Jets
   if(njets > 0){ 
-    fHJet0Eta[ch][cut][sys]     -> Fill(jets.at(0).Eta(), weight);
-    fHJet0Pt [ch][cut][sys]     -> Fill(jets.at(0).Pt(), weight);
-    fHJet0CSV[ch][cut][sys]     -> Fill(jets.at(0).csv, weight);
-    fHJet0DeepCSV[ch][cut][sys] -> Fill(jets.at(0).GetDeepCSVB(), weight);
-    fHJet0DeepFlav[ch][cut][sys] -> Fill(jets.at(0).GetDeepFlav(), weight);
+    fHJet0Eta[ch][cut][sys]     -> Fill(selJets.at(0).Eta(), weight);
+    fHJet0Pt [ch][cut][sys]     -> Fill(selJets.at(0).Pt(), weight);
+    fHJet0CSV[ch][cut][sys]     -> Fill(selJets.at(0).csv, weight);
+    fHJet0DeepCSV[ch][cut][sys] -> Fill(selJets.at(0).GetDeepCSVB(), weight);
+    fHJet0DeepFlav[ch][cut][sys] -> Fill(selJets.at(0).GetDeepFlav(), weight);
   }
   if(njets > 1){
-    fHJet1Eta[ch][cut][sys]     -> Fill(jets.at(1).Eta(), weight);
-    fHJet1Pt [ch][cut][sys]     -> Fill(jets.at(1).Pt(), weight);
-    fHJet1CSV[ch][cut][sys]     -> Fill(jets.at(1).csv, weight);
-    fHJet1DeepCSV[ch][cut][sys] -> Fill(jets.at(1).GetDeepCSVB(), weight);
-    fHJet1DeepFlav[ch][cut][sys] -> Fill(jets.at(1).GetDeepFlav(), weight);
+    fHJet1Eta[ch][cut][sys]     -> Fill(selJets.at(1).Eta(), weight);
+    fHJet1Pt [ch][cut][sys]     -> Fill(selJets.at(1).Pt(), weight);
+    fHJet1CSV[ch][cut][sys]     -> Fill(selJets.at(1).csv, weight);
+    fHJet1DeepCSV[ch][cut][sys] -> Fill(selJets.at(1).GetDeepCSVB(), weight);
+    fHJet1DeepFlav[ch][cut][sys] -> Fill(selJets.at(1).GetDeepFlav(), weight);
   }
-  for(Int_t i = 0; i < (Int_t) jets.size(); i++){ 
-    fHJetPt[ch][cut][sys]  ->Fill(jets.at(i).Pt());
-    fHJetEta[ch][cut][sys] ->Fill(jets.at(i).Eta());
-    fHJetCSV[ch][cut][sys] -> Fill(jets.at(i).csv, weight);
-    fHJetDeepCSV[ch][cut][sys] -> Fill(jets.at(i).GetDeepCSVB(), weight);
-    fHJetDeepFlav[ch][cut][sys] -> Fill(jets.at(i).GetDeepFlav(), weight);
+  for(Int_t i = 0; i < (Int_t) selJets.size(); i++){ 
+    fHJetPt[ch][cut][sys]  ->Fill(selJets.at(i).Pt());
+    fHJetEta[ch][cut][sys] ->Fill(selJets.at(i).Eta());
+    fHJetCSV[ch][cut][sys] -> Fill(selJets.at(i).csv, weight);
+    fHJetDeepCSV[ch][cut][sys] -> Fill(selJets.at(i).GetDeepCSVB(), weight);
+    fHJetDeepFlav[ch][cut][sys] -> Fill(selJets.at(i).GetDeepFlav(), weight);
   }
   // Btag histos
   /*
@@ -970,11 +991,11 @@ void TopAnalysis::FillCorrHistos(){
   cout << "PASAAAAAAA FillCorr" << endl;
   Float_t pTreco; Float_t pTgen; Float_t dR = 0.3; Float_t dPtoPt; Bool_t isBtag; Bool_t isBJet;
   Float_t bin0; Float_t bin1;
-  Int_t njets = jets.size();
+  Int_t njets = selJets.size();
   for(Int_t i = 0; i < njets; i++){
-    pTreco = jets.at(i).Pt(); pTgen = jets.at(i).GetGenPt();
+    pTreco = selJets.at(i).Pt(); pTgen = selJets.at(i).GetGenPt();
     dPtoPt = fabs(pTreco - pTgen)/pTreco;
-    isBtag = jets.at(i).isBtag; isBJet = jets.at(i).flavmc == 5;
+    isBtag = selJets.at(i).isBtag; isBJet = selJets.at(i).flavmc == 5;
 
     hJetPtReco ->Fill(pTreco);
     hJetPtGen  ->Fill(pTgen);
@@ -1079,6 +1100,7 @@ void TopAnalysis::SetEventVariables(){
   fTree->Branch("TMET",            &TMET,            "TMET/F");
   fTree->Branch("TMETPhi",     &TMETPhi,     "TMETPhi/F");
   fTree->Branch("TMT2",            &TMT2,            "TMT2/F");
+  fTree->Branch("TMETsig", &TMETsig, "TMETsig/F");
   if(!gIsData){
     fTree->Branch("TWeight_ElecEffUp",      &TWeight_ElecEffUp,     "TWeight_ElecEffUp/F");
     fTree->Branch("TWeight_ElecEffDown",    &TWeight_ElecEffDown,   "TWeight_ElecEffDown/F");
@@ -1128,6 +1150,12 @@ void TopAnalysis::SetEventVariables(){
   if(gIs2017){
     fTree->Branch("TMETorig",            &TMETorig,            "TMETorig/F");
     fTree->Branch("TMT2orig",            &TMT2orig,            "TMT2orig/F");
+  }
+  if(gIs2018){
+    fTree->Branch("TMETpuppi",            &TMETpuppi,            "TMETpuppi/F");
+    fTree->Branch("TMT2puppi",            &TMT2puppi,            "TMT2puppi/F");
+    fTree->Branch("TMETpuppi_Phi",            &TMETpuppi_Phi,            "TMETpuppi_Phi/F");
+
   }
   if(!gIsData){
     fTree->Branch("TGenMET",         &TGenMET,         "TGenMET/F");
@@ -1193,6 +1221,7 @@ void TopAnalysis::SetVariables(int sys){
     pt = Get<Float_t>(JetPt,i); eta = Get<Float_t>("Jet_eta",i); phi = Get<Float_t>("Jet_phi", i); m = Get<Float_t>("Jet_mass",i);
     csv = Get<Float_t>("Jet_btagCSVV2", i); deepcsv = Get<Float_t>("Jet_btagDeepB", i); deepflav = Get<Float_t>("Jet_btagDeepFlavB", i);
     jetid = Get<Int_t>("Jet_jetId",i);
+
     Float_t genPt = -999;
     if(!gIsData){
       Int_t nGenJets = Get<Int_t>("nGenJet");
@@ -1241,8 +1270,8 @@ void TopAnalysis::SetVariables(int sys){
       }
     }
   }
-  TNJets = njets; TNBtags = nbtags; THT = ht;
-
+ //TNJets = njets; TNBtags = nbtags; THT = ht;
+  njets= TNJets ; nbtags=TNBtags ; ht=THT;
   if     (sys == kMuonEffUp  ) weight = TWeight_MuonEffUp;
   else if(sys == kMuonEffDown) weight = TWeight_MuonEffDown;
   else if(sys == kElecEffUp  ) weight = TWeight_ElecEffUp;
