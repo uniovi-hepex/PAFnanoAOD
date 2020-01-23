@@ -23,6 +23,10 @@ class JetSelector : public PAFChainItemSelector{
     std::vector<Lepton> Leptons;
     std::vector<Lepton> VetoLeptons;
     std::vector<Jet> selJets;
+    std::vector<Jet> selJetsJecCorUp;
+    std::vector<Jet> selJetsJecCorDown;
+    std::vector<Jet> selJetsJecUnCorUp;
+    std::vector<Jet> selJetsJecUnCorDown;
     std::vector<Jet> selJetsJecUp;
     std::vector<Jet> selJetsJecDown;
     std::vector<Jet> selJetsJERUp;

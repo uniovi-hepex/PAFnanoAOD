@@ -109,6 +109,10 @@ void JetSelector::Initialise(){
   mcJets   = std::vector<Jet>();
   genJets  = std::vector<Jet>();
   vetoJets = std::vector<Jet>();
+  selJetsJecCorUp = std::vector<Jet>();
+  selJetsJecCorDown = std::vector<Jet>();
+  selJetsJecUnCorUp = std::vector<Jet>();
+  selJetsJecUnCorDown = std::vector<Jet>();
   selJetsJecUp = std::vector<Jet>();
   selJetsJecDown = std::vector<Jet>();
   selJetsJERUp   = std::vector<Jet>();
@@ -144,6 +148,10 @@ void JetSelector::GetGenJetVariables(Int_t i){
 void JetSelector::InsideLoop(){
   // Clear vectors...
   selJets.clear();
+  selJetsJecCorUp.clear();
+  selJetsJecCorDown.clear();
+  selJetsJecUnCorUp.clear();
+  selJetsJecUnCorDown.clear();
   selJetsJecUp.clear();
   selJetsJecDown.clear();
   selJetsJERUp.clear();
@@ -183,7 +191,9 @@ void JetSelector::InsideLoop(){
   Float_t errLup    = 0.;
   Float_t errLdn    = 0.;
   TLorentzVector pJESUp; TLorentzVector pJESDo; TLorentzVector pJERUp; TLorentzVector pJERDo;
-  Jet tJESUp; Jet tJESDo; Jet tJERUp; Jet tJERDo;
+  TLorentzVector pJESCorUp; TLorentzVector pJESCorDo;
+  TLorentzVector pJESUnCorUp; TLorentzVector pJESUnCorDo;
+  Jet tJESUp; Jet tJESDo; Jet tJERUp; Jet tJERDo; Jet tJESCorUp; Jet tJESUnCorUp; Jet tJESCorDo; Jet tJESUnCorDo;
 
   // Loop over all the jets
   for (Int_t i = 0; i < nJet; i++) {
@@ -227,18 +237,34 @@ void JetSelector::InsideLoop(){
         pJESDo.SetPtEtaPhiM(Get<Float_t>("Jet_pt_jesTotalDown", i), tJ.p.Eta(), tJ.p.Phi(), Get<Float_t>("Jet_mass_jesTotalDown", i));
         pJERUp.SetPtEtaPhiM(Get<Float_t>("Jet_pt_jerUp",   i), tJ.p.Eta(), tJ.p.Phi(), Get<Float_t>("Jet_mass_jerUp",   i));
         pJERDo.SetPtEtaPhiM(Get<Float_t>("Jet_pt_jerDown", i), tJ.p.Eta(), tJ.p.Phi(), Get<Float_t>("Jet_mass_jerDown", i));
+        pJESUnCorUp.SetPtEtaPhiM(Get<Float_t>("Jet_pt_jesTotalUnCorrUp",   i), tJ.p.Eta(), tJ.p.Phi(), Get<Float_t>("Jet_mass_jesTotalUnCorrUp",   i));
+        pJESUnCorDo.SetPtEtaPhiM(Get<Float_t>("Jet_pt_jesTotalUnCorrDown", i), tJ.p.Eta(), tJ.p.Phi(), Get<Float_t>("Jet_mass_jesTotalUnCorrDown", i));
+        pJESCorUp.SetPtEtaPhiM(Get<Float_t>("Jet_pt_jesTotalCorrUp",   i), tJ.p.Eta(), tJ.p.Phi(), Get<Float_t>("Jet_mass_jesTotalCorrUp",   i));
+        pJESCorDo.SetPtEtaPhiM(Get<Float_t>("Jet_pt_jesTotalCorrDown", i), tJ.p.Eta(), tJ.p.Phi(), Get<Float_t>("Jet_mass_jesTotalCorrDown", i));
         tJESUp = Jet(pJESUp, csv, jetId, flav);
         tJESDo = Jet(pJESDo, csv, jetId, flav);
         tJERUp = Jet(pJERUp, csv, jetId, flav);
         tJERDo = Jet(pJERDo, csv, jetId, flav);
+        tJESCorUp = Jet(pJESCorUp, csv, jetId, flav);
+        tJESCorDo = Jet(pJESCorDo, csv, jetId, flav);
+        tJESUnCorUp = Jet(pJESUnCorUp, csv, jetId, flav);
+        tJESUnCorDo = Jet(pJESUnCorDo, csv, jetId, flav);
         tJESUp.SetIsBtag( fBTagSFnom->IsTagged(deepflav, flav, Get<Float_t>("Jet_pt_jesTotalUp",   i), tJ.p.Eta(), (UInt_t)Get<Float_t>("Jet_pt_jesTotalUp",   i)) );
         tJESDo.SetIsBtag( fBTagSFnom->IsTagged(deepflav, flav, Get<Float_t>("Jet_pt_jesTotalDown", i), tJ.p.Eta(), (UInt_t)Get<Float_t>("Jet_pt_jesTotalDown", i)) );
         tJERUp.SetIsBtag( fBTagSFnom->IsTagged(deepflav, flav, Get<Float_t>("Jet_pt_jerUp",        i), tJ.p.Eta(), (UInt_t)Get<Float_t>("Jet_pt_jerUp",        i)) );
         tJERDo.SetIsBtag( fBTagSFnom->IsTagged(deepflav, flav, Get<Float_t>("Jet_pt_jerDown",      i), tJ.p.Eta(), (UInt_t)Get<Float_t>("Jet_pt_jerDown",      i)) );
+        tJESCorUp.SetIsBtag( fBTagSFnom->IsTagged(deepflav, flav, Get<Float_t>("Jet_pt_jesTotalCorrUp",   i), tJ.p.Eta(), (UInt_t)Get<Float_t>("Jet_pt_jesTotalCorrUp",   i)) );
+        tJESCorDo.SetIsBtag( fBTagSFnom->IsTagged(deepflav, flav, Get<Float_t>("Jet_pt_jesTotalCorrDown", i), tJ.p.Eta(), (UInt_t)Get<Float_t>("Jet_pt_jesTotalCorrDown", i)) );
+        tJESUnCorUp.SetIsBtag( fBTagSFnom->IsTagged(deepflav, flav, Get<Float_t>("Jet_pt_jesTotalUnCorrUp",   i), tJ.p.Eta(), (UInt_t)Get<Float_t>("Jet_pt_jesTotalUnCorrUp",   i)) );
+        tJESUnCorDo.SetIsBtag( fBTagSFnom->IsTagged(deepflav, flav, Get<Float_t>("Jet_pt_jesTotalUnCorrDown", i), tJ.p.Eta(), (UInt_t)Get<Float_t>("Jet_pt_jesTotalUnCorrDown", i)) );
         if(TMath::Abs(tJESUp.Eta()) < jet_MaxEta && tJESUp.Pt() > jet_MinPt) selJetsJecUp  .push_back(tJESUp);
         if(TMath::Abs(tJESDo.Eta()) < jet_MaxEta && tJESDo.Pt() > jet_MinPt) selJetsJecDown.push_back(tJESDo);
         if(TMath::Abs(tJERUp.Eta()) < jet_MaxEta && tJERUp.Pt() > jet_MinPt) selJetsJERUp  .push_back(tJERUp);
         if(TMath::Abs(tJERDo.Eta()) < jet_MaxEta && tJERDo.Pt() > jet_MinPt) selJetsJERDown.push_back(tJERDo);
+        if(TMath::Abs(tJESCorUp.Eta()) < jet_MaxEta && tJESCorUp.Pt() > jet_MinPt) selJetsJecCorUp  .push_back(tJESCorUp);
+        if(TMath::Abs(tJESCorDo.Eta()) < jet_MaxEta && tJESCorDo.Pt() > jet_MinPt) selJetsJecCorDown.push_back(tJESCorDo);
+        if(TMath::Abs(tJESUnCorUp.Eta()) < jet_MaxEta && tJESUnCorUp.Pt() > jet_MinPt) selJetsJecUnCorUp  .push_back(tJESUnCorUp);
+        if(TMath::Abs(tJESUnCorDo.Eta()) < jet_MaxEta && tJESUnCorDo.Pt() > jet_MinPt) selJetsJecUnCorDown.push_back(tJESUnCorDo);
       }
 
       // Fill the veto collections
@@ -318,6 +344,10 @@ void JetSelector::InsideLoop(){
   }
 
   selJets        = SortJetsByPt(selJets);
+  selJetsJecCorUp   = SortJetsByPt(selJetsJecCorUp);
+  selJetsJecCorDown = SortJetsByPt(selJetsJecCorDown);
+  selJetsJecUnCorUp   = SortJetsByPt(selJetsJecUnCorUp);
+  selJetsJecUnCorDown   = SortJetsByPt(selJetsJecUnCorDown);
   selJetsJecUp   = SortJetsByPt(selJetsJecUp);
   selJetsJecDown = SortJetsByPt(selJetsJecDown);
   selJetsJERUp   = SortJetsByPt(selJetsJERUp);
@@ -333,6 +363,10 @@ void JetSelector::InsideLoop(){
 
   // Set params...
   SetParam("selJets",         selJets);
+  SetParam("selJetsJecCorUp",    selJetsJecCorUp);
+  SetParam("selJetsJecCorDown",    selJetsJecCorDown);
+  SetParam("selJetsJecUnCorUp",    selJetsJecUnCorUp);
+  SetParam("selJetsJecUnCorDown",    selJetsJecUnCorDown);
   SetParam("selJetsJecUp",    selJetsJecUp);
   SetParam("selJetsJecDown",  selJetsJecDown);
   SetParam("selJetsJERUp" ,   selJetsJERUp);
