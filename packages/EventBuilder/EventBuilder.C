@@ -424,6 +424,7 @@ Bool_t EventBuilder::TrigElMu(){
 
 
 // ########################### MET FILTERS
+// https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2
 Bool_t EventBuilder::PassesMETfilters() { // Updated on 2019-06-14 for both data and MC
   if (gIsData) {
     if      (gIs2016) {
@@ -432,9 +433,9 @@ Bool_t EventBuilder::PassesMETfilters() { // Updated on 2019-06-14 for both data
           Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
           Get<Bool_t>("Flag_HBHENoiseIsoFilter")                 &&
           Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
-          Get<Bool_t>("Flag_BadPFMuonFilter")                    &&
+          Get<Bool_t>("Flag_BadPFMuonFilter")                    //&&
 //           Get<Bool_t>("Flag_BadChargedCandidateFilter")          && // Currently NOT RECOMMENDED
-          Get<Bool_t>("Flag_eeBadScFilter")
+          //Get<Bool_t>("Flag_eeBadScFilter") // Not recommended
          ) return true;
       else return false;
     }
@@ -444,9 +445,9 @@ Bool_t EventBuilder::PassesMETfilters() { // Updated on 2019-06-14 for both data
           Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
           Get<Bool_t>("Flag_HBHENoiseIsoFilter")                 &&
           Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
-          Get<Bool_t>("Flag_BadPFMuonFilter")                    &&
+          Get<Bool_t>("Flag_BadPFMuonFilter")                    //&&
 //           Get<Bool_t>("Flag_BadChargedCandidateFilter")          && // Currently NOT RECOMMENDED
-          Get<Bool_t>("Flag_eeBadScFilter")                      &&
+          //Get<Bool_t>("Flag_eeBadScFilter") // Not recommended
           Get<Bool_t>("Flag_ecalBadCalibFilterV2")                 //&& // WE ARE APPLYING THIS ONE INSTEAD OF THE NEXT ONE THAT DOES NOT EXIST EXACTLY
           //Get<Bool_t>("ecalBadCalibReducedMINIAODFilter")             // WE DO NOT HAVE THIS ONE
         ) return true;
@@ -458,9 +459,9 @@ Bool_t EventBuilder::PassesMETfilters() { // Updated on 2019-06-14 for both data
           Get<Bool_t>("Flag_HBHENoiseFilter")                    &&
           Get<Bool_t>("Flag_HBHENoiseIsoFilter")                 &&
           Get<Bool_t>("Flag_EcalDeadCellTriggerPrimitiveFilter") &&
-          Get<Bool_t>("Flag_BadPFMuonFilter")                    &&
+          Get<Bool_t>("Flag_BadPFMuonFilter")                    //&&
 //           Get<Bool_t>("Flag_BadChargedCandidateFilter")          && // Currently NOT RECOMMENDED
-          Get<Bool_t>("Flag_eeBadScFilter")                      &&
+          //Get<Bool_t>("Flag_eeBadScFilter")                      && // Not recommended
           Get<Bool_t>("Flag_ecalBadCalibFilterV2")                 //&& // WE ARE APPLYING THIS ONE INSTEAD OF THE NEXT ONE THAT DOES NOT EXIST EXACTLY
           //Get<Bool_t>("ecalBadCalibReducedMINIAODFilter")             // WE DO NOT HAVE THIS ONE
         ) return true;
