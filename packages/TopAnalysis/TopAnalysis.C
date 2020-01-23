@@ -172,10 +172,10 @@ void TopAnalysis::Initialise(){
   metvar    = year == 2017? "METFixEE2017"     : "MET";
   metvarphi = year == 2017? "METFixEE2017_phi" : "MET_phi";
   metvarpt  = year == 2017? "METFixEE2017_pt"  : "MET_pt";
-  if(year != 2017 and gOptions.Contains("JetPtNom")){
-    metvarpt   = "MET_pt_nom";
-    metvarphi  = "MET_phi_nom";
-  }
+  //if(year != 2017 and gOptions.Contains("JetPtNom")){
+  //  metvarpt   = "MET_pt_nom";
+  //  metvarphi  = "MET_phi_nom";
+  //}
   //metvar="MET";
   //metvarpt="MET_pt";
   
@@ -239,6 +239,10 @@ void TopAnalysis::InsideLoop(){
   selJetsJecDown = GetParam<vector<Jet>>("selJetsJecDown");
   selJetsJERUp   = GetParam<vector<Jet>>("selJetsJERUp");
   selJetsJERDown = GetParam<vector<Jet>>("selJetsJERDown");
+  selJetsJecCorUp   = GetParam<vector<Jet>>("selJetsJecCorUp");
+  selJetsJecCorDown = GetParam<vector<Jet>>("selJetsJecCorDown");
+  selJetsJecUnCorUp   = GetParam<vector<Jet>>("selJetsJecUnCorUp");
+  selJetsJecUnCorDown = GetParam<vector<Jet>>("selJetsJecUnCorDown");
   //Jets15         = GetParam<vector<Jet>>("Jets15");
   //vetoJets       = GetParam<vector<Jet>>("vetoJets");
   //genJets        = GetParam<vector<Jet>>("genJets");
@@ -493,14 +497,14 @@ void TopAnalysis::GetLeptonVariables(std::vector<Lepton> selLeptons, std::vector
       TMllElecDo = (muon+elec).M();
     }
   }
-  TPassDilep       = ( (TMuonPt   > 25 && TElecPt   > 20) || (TMuonPt   > 20 && TElecPt   > 25) ) && TMll       > 20;
+  TPassDilep         = ( (TMuonPt   > 25 && TElecPt   > 20) || (TMuonPt   > 20 && TElecPt   > 25) ) && TMll       > 20;
   TPassDilepMuonESUp = ( (TMuonPtUp > 25 && TElecPt   > 20) || (TMuonPtUp > 20 && TElecPt   > 25) ) && TMllMuonUp > 20;
   TPassDilepMuonESDo = ( (TMuonPtDo > 25 && TElecPt   > 20) || (TMuonPtDo > 20 && TElecPt   > 25) ) && TMllMuonDo > 20; 
   TPassDilepElecESUp = ( (TMuonPt   > 25 && TElecPtUp > 20) || (TMuonPt   > 20 && TElecPtUp > 25) ) && TMllElecUp > 20; 
   TPassDilepElecESDo = ( (TMuonPt   > 25 && TElecPtDo > 20) || (TMuonPt   > 20 && TElecPtDo > 25) ) && TMllElecDo > 20; 
   TPassDilepAny = TPassDilep || TPassDilepMuonESUp || TPassDilepMuonESDo || TPassDilepElecESUp || TPassDilepElecESDo;
-  TPassMETAny = (TMET > metcut || TMETJESUp > metcut || TMETJESDown > metcut || TMETJERUp > metcut || TMETJERDown > metcut || TMETMuonESUp > metcut || TMETMuonESDown > metcut || TMETElecESUp > metcut || TMETElecESDown > metcut || TMETUnclUp > metcut || TMETUnclDown > metcut);
-  TPassMT2Any = (TMT2 > mt2cut || TMT2JESUp > mt2cut || TMT2JESDown > mt2cut || TMT2JERUp > mt2cut || TMT2JERDown > mt2cut || TMT2MuonESUp > mt2cut || TMT2MuonESDown > mt2cut || TMT2ElecESUp > mt2cut || TMT2ElecESDown > mt2cut || TMT2UnclUp > mt2cut || TMT2UnclDown > mt2cut);
+  TPassMETAny = (TMET > metcut || TMETJESUp > metcut || TMETJESDown > metcut || TMETJERUp > metcut || TMETJERDown > metcut || TMETMuonESUp > metcut || TMETMuonESDown > metcut || TMETElecESUp > metcut || TMETElecESDown > metcut || TMETUnclUp > metcut || TMETUnclDown > metcut || TMETJESCorUp > metcut || TMETJESCorDown > metcut || TMETJESUnCorUp > metcut || TMETJESUnCorDown > metcut);
+  TPassMT2Any = (TMT2 > mt2cut || TMT2JESUp > mt2cut || TMT2JESDown > mt2cut || TMT2JERUp > mt2cut || TMT2JERDown > mt2cut || TMT2MuonESUp > mt2cut || TMT2MuonESDown > mt2cut || TMT2ElecESUp > mt2cut || TMT2ElecESDown > mt2cut || TMT2UnclUp > mt2cut || TMT2UnclDown > mt2cut || TMT2JESCorUp > mt2cut || TMT2JESCorDown > mt2cut || TMT2JESUnCorUp > mt2cut || TMT2JESUnCorDown > mt2cut);
   if(gIsData){
     TPassDilepAny = TPassDilep;
     TPassMETAny = TMET > metcut;
@@ -513,7 +517,7 @@ void TopAnalysis::GetJetVariables(std::vector<Jet> selJets, std::vector<Jet> cle
   TNFwdJets   = vetoJets.size() - selJets.size();
   TNBtags = 0; TNBtagsBtagUp = 0; TNBtagsBtagDown = 0;
   TNBtagsMisTagUp = 0;  TNBtagsMisTagDown = 0;
-  THTJESUp = 0; THTJESDown = 0;
+  THTJESUp = 0; THTJESDown = 0; THTJESCorUp = 0; THTJESCorDown = 0; THTJESUnCorUp = 0; THTJESUnCorDown = 0;
   THTJERUp = 0; THTJERDown = 0;
   TBtagPt = 0;
 
@@ -558,16 +562,42 @@ void TopAnalysis::GetJetVariables(std::vector<Jet> selJets, std::vector<Jet> cle
   TNBtagsBtagDown   = GetBtags(selJets, -1);
   TNBtagsMisTagUp   = GetBtags(selJets,  3);
   TNBtagsMisTagDown = GetBtags(selJets, -3);
+
+  // NJets
   TNJetsJESUp       = GetNJets(selJetsJecUp);
   TNJetsJESDown     = GetNJets(selJetsJecDown);
+  TNJetsJESCorUp    = GetNJets(selJetsJecCorUp);
+  TNJetsJESCorDown  = GetNJets(selJetsJecCorDown);
+  TNJetsJESUnCorUp  = GetNJets(selJetsJecUnCorUp);
+  TNJetsJESUnCorDown= GetNJets(selJetsJecUnCorDown);
   TNJetsJERUp       = GetNJets(selJetsJERUp);
   TNJetsJERDown     = GetNJets(selJetsJERDown);
+
+  // HT
   THTJESUp          = GetHT(selJetsJecUp);
   THTJESDown        = GetHT(selJetsJecDown);
   THTJERUp          = GetHT(selJetsJERUp);
   THTJERDown        = GetHT(selJetsJERDown);
+  THTJESCorUp       = GetHT(selJetsJecCorUp);
+  THTJESCorDown     = GetHT(selJetsJecCorDown);
+  THTJESUnCorUp     = GetHT(selJetsJecUnCorUp);
+  THTJESUnCorDown   = GetHT(selJetsJecUnCorDown);
 
-  TPassJetsAny = (TNJets >= 2) || (TNJetsJESUp >= 2) || (TNJetsJESDown >= 2) || (TNJetsJERUp >= 2) || (TNJetsJERDown >= 2);
+  // Jet0Pt
+  TJet0PtJERUp = 0; TJet0PtJERDown = 0;
+  TJet0PtJESUp = 0; TJet0PtJESDown = 0;
+  TJet0PtJESCorUp = 0; TJet0PtJESCorDown = 0;
+  TJet0PtJESUnCorUp = 0; TJet0PtJESUnCorDown = 0;
+  if(TNJetsJESUp        > 0) TJet0PtJESUp        = selJetsJecUp.at(0).Pt();
+  if(TNJetsJESDown      > 0) TJet0PtJESDown      = selJetsJecDown.at(0).Pt();
+  if(TNJetsJERUp        > 0) TJet0PtJERUp        = selJetsJERUp.at(0).Pt();
+  if(TNJetsJERDown      > 0) TJet0PtJERDown      = selJetsJERDown.at(0).Pt();
+  if(TNJetsJESCorUp     > 0) TJet0PtJESCorUp     = selJetsJecCorUp.at(0).Pt();
+  if(TNJetsJESCorDown   > 0) TJet0PtJESCorDown   = selJetsJecCorDown.at(0).Pt();
+  if(TNJetsJESUnCorUp   > 0) TJet0PtJESUnCorUp   = selJetsJecUnCorUp.at(0).Pt();
+  if(TNJetsJESUnCorDown > 0) TJet0PtJESUnCorDown = selJetsJecUnCorDown.at(0).Pt();
+
+  TPassJetsAny = (TNJets >= 2) || (TNJetsJESCorUp >= 2) || (TNJetsJESCorDown >= 2) || (TNJetsJESUnCorUp >= 2) || (TNJetsJESUnCorDown >= 2) || (TNJetsJERUp >= 2) || (TNJetsJERDown >= 2);
   TPassBtagAny = (TNBtags >= 1) || (TNBtagsBtagUp >= 1) || (TNBtagsBtagDown >= 1) || (TNBtagsMisTagUp >= 1) || (TNBtagsMisTagDown >= 1);
 }
 
@@ -604,6 +634,7 @@ void TopAnalysis::GetMET(){
 
   TNVert_pu = 0; TgenTop1Pt = 0; TgenTop2Pt = 0; TGenMET = 0; 
   TMETJESUp = 0; TMETJESDown = 0; TMETJERUp = 0; TMETJERDown = 0; TMETUnclUp = 0; TMETUnclDown = 0; TMETMuonESUp = 0; TMETMuonESDown = 0; TMETElecESUp = 0; TMETElecESDown = 0; TMETPhiJESUp = 0; TMETPhiJESDown = 0; TMETPhiJERUp = 0; TMETPhiJERDown = 0; TMETPhiUnclUp = 0; TMETPhiUnclDown = 0; TMETPhiMuonESUp = 0; TMETPhiMuonESDown = 0; TMETPhiElecESUp = 0; TMETPhiElecESDown = 0; TMT2JESUp = 0; TMT2JESDown = 0; TMT2JERUp = 0; TMT2JERDown = 0; TMT2UnclUp = 0; TMT2UnclDown = 0; TMT2MuonESUp = 0; TMT2MuonESDown = 0; TMT2ElecESUp = 0; TMT2ElecESDown = 0;
+TMT2JESCorUp = 0; TMT2JESCorDown = 0; TMT2JESUnCorUp = 0; TMT2JESUnCorDown = 0; TMETJESCorUp = 0; TMETJESCorDown = 0; TMETJESUnCorUp = 0; TMETJESUnCorDown = 0; TMETPhiJESCorUp = 0; TMETPhiJESCorDown = 0; TMETPhiJESUnCorUp = 0; TMETPhiJESUnCorDown = 0;
 
   if(gIsData) TNVert = Get<Int_t>("PV_npvs");
   else        TNVert = Get<Int_t>("Pileup_nPU");
@@ -622,12 +653,22 @@ void TopAnalysis::GetMET(){
     TMETPhiJESUp   = Get<Float_t>("MET_phi_jesTotalUp");
     TMETJESDown    = Get<Float_t>("MET_pt_jesTotalDown");
     TMETPhiJESDown = Get<Float_t>("MET_phi_jesTotalDown");
+    TMETJESCorUp        = Get<Float_t>("MET_pt_jesTotalCorrUp");
+    TMETPhiJESCorUp     = Get<Float_t>("MET_phi_jesTotalCorrUp");
+    TMETJESCorDown      = Get<Float_t>("MET_pt_jesTotalCorrDown");
+    TMETPhiJESCorDown   = Get<Float_t>("MET_phi_jesTotalCorrDown");
+    TMETJESUnCorUp        = Get<Float_t>("MET_pt_jesTotalUnCorrUp");
+    TMETPhiJESUnCorUp     = Get<Float_t>("MET_phi_jesTotalUnCorrUp");
+    TMETJESUnCorDown      = Get<Float_t>("MET_pt_jesTotalUnCorrDown");
+    TMETPhiJESUnCorDown   = Get<Float_t>("MET_phi_jesTotalUnCorrDown");
     TMETJERUp      = Get<Float_t>("MET_pt_jerUp");
     TMETPhiJERUp   = Get<Float_t>("MET_phi_jerUp");
     TMETJERDown    = Get<Float_t>("MET_pt_jerDown");
     TMETPhiJERDown = Get<Float_t>("MET_phi_jerDown");
-    TMT2JESUp      = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMETJESUp,   TMETPhiJESUp);
-    TMT2JESDown    = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMETJESDown, TMETPhiJESDown);
+    TMT2JESCorUp      = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMETJESCorUp,   TMETPhiJESCorUp);
+    TMT2JESCorDown    = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMETJESCorDown, TMETPhiJESCorDown);
+    TMT2JESUnCorUp      = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMETJESUnCorUp,   TMETPhiJESUnCorUp);
+    TMT2JESUnCorDown    = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMETJESUnCorDown, TMETPhiJESUnCorDown);
     TMT2JERUp      = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMETJERUp,   TMETPhiJERUp);
     TMT2JERDown    = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMETJERDown, TMETPhiJERDown);
   }
@@ -853,7 +894,6 @@ void TopAnalysis::InitHistos(){
 
 void TopAnalysis::FillDYHistos(Int_t ch){
   if(!makeHistos) return;
-  cout << "BEGIN DY Histos " << endl;
   Int_t sys = 0;
   Int_t cut;
   Double_t EventWeight = weight;
@@ -882,7 +922,6 @@ void TopAnalysis::FillDYHistos(Int_t ch){
 void TopAnalysis::FillHistos(Int_t ch, Int_t cut, Int_t sys){
   if(gIsData && sys != 0) return;
   if(!makeHistos) return;
-  cout << "BEGIN FillHistos" << endl;
 
   if(!gIsData && sys == 0){
     Int_t i = 0;
@@ -1072,12 +1111,24 @@ void TopAnalysis::SetJetVariables(){
     // JER / JES uncertainties
     fTree->Branch("TNJetsJESUp",       &TNJetsJESUp,     "TNJetsJESUp/I");
     fTree->Branch("TNJetsJESDown",     &TNJetsJESDown,   "TNJetsJESDown/I");
+    fTree->Branch("TNJetsJESCorUp",       &TNJetsJESCorUp,     "TNJetsJESCorUp/I");
+    fTree->Branch("TNJetsJESCorDown",     &TNJetsJESCorDown,   "TNJetsJESCorDown/I");
+    fTree->Branch("TNJetsJESUnCorUp",       &TNJetsJESUnCorUp,     "TNJetsJESUnCorUp/I");
+    fTree->Branch("TNJetsJESUnCorDown",     &TNJetsJESUnCorDown,   "TNJetsJESUnCorDown/I");
     fTree->Branch("TNJetsJERUp",       &TNJetsJERUp,     "TNJetsJERUp/I");
     fTree->Branch("TNJetsJERDown",     &TNJetsJERDown,   "TNJetsJERDown/I");
     fTree->Branch("THTJESUp",     &THTJESUp,     "THTJESUp/F");
     fTree->Branch("THTJESDown",   &THTJESDown,   "THTJESDown/F");
+    fTree->Branch("THTJESCorUp",     &THTJESCorUp,     "THTJESCorUp/F");
+    fTree->Branch("THTJESCorDown",   &THTJESCorDown,   "THTJESCorDown/F");
+    fTree->Branch("THTJESUnCorUp",     &THTJESUnCorUp,     "THTJESUnCorUp/F");
+    fTree->Branch("THTJESUnCorDown",   &THTJESUnCorDown,   "THTJESUnCorDown/F");
     fTree->Branch("THTJERUp",     &THTJERUp,     "THTJERUp/F");
     fTree->Branch("THTJERDown",   &THTJERDown,   "THTJERDown/F");
+    fTree->Branch("TJet0PtJESCorUp",       &TJet0PtJESCorUp,     "TJet0PtJESCorUp/F");
+    fTree->Branch("TJet0PtJESCorDown",     &TJet0PtJESCorDown,   "TJet0PtJESCorDown/F");
+    fTree->Branch("TJet0PtJESUnCorUp",       &TJet0PtJESUnCorUp,     "TJet0PtJESUnCorUp/F");
+    fTree->Branch("TJet0PtJESUnCorDown",     &TJet0PtJESUnCorDown,   "TJet0PtJESUnCorDown/F");
 
     // B-tagging uncertainties
     fTree->Branch("TNBtagsBtagUp",     &TNBtagsBtagUp,   "TNBtagsBtagUp/I");
@@ -1124,10 +1175,20 @@ void TopAnalysis::SetEventVariables(){
     fTree->Branch("TMETJESDown",    &TMETJESDown,     "TMETJESDown/F");
     fTree->Branch("TMETJERUp",      &TMETJERUp,       "TMETJERUp/F");
     fTree->Branch("TMETJERDown",    &TMETJERDown,     "TMETJERDown/F");
+    fTree->Branch("TMETJESCorUp",      &TMETJESCorUp,       "TMETJESCorUp/F");
+    fTree->Branch("TMETJESCorDown",    &TMETJESCorDown,     "TMETJESCorDown/F");
+    fTree->Branch("TMETJESUnCorUp",      &TMETJESUnCorUp,       "TMETJESUnCorUp/F");
+    fTree->Branch("TMETJESUnCorDown",    &TMETJESUnCorDown,     "TMETJESUnCorDown/F");
+
     fTree->Branch("TMT2JESUp",      &TMT2JESUp,       "TMT2JESUp/F");
     fTree->Branch("TMT2JESDown",    &TMT2JESDown,     "TMT2JESDown/F");
     fTree->Branch("TMT2JERUp",      &TMT2JERUp,       "TMT2JERUp/F");
     fTree->Branch("TMT2JERDown",    &TMT2JERDown,     "TMT2JERDown/F");
+    fTree->Branch("TMT2JESCorUp",      &TMT2JESCorUp,       "TMT2JESCorUp/F");
+    fTree->Branch("TMT2JESCorDown",    &TMT2JESCorDown,     "TMT2JESCorDown/F");
+    fTree->Branch("TMT2JESUnCorUp",      &TMT2JESUnCorUp,       "TMT2JESUnCorUp/F");
+    fTree->Branch("TMT2JESUnCorDown",    &TMT2JESUnCorDown,     "TMT2JESUnCorDown/F");
+
     if(gDoMuonES){
       fTree->Branch("TMETMuonESUp",   &TMETMuonESUp,    "TMETMuonESUp/F");
       fTree->Branch("TMETMuonESDown", &TMETMuonESDown,  "TMETMuonESDown/F");

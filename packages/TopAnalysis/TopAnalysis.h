@@ -34,6 +34,10 @@ class TopAnalysis : public PAFChainItemSelector{
     std::vector<Jet> selJetsJecDown ;
     std::vector<Jet> selJetsJERUp   ;
     std::vector<Jet> selJetsJERDown ;
+    std::vector<Jet> selJetsJecCorUp   ;
+    std::vector<Jet> selJetsJecCorDown ;
+    std::vector<Jet> selJetsJecUnCorUp   ;
+    std::vector<Jet> selJetsJecUnCorDown ;
 
     std::vector<Jet> Jets15  ;
     std::vector<Jet> genJets  ;
@@ -216,6 +220,10 @@ class TopAnalysis : public PAFChainItemSelector{
     Int_t   TNJetsJESDown;
     Int_t   TNJetsJERUp;
     Int_t   TNJetsJERDown;
+    Int_t   TNJetsJESCorUp;
+    Int_t   TNJetsJESCorDown;
+    Int_t   TNJetsJESUnCorUp;
+    Int_t   TNJetsJESUnCorDown;
     Int_t   TNBtagsBtagUp;
     Int_t   TNBtagsBtagDown;
     Int_t   TNBtagsMisTagUp;
@@ -227,9 +235,21 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t TJetJER_Pt[20];
     Float_t THTJESUp;
     Float_t THTJESDown;
+    Float_t THTJESCorUp;
+    Float_t THTJESCorDown;
+    Float_t THTJESUnCorUp;
+    Float_t THTJESUnCorDown;
     Float_t THTJERUp;
     Float_t THTJERDown;
     Float_t TBtagPt;
+    Float_t TJet0PtJESUp;
+    Float_t TJet0PtJESDown;
+    Float_t TJet0PtJERUp;
+    Float_t TJet0PtJERDown;
+    Float_t TJet0PtJESCorUp;
+    Float_t TJet0PtJESCorDown;
+    Float_t TJet0PtJESUnCorUp;
+    Float_t TJet0PtJESUnCorDown;
 
     Int_t   TNISRJets;
     Float_t TMETJESUp; Float_t TMETJESDown; Float_t TMETJERUp; Float_t TMETJERDown; Float_t TMETUnclUp; Float_t TMETUnclDown;
@@ -238,6 +258,8 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t TMETPhiMuonESUp; Float_t TMETPhiMuonESDown; Float_t TMETPhiElecESUp; Float_t TMETPhiElecESDown;
     Float_t TMT2JESUp; Float_t TMT2JESDown; Float_t TMT2JERUp; Float_t TMT2JERDown; Float_t TMT2UnclUp; Float_t TMT2UnclDown;
     Float_t TMT2MuonESUp; Float_t TMT2MuonESDown; Float_t TMT2ElecESUp; Float_t TMT2ElecESDown;
+    Float_t TMT2JESCorUp; Float_t TMT2JESCorDown; Float_t TMT2JESUnCorUp; Float_t TMT2JESUnCorDown; Float_t TMETJESCorUp; Float_t TMETJESCorDown; Float_t TMETJESUnCorUp; Float_t TMETJESUnCorDown; Float_t TMETPhiJESCorUp; Float_t TMETPhiJESCorDown; Float_t TMETPhiJESUnCorUp; Float_t TMETPhiJESUnCorDown;
+
     
     Float_t m_stop; Float_t m_LSP; Int_t sumWeights; Int_t ngenPart; Int_t iSt; Int_t iLSP; Double_t xsec; Int_t j;Float_t norm;//quitar
     Float_t  TWeight_LepEffUp;
