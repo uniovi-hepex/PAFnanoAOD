@@ -170,8 +170,8 @@ void TopAnalysis::Initialise(){
   nSyst = useSyst.size();
   InitHistos();
   metvar    = year == 2017? "METFixEE2017"     : "MET";
-  metvarphi = year == 2017? "METFixEE2017_phi" : "MET_phi";
-  metvarpt  = year == 2017? "METFixEE2017_pt"  : "MET_pt";
+  metvarphi = year == 2017? "METFixEE2017_phi" : "MET_phi_nom";
+  metvarpt  = year == 2017? "METFixEE2017_pt"  : "MET_pt_nom";
   //if(year != 2017 and gOptions.Contains("JetPtNom")){
   //  metvarpt   = "MET_pt_nom";
   //  metvarphi  = "MET_phi_nom";
