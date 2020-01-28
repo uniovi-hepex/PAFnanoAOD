@@ -124,7 +124,7 @@ void JetSelector::GetJetVariables(Int_t i){
   Float_t FSRSF = 1;
   //if(gIsFSRUp)   FSRSF = GetFSR_JECSF_Up(  Get<Float_t>("Jet"+jec+"_pt",i));
   //if(gIsFSRDown) FSRSF = GetFSR_JECSF_Down(Get<Float_t>("Jet"+jec+"_pt",i));
-  tpJ.SetPtEtaPhiM(Get<Float_t>("Jet_pt_nom",i), Get<Float_t>("Jet_eta",i), Get<Float_t>("Jet_phi", i), Get<Float_t>("Jet_mass",i));
+  tpJ.SetPtEtaPhiM(Get<Float_t>("Jet_pt_nom",i), Get<Float_t>("Jet_eta",i), Get<Float_t>("Jet_phi", i), Get<Float_t>("Jet_mass_nom",i));
   eta = tpJ.Eta();;
   pt = tpJ.Pt();
   //rawPt       = Get<Float_t>("Jet_rawPt",i);
