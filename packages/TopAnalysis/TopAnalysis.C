@@ -172,6 +172,10 @@ void TopAnalysis::Initialise(){
   metvar    = year == 2017? "METFixEE2017"     : "MET";
   metvarphi = year == 2017? "METFixEE2017_phi" : "MET_phi_nom";
   metvarpt  = year == 2017? "METFixEE2017_pt"  : "MET_pt_nom";
+  if(gIsData){
+    metvarphi = "MET_phi";
+    metvarpt  = "MET_pt";
+  }
   //if(year != 2017 and gOptions.Contains("JetPtNom")){
   //  metvarpt   = "MET_pt_nom";
   //  metvarphi  = "MET_phi_nom";

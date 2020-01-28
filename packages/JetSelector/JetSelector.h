@@ -61,6 +61,9 @@ class JetSelector : public PAFChainItemSelector{
     Float_t BtagSFMistagUp;
     Float_t BtagSFMistagDown;
 
+    TString jetptvar;
+    TString jetmassvar;
+
   protected:
 
     BTagSFUtil *fBTagSFnom ;
