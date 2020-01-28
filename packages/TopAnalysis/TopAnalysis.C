@@ -291,7 +291,7 @@ void TopAnalysis::InsideLoop(){
   if(gIsTTbar && makeHistos) FillCorrHistos(); 
 
   if(gIsTTbar && genLeptons.size() < 2) return; // Dilepton selection for ttbar!!!
-  //if(gIsTTbar && genLeptons.size() >= 2) return; // Semilep selection for ttbar!!! //quitar y dejar la de arriba
+ // if(gIsTTbar && genLeptons.size() >= 2) return; // Semilep selection for ttbar!!! //quitar y dejar la de arriba
 
   //if(gIsSignal){
   //  if(m_stop != 205) return;
@@ -364,9 +364,9 @@ void TopAnalysis::InsideLoop(){
       // Get values or the corresponding variation
 
       SetVariables(useSyst.at(sys));
-      //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();
+      if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();
       //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill(); //quitar:sincro, dejar esta o la otra  
-      if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny) fTree->Fill();
+      //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny) fTree->Fill();
       
       //if (!isSS) fHyields[gChannel][sys] -> Fill(iZVeto, weight); //quitar: sincro
       if (invmass > 20 && lep0pt > 25 && lep1pt > 20) {
@@ -653,14 +653,24 @@ TMT2JESCorUp = 0; TMT2JESCorDown = 0; TMT2JESUnCorUp = 0; TMT2JESUnCorDown = 0; 
     TMETPhiJESUp   = Get<Float_t>("MET_phi_jesTotalUp");
     TMETJESDown    = Get<Float_t>("MET_pt_jesTotalDown");
     TMETPhiJESDown = Get<Float_t>("MET_phi_jesTotalDown");
-    TMETJESCorUp        = Get<Float_t>("MET_pt_jesTotalCorrUp");
-    TMETPhiJESCorUp     = Get<Float_t>("MET_phi_jesTotalCorrUp");
-    TMETJESCorDown      = Get<Float_t>("MET_pt_jesTotalCorrDown");
-    TMETPhiJESCorDown   = Get<Float_t>("MET_phi_jesTotalCorrDown");
-    TMETJESUnCorUp        = Get<Float_t>("MET_pt_jesTotalUnCorrUp");
-    TMETPhiJESUnCorUp     = Get<Float_t>("MET_phi_jesTotalUnCorrUp");
-    TMETJESUnCorDown      = Get<Float_t>("MET_pt_jesTotalUnCorrDown");
-    TMETPhiJESUnCorDown   = Get<Float_t>("MET_phi_jesTotalUnCorrDown");
+    if(gIs2017){
+		TMETJESCorUp        = Get<Float_t>("METFixEE2017_pt_jesTotalCorrUp");
+		TMETPhiJESCorUp     = Get<Float_t>("METFixEE2017_phi_jesTotalCorrUp");
+		TMETJESCorDown      = Get<Float_t>("METFixEE2017_pt_jesTotalCorrDown");
+		TMETPhiJESCorDown   = Get<Float_t>("METFixEE2017_phi_jesTotalCorrDown");
+		TMETJESUnCorUp        = Get<Float_t>("METFixEE2017_pt_jesTotalUnCorrUp");
+		TMETPhiJESUnCorUp     = Get<Float_t>("METFixEE2017_phi_jesTotalUnCorrUp");
+		TMETJESUnCorDown      = Get<Float_t>("METFixEE2017_pt_jesTotalUnCorrDown");
+		TMETPhiJESUnCorDown   = Get<Float_t>("METFixEE2017_phi_jesTotalUnCorrDown");}
+	else{
+		TMETJESCorUp        = Get<Float_t>("MET_pt_jesTotalCorrUp");
+		TMETPhiJESCorUp     = Get<Float_t>("MET_phi_jesTotalCorrUp");
+		TMETJESCorDown      = Get<Float_t>("MET_pt_jesTotalCorrDown");
+		TMETPhiJESCorDown   = Get<Float_t>("MET_phi_jesTotalCorrDown");
+		TMETJESUnCorUp        = Get<Float_t>("MET_pt_jesTotalUnCorrUp");
+		TMETPhiJESUnCorUp     = Get<Float_t>("MET_phi_jesTotalUnCorrUp");
+		TMETJESUnCorDown      = Get<Float_t>("MET_pt_jesTotalUnCorrDown");
+		TMETPhiJESUnCorDown   = Get<Float_t>("MET_phi_jesTotalUnCorrDown");}
     TMETJERUp      = Get<Float_t>("MET_pt_jerUp");
     TMETPhiJERUp   = Get<Float_t>("MET_phi_jerUp");
     TMETJERDown    = Get<Float_t>("MET_pt_jerDown");
