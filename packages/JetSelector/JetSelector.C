@@ -48,6 +48,9 @@ void JetSelector::Initialise(){
   gDoSys       = gOptions.Contains("doSyst")? true : false;
   gSelection   = GetSelection(selection);
 
+  jetptvar   = gIsData? "Jet_pt" : "Jet_pt_nom";
+  jetmassvar = gIsData? "Jet_mass" : "Jet_mass_nom";
+
   gIsFSRUp = false; gIsFSRDown = false;
   if     (gSampleName.Contains("TTbar_Powheg") && gSampleName.Contains("fsrUp"))   gIsFSRUp = true;
   else if(gSampleName.Contains("TTbar_Powheg") && gSampleName.Contains("fsrDown")) gIsFSRDown = true;
@@ -124,7 +127,7 @@ void JetSelector::GetJetVariables(Int_t i){
   Float_t FSRSF = 1;
   //if(gIsFSRUp)   FSRSF = GetFSR_JECSF_Up(  Get<Float_t>("Jet"+jec+"_pt",i));
   //if(gIsFSRDown) FSRSF = GetFSR_JECSF_Down(Get<Float_t>("Jet"+jec+"_pt",i));
-  tpJ.SetPtEtaPhiM(Get<Float_t>("Jet_pt_nom",i), Get<Float_t>("Jet_eta",i), Get<Float_t>("Jet_phi", i), Get<Float_t>("Jet_mass_nom",i));
+  tpJ.SetPtEtaPhiM(Get<Float_t>(jetptvar,i), Get<Float_t>("Jet_eta",i), Get<Float_t>("Jet_phi", i), Get<Float_t>(jetmassvar,i));
   eta = tpJ.Eta();;
   pt = tpJ.Pt();
   //rawPt       = Get<Float_t>("Jet_rawPt",i);
