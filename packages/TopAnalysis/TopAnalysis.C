@@ -502,17 +502,17 @@ void TopAnalysis::GetLeptonVariables(std::vector<Lepton> selLeptons, std::vector
     }
   }
   TPassDilep         = ( (TMuonPt   > 25 && TElecPt   > 20) || (TMuonPt   > 20 && TElecPt   > 25) ) && TMll       > 20;
-  TPassDilepMuonESUp = ( (TMuonPtUp > 25 && TElecPt   > 20) || (TMuonPtUp > 20 && TElecPt   > 25) ) && TMllMuonUp > 20;
-  TPassDilepMuonESDo = ( (TMuonPtDo > 25 && TElecPt   > 20) || (TMuonPtDo > 20 && TElecPt   > 25) ) && TMllMuonDo > 20; 
-  TPassDilepElecESUp = ( (TMuonPt   > 25 && TElecPtUp > 20) || (TMuonPt   > 20 && TElecPtUp > 25) ) && TMllElecUp > 20; 
-  TPassDilepElecESDo = ( (TMuonPt   > 25 && TElecPtDo > 20) || (TMuonPt   > 20 && TElecPtDo > 25) ) && TMllElecDo > 20; 
-  TPassDilepAny = TPassDilep || TPassDilepMuonESUp || TPassDilepMuonESDo || TPassDilepElecESUp || TPassDilepElecESDo;
-  TPassMETAny = (TMET > metcut || TMETJESUp > metcut || TMETJESDown > metcut || TMETJERUp > metcut || TMETJERDown > metcut || TMETMuonESUp > metcut || TMETMuonESDown > metcut || TMETElecESUp > metcut || TMETElecESDown > metcut || TMETUnclUp > metcut || TMETUnclDown > metcut || TMETJESCorUp > metcut || TMETJESCorDown > metcut || TMETJESUnCorUp > metcut || TMETJESUnCorDown > metcut);
-  TPassMT2Any = (TMT2 > mt2cut || TMT2JESUp > mt2cut || TMT2JESDown > mt2cut || TMT2JERUp > mt2cut || TMT2JERDown > mt2cut || TMT2MuonESUp > mt2cut || TMT2MuonESDown > mt2cut || TMT2ElecESUp > mt2cut || TMT2ElecESDown > mt2cut || TMT2UnclUp > mt2cut || TMT2UnclDown > mt2cut || TMT2JESCorUp > mt2cut || TMT2JESCorDown > mt2cut || TMT2JESUnCorUp > mt2cut || TMT2JESUnCorDown > mt2cut);
   if(gIsData){
     TPassDilepAny = TPassDilep;
     TPassMETAny = TMET > metcut;
     TPassMT2Any = TMT2 > mt2cut;
+  }
+  else{
+    TPassDilepMuonESUp = ( (TMuonPtUp > 25 && TElecPt   > 20) || (TMuonPtUp > 20 && TElecPt   > 25) ) && TMllMuonUp > 20;
+    TPassDilepMuonESDo = ( (TMuonPtDo > 25 && TElecPt   > 20) || (TMuonPtDo > 20 && TElecPt   > 25) ) && TMllMuonDo > 20; 
+    TPassDilepElecESUp = ( (TMuonPt   > 25 && TElecPtUp > 20) || (TMuonPt   > 20 && TElecPtUp > 25) ) && TMllElecUp > 20; 
+    TPassDilepElecESDo = ( (TMuonPt   > 25 && TElecPtDo > 20) || (TMuonPt   > 20 && TElecPtDo > 25) ) && TMllElecDo > 20; 
+    TPassDilepAny = TPassDilep || TPassDilepMuonESUp || TPassDilepMuonESDo || TPassDilepElecESUp || TPassDilepElecESDo;
   }
 }
 
@@ -617,6 +617,7 @@ void TopAnalysis::GetGenJetVariables(std::vector<Jet> genJets, std::vector<Jet> 
 
 
 void TopAnalysis::GetMET(){
+  TMT2 = 0;
   TRun        = gIsData ? Get<UInt_t>("run") : 1;
   TMET        = Get<Float_t>(metvarpt); // MET_pt
   TMETPhi    = Get<Float_t>(metvarphi);  // MET phi
@@ -627,13 +628,20 @@ void TopAnalysis::GetMET(){
     if(gIs2017) TMT2orig = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMETorig, Get<Float_t>("MET_phi"));
   }
   
-  
+
   if(gIs2018){
-		TMETpuppi        = Get<Float_t>("PuppiMET_pt"); // MET_pt
-        TMETpuppi_Phi    = Get<Float_t>("PuppiMET_phi");  // MET phi
-        if((Int_t) selLeptons.size() >= 2){
-        TMT2puppi=getMT2ll(selLeptons.at(0), selLeptons.at(1), TMETpuppi, TMETpuppi_Phi);}}
-   
+    TMETpuppi        = Get<Float_t>("PuppiMET_pt"); // MET_pt
+    TMETpuppi_Phi    = Get<Float_t>("PuppiMET_phi");  // MET phi
+    if((Int_t) selLeptons.size() >= 2){
+      TMT2puppi=getMT2ll(selLeptons.at(0), selLeptons.at(1), TMETpuppi, TMETpuppi_Phi);
+    }
+  }
+
+  if(gIsData){
+    TPassMETAny = TMET > metcut;
+    TPassMT2Any = TMT2 > mt2cut;
+  }
+
   TLorentzVector pmet; pmet.SetPtEtaPhiM(TMET, 0, TMETPhi, 0);
 
   TNVert_pu = 0; TgenTop1Pt = 0; TgenTop2Pt = 0; TGenMET = 0; 
@@ -710,6 +718,10 @@ TMT2JESCorUp = 0; TMT2JESCorDown = 0; TMT2JESUnCorUp = 0; TMT2JESUnCorDown = 0; 
       TMT2ElecESDown = getMT2ll(muon, elecdo, TMETElecESDown, TMETPhiElecESDown);
     }
 
+  }
+  if(!gIsData){
+    TPassMETAny = (TMET > metcut || TMETJESUp > metcut || TMETJESDown > metcut || TMETJERUp > metcut || TMETJERDown > metcut || TMETMuonESUp > metcut || TMETMuonESDown > metcut || TMETElecESUp > metcut || TMETElecESDown > metcut || TMETUnclUp > metcut || TMETUnclDown > metcut || TMETJESCorUp > metcut || TMETJESCorDown > metcut || TMETJESUnCorUp > metcut || TMETJESUnCorDown > metcut);
+    TPassMT2Any = (TMT2 > mt2cut || TMT2JESUp > mt2cut || TMT2JESDown > mt2cut || TMT2JERUp > mt2cut || TMT2JERDown > mt2cut || TMT2MuonESUp > mt2cut || TMT2MuonESDown > mt2cut || TMT2ElecESUp > mt2cut || TMT2ElecESDown > mt2cut || TMT2UnclUp > mt2cut || TMT2UnclDown > mt2cut || TMT2JESCorUp > mt2cut || TMT2JESCorDown > mt2cut || TMT2JESUnCorUp > mt2cut || TMT2JESUnCorDown > mt2cut);
   }
 }
 
