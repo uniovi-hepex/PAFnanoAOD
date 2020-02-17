@@ -115,6 +115,7 @@ class TopAnalysis : public PAFChainItemSelector{
     ULong64_t event;
     UInt_t    lumiblock;
     Double_t TWeight;   // Total nominal weight
+    Double_t TWeight_noPU;
     Float_t TMll;      // Invariant mass
     Float_t TMllMuonUp; Float_t TMllMuonDo; Float_t TMllElecUp; Float_t TMllElecDo;
     Float_t TDilep_Pt;
