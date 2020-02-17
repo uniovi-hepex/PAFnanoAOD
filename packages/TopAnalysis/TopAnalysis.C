@@ -171,7 +171,7 @@ void TopAnalysis::Initialise(){
   InitHistos();
   metvar    = year == 2017? "METFixEE2017"     : "MET";
   metvarphi = year == 2017? "METFixEE2017_phi" : "MET_phi_nom";
-  metvarpt  = year == 2017? "METFixEE2017_pt"  : "MET_pt_nom";
+  metvarpt  = year == 2017? "METFixEE2017_pt_nom"  : "MET_pt_nom";
   if(gIsData){
     metvarphi = "MET_phi";
     metvarpt  = "MET_pt";
@@ -368,9 +368,9 @@ void TopAnalysis::InsideLoop(){
       // Get values or the corresponding variation
 
       SetVariables(useSyst.at(sys));
-      //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();
+      if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();
       //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill(); //quitar:sincro, dejar esta o la otra  
-      if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny) fTree->Fill();
+      //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny) fTree->Fill();
       
       //if (!isSS) fHyields[gChannel][sys] -> Fill(iZVeto, weight); //quitar: sincro
       if (invmass > 20 && lep0pt > 25 && lep1pt > 20) {
@@ -648,35 +648,59 @@ void TopAnalysis::GetMET(){
   TMETJESUp = 0; TMETJESDown = 0; TMETJERUp = 0; TMETJERDown = 0; TMETUnclUp = 0; TMETUnclDown = 0; TMETMuonESUp = 0; TMETMuonESDown = 0; TMETElecESUp = 0; TMETElecESDown = 0; TMETPhiJESUp = 0; TMETPhiJESDown = 0; TMETPhiJERUp = 0; TMETPhiJERDown = 0; TMETPhiUnclUp = 0; TMETPhiUnclDown = 0; TMETPhiMuonESUp = 0; TMETPhiMuonESDown = 0; TMETPhiElecESUp = 0; TMETPhiElecESDown = 0; TMT2JESUp = 0; TMT2JESDown = 0; TMT2JERUp = 0; TMT2JERDown = 0; TMT2UnclUp = 0; TMT2UnclDown = 0; TMT2MuonESUp = 0; TMT2MuonESDown = 0; TMT2ElecESUp = 0; TMT2ElecESDown = 0;
 TMT2JESCorUp = 0; TMT2JESCorDown = 0; TMT2JESUnCorUp = 0; TMT2JESUnCorDown = 0; TMETJESCorUp = 0; TMETJESCorDown = 0; TMETJESUnCorUp = 0; TMETJESUnCorDown = 0; TMETPhiJESCorUp = 0; TMETPhiJESCorDown = 0; TMETPhiJESUnCorUp = 0; TMETPhiJESUnCorDown = 0;
 
-  if(gIsData) TNVert = Get<Int_t>("PV_npvs");
-  else        TNVert = Get<Int_t>("Pileup_nPU");
+  if(gIsData) TNVert = Get<Int_t>("PV_npvsGood"); //PV_npvs
+  else        TNVert = Get<Int_t>("PV_npvsGood"); //Pileup_nPU
   if(gIsData) return;
   TNVert_pu      = Get<Float_t>("Pileup_nTrueInt"); 
   TGenMET     = Get<Float_t>("GenMET_pt");
-
-  TMETUnclUp      = Get<Float_t>("MET_pt_unclustEnUp");
-  TMETUnclDown    = Get<Float_t>("MET_pt_unclustEnDown");
-  TMETPhiUnclUp   = Get<Float_t>("MET_phi_unclustEnUp");
-  TMETPhiUnclDown = Get<Float_t>("MET_phi_unclustEnDown");
+  if(gIs2017){
+	  TMETUnclUp      = Get<Float_t>("METFixEE2017_pt_unclustEnUp");
+	  TMETUnclDown    = Get<Float_t>("METFixEE2017_pt_unclustEnDown");
+	  TMETPhiUnclUp   = Get<Float_t>("METFixEE2017_phi_unclustEnUp");
+	  TMETPhiUnclDown = Get<Float_t>("METFixEE2017_phi_unclustEnDown");}
+  else{
+	  TMETUnclUp      = Get<Float_t>("MET_pt_unclustEnUp");
+	  TMETUnclDown    = Get<Float_t>("MET_pt_unclustEnDown");
+	  TMETPhiUnclUp   = Get<Float_t>("MET_phi_unclustEnUp");
+	  TMETPhiUnclDown = Get<Float_t>("MET_phi_unclustEnDown");}
   TMT2UnclUp      = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMETUnclUp,   TMETPhiUnclUp);
   TMT2UnclDown    = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMETUnclDown, TMETPhiUnclDown);
   if(gDoJECunc){
-    TMETJESUp      = Get<Float_t>("MET_pt_jesTotalUp");
-    TMETPhiJESUp   = Get<Float_t>("MET_phi_jesTotalUp");
-    TMETJESDown    = Get<Float_t>("MET_pt_jesTotalDown");
-    TMETPhiJESDown = Get<Float_t>("MET_phi_jesTotalDown");
-    TMETJESCorUp        = Get<Float_t>("MET_pt_jesTotalCorrUp");
-    TMETPhiJESCorUp     = Get<Float_t>("MET_phi_jesTotalCorrUp");
-    TMETJESCorDown      = Get<Float_t>("MET_pt_jesTotalCorrDown");
-    TMETPhiJESCorDown   = Get<Float_t>("MET_phi_jesTotalCorrDown");
-    TMETJESUnCorUp        = Get<Float_t>("MET_pt_jesTotalUnCorrUp");
-    TMETPhiJESUnCorUp     = Get<Float_t>("MET_phi_jesTotalUnCorrUp");
-    TMETJESUnCorDown      = Get<Float_t>("MET_pt_jesTotalUnCorrDown");
-    TMETPhiJESUnCorDown   = Get<Float_t>("MET_phi_jesTotalUnCorrDown");
-    TMETJERUp      = Get<Float_t>("MET_pt_jerUp");
-    TMETPhiJERUp   = Get<Float_t>("MET_phi_jerUp");
-    TMETJERDown    = Get<Float_t>("MET_pt_jerDown");
-    TMETPhiJERDown = Get<Float_t>("MET_phi_jerDown");
+    
+    if(gIs2017){
+		TMETJESUp      = Get<Float_t>("METFixEE2017_pt_jesTotalUp");
+		TMETPhiJESUp   = Get<Float_t>("METFixEE2017_phi_jesTotalUp");
+		TMETJESDown    = Get<Float_t>("METFixEE2017_pt_jesTotalDown");
+		TMETPhiJESDown = Get<Float_t>("METFixEE2017_phi_jesTotalDown");
+		TMETJESCorUp        = Get<Float_t>("METFixEE2017_pt_jesTotalCorrUp");
+		TMETPhiJESCorUp     = Get<Float_t>("METFixEE2017_phi_jesTotalCorrUp");
+		TMETJESCorDown      = Get<Float_t>("METFixEE2017_pt_jesTotalCorrDown");
+		TMETPhiJESCorDown   = Get<Float_t>("METFixEE2017_phi_jesTotalCorrDown");
+		TMETJESUnCorUp        = Get<Float_t>("METFixEE2017_pt_jesTotalUnCorrUp");
+		TMETPhiJESUnCorUp     = Get<Float_t>("METFixEE2017_phi_jesTotalUnCorrUp");
+		TMETJESUnCorDown      = Get<Float_t>("METFixEE2017_pt_jesTotalUnCorrDown");
+		TMETPhiJESUnCorDown   = Get<Float_t>("METFixEE2017_phi_jesTotalUnCorrDown");
+		TMETJERUp      = Get<Float_t>("METFixEE2017_pt_jerUp");
+		TMETPhiJERUp   = Get<Float_t>("METFixEE2017_phi_jerUp");
+		TMETJERDown    = Get<Float_t>("METFixEE2017_pt_jerDown");
+		TMETPhiJERDown = Get<Float_t>("METFixEE2017_phi_jerDown");}
+	else{
+		TMETJESUp      = Get<Float_t>("MET_pt_jesTotalUp");
+		TMETPhiJESUp   = Get<Float_t>("MET_phi_jesTotalUp");
+		TMETJESDown    = Get<Float_t>("MET_pt_jesTotalDown");
+		TMETPhiJESDown = Get<Float_t>("MET_phi_jesTotalDown");
+		TMETJESCorUp        = Get<Float_t>("MET_pt_jesTotalCorrUp");
+		TMETPhiJESCorUp     = Get<Float_t>("MET_phi_jesTotalCorrUp");
+		TMETJESCorDown      = Get<Float_t>("MET_pt_jesTotalCorrDown");
+		TMETPhiJESCorDown   = Get<Float_t>("MET_phi_jesTotalCorrDown");
+		TMETJESUnCorUp        = Get<Float_t>("MET_pt_jesTotalUnCorrUp");
+		TMETPhiJESUnCorUp     = Get<Float_t>("MET_phi_jesTotalUnCorrUp");
+		TMETJESUnCorDown      = Get<Float_t>("MET_pt_jesTotalUnCorrDown");
+		TMETPhiJESUnCorDown   = Get<Float_t>("MET_phi_jesTotalUnCorrDown");
+		TMETJERUp      = Get<Float_t>("MET_pt_jerUp");
+		TMETPhiJERUp   = Get<Float_t>("MET_phi_jerUp");
+		TMETJERDown    = Get<Float_t>("MET_pt_jerDown");
+		TMETPhiJERDown = Get<Float_t>("MET_phi_jerDown");}
     TMT2JESCorUp      = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMETJESCorUp,   TMETPhiJESCorUp);
     TMT2JESCorDown    = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMETJESCorDown, TMETPhiJESCorDown);
     TMT2JESUnCorUp      = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMETJESUnCorUp,   TMETPhiJESUnCorUp);
@@ -730,7 +754,7 @@ TMT2JESCorUp = 0; TMT2JESCorDown = 0; TMT2JESUnCorUp = 0; TMT2JESUnCorDown = 0; 
 
 void TopAnalysis::GetWeights(){
   TWeight_ElecEffUp = 1; TWeight_ElecEffDown = 1; TWeight_MuonEffUp = 1; TWeight_MuonEffDown = 1;
-  TWeight_TrigUp = 1; TWeight_TrigDown = 1; TWeight_PUDown = 1; TWeight_PUUp = 1; TWeight = 1;
+  TWeight_TrigUp = 1; TWeight_TrigDown = 1; TWeight_PUDown = 1; TWeight_PUUp = 1; TWeight = 1; TWeight_noPU = 1; 
   TWeight_ISRUp   = 1; TWeight_ISRDown = 1; TWeight_FSRUp   = 1; TWeight_FSRDown = 1; TWeight_PrefUp = 1; TWeight_PrefDown = 1; TWeight_TopPtUp = 1; TWeight_TopPtDown = 1;
   if(gIsData) return;
   if(TNSelLeps < 2) return;
@@ -789,6 +813,7 @@ void TopAnalysis::GetWeights(){
   }
 
   //if(gIsSignal) PUSF = 1;
+  TWeight_noPU             = NormWeight*ElecSF*MuonSF*TrigSF*PrefWeight;
 
   TWeight             = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeight;
   TWeight_ElecEffUp   = NormWeight*ElecSFUp*MuonSF*TrigSF*PUSF*PrefWeight;
@@ -1164,6 +1189,8 @@ void TopAnalysis::SetJetVariables(){
 
 void TopAnalysis::SetEventVariables(){
   fTree->Branch("TWeight",      &TWeight,      "TWeight/D");
+  fTree->Branch("TWeight_noPU",      &TWeight_noPU,      "TWeight_noPU/D");
+
   fTree->Branch("TMET",            &TMET,            "TMET/F");
   fTree->Branch("TMETPhi",     &TMETPhi,     "TMETPhi/F");
   fTree->Branch("TMT2",            &TMT2,            "TMT2/F");
@@ -1277,7 +1304,7 @@ void TopAnalysis::SetVariables(int sys){
   // that you choose
   // Global
 
-  nleps = selLeptons.size(); weight = TWeight;
+  nleps = selLeptons.size(); weight = TWeight;//quitar: dejar TWeight
   met = TMET; mt2 = TMT2; nvert = TNVert; invmass = TMll; nvert_pu = TNVert_pu;
   // Leptons
   if(nleps >= 2){
