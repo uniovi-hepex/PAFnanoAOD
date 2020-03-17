@@ -38,4 +38,17 @@ Float_t GetHT(std::vector<Jet> jets){
   for(Int_t i = 0; i < njets; i++) ht += jets.at(i).Pt(); 
   return ht;
 }
-  
+
+Float_t GetDeltaHTmiss(TLorentzVector jet, std::vector<Jet> jets, std::vector<Lepton> leptons){
+  Float_t dht = 0;
+  TLorentzVector pjet=jets.at(0).p;
+  TLorentzVector plepton=leptons.at(0).p;
+  TLorentzVector pHTmiss;
+  Int_t njets = GetNJets(jets);
+  Int_t nleps = leptons.size();
+  for(Int_t i = 1; i < njets; i++) pjet += jets.at(i).p;
+  for(Int_t i = 1; i < nleps; i++) plepton += leptons.at(i).p; 
+  pHTmiss = pjet+plepton;
+  dht=jet.DeltaPhi(pHTmiss);
+  return dht;
+}

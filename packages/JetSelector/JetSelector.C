@@ -59,7 +59,7 @@ void JetSelector::Initialise(){
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
   taggerName="DeepFlav";//"DeepFlav";
-  stringWP = "Medium";
+  stringWP = "Medium"; //
   jet_MaxEta = 2.4;
   jet_MinPt  = 30;
   vetoJet_minPt = 30;
@@ -67,7 +67,7 @@ void JetSelector::Initialise(){
   minDR = 0.4;
   if      (gSelection == itt) {
     taggerName="DeepFlav";//"DeepFlav";
-    stringWP = "Medium";
+    stringWP = "Medium"; //
     jet_MaxEta = 2.4;
     jet_MinPt  = 30;
     vetoJet_minPt = 30;
@@ -94,7 +94,7 @@ void JetSelector::Initialise(){
   }
 
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-  MeasType = "mujets";
+  MeasType = "mujets"; //
   TString pwd  = GetParam<TString>("WorkingDir");
   TString BTagSFPath = Form("%s/packages/BTagSFUtil", pwd.Data());
   
@@ -202,7 +202,7 @@ void JetSelector::InsideLoop(){
   for (Int_t i = 0; i < nJet; i++) {
     // Get all jet variables
     GetJetVariables(i);
-    tJ = Jet(tpJ, csv, jetId, flav);
+    tJ = Jet(tpJ, deepflav, jetId, flav);
     tJ.SetDeepCSVB(deepcsv);
     tJ.SetDeepCSVC(deepcsvC);
     tJ.SetDeepFlav(deepflav);
@@ -396,7 +396,7 @@ Bool_t JetSelector::IsBtag(Jet j){
   Bool_t isbtag = false;
   // using "weights" as scale factors in the tW analysis :)
   if (gSelection == itWtt || gSelection == itW) isbtag = fBTagSFnom->IsTagged(j.csv, -999999, j.p.Pt(), j.p.Eta(), (UInt_t)j.p.Pt());
-  else   isbtag = fBTagSFnom->IsTagged(j.csv,j.flavmc, j.p.Pt(), j.p.Eta(), (UInt_t)j.p.Pt());
+  else   isbtag = fBTagSFnom->IsTagged(j.deepflav,j.flavmc, j.p.Pt(), j.p.Eta(), (UInt_t)j.p.Pt());
   return isbtag;
 }
 
