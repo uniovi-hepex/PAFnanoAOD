@@ -216,7 +216,7 @@ Bool_t LeptonSelector::isGoodLepton(Lepton lep){
   Bool_t passId; Bool_t passIso;
   if (lep.isMuon) {
     passId  = getMuonId(iTight);
-    passIso = getRelIso04POG(iTight);   //quitar true
+    passIso =getRelIso04POG(iTight);   
   }
   if (lep.isElec) {
     passId = getElecCutBasedId(iTight) && lostHits <= 1;

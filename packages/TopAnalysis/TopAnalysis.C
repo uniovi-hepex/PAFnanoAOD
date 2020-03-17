@@ -31,6 +31,7 @@ TopAnalysis::TopAnalysis() : PAFChainItemSelector() {
         fHElecEta[ch][cut][sys]     = 0;
         fHDelLepPhi[ch][cut][sys]   = 0;
         fHDelLepEta[ch][cut][sys]   = 0;
+        fHDelLepR[ch][cut][sys]   = 0;
         fHHT[ch][cut][sys]          = 0;
         fHJetEta[ch][cut][sys]     = 0;
         fHJetBtagEta[ch][cut][sys]     = 0;
@@ -41,6 +42,10 @@ TopAnalysis::TopAnalysis() : PAFChainItemSelector() {
         fHDYInvMassSF[ch][cut][sys]     = 0;
         fHInvMass[ch][cut][sys]       = 0;
         fHInvMass2[ch][cut][sys]      = 0;
+        fHInvMass2EE[ch][cut][sys]      = 0;
+        fHInvMass2BB[ch][cut][sys]      = 0;
+        fHInvMass2EB[ch][cut][sys]      = 0;
+        fHInvMass2BE[ch][cut][sys]      = 0;
         fHNBtagsNJets[ch][cut][sys]   = 0;
         fHNJets[ch][cut][sys]        = 0;
         fHNBtagJets[ch][cut][sys]    = 0;
@@ -193,7 +198,7 @@ void TopAnalysis::Initialise(){
   TString pwd  = GetParam<TString>("WorkingDir");
   TString BTagSFPath = Form("%s/packages/BTagSFUtil", pwd.Data());
   TString taggerName="DeepFlav"; //"CSVv2"; //"DeepCSV"; // DeepFlav   //quitar dejar DeepFlav
-  TString MeasType = "mujets";
+  TString MeasType = "mujets"; //quitar: dejar mujets
   TString stringWP = "Medium";//"Medium"; //quitar dejar medium
   //if(taggerName == "DeepFlav" && year == 2017) MeasType = "comb";
   fBTagSFnom = new BTagSFUtil(MeasType.Data(), BTagSFPath, taggerName.Data(), stringWP,  0, year);
@@ -251,8 +256,19 @@ void TopAnalysis::InsideLoop(){
   //vetoJets       = GetParam<vector<Jet>>("vetoJets");
   //genJets        = GetParam<vector<Jet>>("genJets");
   //mcJets         = GetParam<vector<Jet>>("mcJets");
-  if( (int)selLeptons.size() < 2) return;
+  fhDummy->Fill(1);
 
+  if( (int)selLeptons.size() < 2) return;
+  
+  //HEM ISSUE
+  /*
+  if((int)selJets.size() >= 1){
+   for(Int_t i = 0; i < selJets.size(); i++){ //quitar
+    if (TMath::Abs(GetDeltaHTmiss(selJets.at(i).p, selJets, selLeptons))<0.5 && selJets.at(i).p.Phi() <-0.67 && selJets.at(i).p.Phi() >-1.77 && selJets.at(i).p.Eta()<-1.2 && selJets.at(i).p.Phi()>-3.2) return;}}
+
+  for(Int_t i = 0; i < selLeptons.size(); i++){ //quitar
+    if (selLeptons.at(i).isElec && selLeptons.at(i).p.Phi() <-0.87 && selLeptons.at(i).p.Phi() >-1.57 && selLeptons.at(i).p.Eta()<-1.4 && selLeptons.at(i).p.Phi()>-3.0) return;}
+  */
   // Weights and SFs
   NormWeight     = GetParam<Double_t>("NormWeight");
   TrigSF         = GetParam<Float_t>("TriggerSF");
@@ -291,10 +307,9 @@ void TopAnalysis::InsideLoop(){
   GetWeights();
   GetJetVariables(selJets, Jets15); //quitar: esto estaba comentado (lo descomente pa minitrees de stop)
 
-  fhDummy->Fill(1);
   if(gIsTTbar && makeHistos) FillCorrHistos(); 
 
-  if(gIsTTbar && genLeptons.size() < 2) return; // Dilepton selection for ttbar!!!
+  if(gIsTTbar && genLeptons.size() < 2) return; // Dilepton selection for ttbar!!! 
   //if(gIsTTbar && genLeptons.size() >= 2) return; // Semilep selection for ttbar!!! //quitar y dejar la de arriba
 
   //if(gIsSignal){
@@ -355,7 +370,7 @@ void TopAnalysis::InsideLoop(){
 
   // Event Selection
   // ===================================================================================================================
-  if(gIsTTbar){
+  if(gIsTTbar){ 
     SetVariables();
     if(makeHistos) FillCorrHistos();
   }
@@ -368,8 +383,8 @@ void TopAnalysis::InsideLoop(){
       // Get values or the corresponding variation
 
       SetVariables(useSyst.at(sys));
-      if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();
-      //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill(); //quitar:sincro, dejar esta o la otra  
+      //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();
+      if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill(); //quitar:sincro, dejar esta o la otra  
       //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny) fTree->Fill();
       
       //if (!isSS) fHyields[gChannel][sys] -> Fill(iZVeto, weight); //quitar: sincro
@@ -891,8 +906,9 @@ void TopAnalysis::InitHistos(){
         fHElecEta[ch][cut][sys]     = CreateH1F("H_ElecEta_"    +suffix, "Lep1Eta"   , 50  ,-2.5 ,2.5);
         fHLep0Eta[ch][cut][sys]     = CreateH1D("H_Lep0Eta_"    +suffix, "Lep0Eta"   , 50  ,-2.5 ,2.5);
         fHLep1Eta[ch][cut][sys]     = CreateH1F("H_Lep1Eta_"    +suffix, "Lep1Eta"   , 50  ,-2.5 ,2.5);
-        fHDelLepPhi[ch][cut][sys]   = CreateH1F("H_DelLepPhi_"  +suffix, "DelLepPhi" , 100, 0, 1);
+        fHDelLepPhi[ch][cut][sys]   = CreateH1F("H_DelLepPhi_"  +suffix, "DelLepPhi" , 500, 0, 5);
         fHDelLepEta[ch][cut][sys]   = CreateH1F("H_DelLepEta_"  +suffix, "DelLepEta" ,  96,0, 4.8);
+        fHDelLepR[ch][cut][sys]   = CreateH1F("H_DelLepR_"  +suffix, "DelLepR" ,  96,0, 4.8);
         fHHT[ch][cut][sys]          = CreateH1F("H_HT_"         +suffix, "HT"        , 4700,30,500);
         fHJet0Eta[ch][cut][sys]     = CreateH1F("H_Jet0Eta_"  +suffix, "Jet0Eta"   , 50,-2.5,2.5);
         fHJet1Eta[ch][cut][sys]     = CreateH1F("H_Jet1Eta_"  +suffix, "Jet1Eta"   , 50,-2.5,2.5);
@@ -900,9 +916,13 @@ void TopAnalysis::InitHistos(){
         fHDYInvMassSF[ch][cut][sys] = CreateH1F("H_DY_SF_InvMass_"    +suffix, "InvMass"   ,  300,  0., 300.);
         fHInvMass[ch][cut][sys]     = CreateH1F("H_InvMass_"    +suffix, "InvMass"   ,  300,  0., 300.);
         fHInvMass2[ch][cut][sys]    = CreateH1F("H_InvMass2_"   +suffix, "InvMass2"  ,  400, 70., 110.);
+        fHInvMass2BE[ch][cut][sys]    = CreateH1F("H_InvMass2BE_"   +suffix, "InvMass2BE"  ,  400, 70., 110.);
+        fHInvMass2EB[ch][cut][sys]    = CreateH1F("H_InvMass2EB_"   +suffix, "InvMass2EB"  ,  400, 70., 110.);
+        fHInvMass2BB[ch][cut][sys]    = CreateH1F("H_InvMass2BB_"   +suffix, "InvMass2BB"  ,  400, 70., 110.);
+        fHInvMass2EE[ch][cut][sys]    = CreateH1F("H_InvMass2EE_"   +suffix, "InvMass2EE"  ,  400, 70., 110.);
         fHNBtagsNJets[ch][cut][sys] = CreateH1F("H_NBtagsNJets_"+suffix, "NBtagsNJets"   ,15 , -0.5, 14.5);
-        fHNJets[ch][cut][sys]       = CreateH1F("H_NJets_"      +suffix, "NJets"     , 8 ,-0.5, 7.5);
-        fHNBtagJets[ch][cut][sys]   = CreateH1F("H_NBtagJets_"  +suffix, "NBtagJets" , 4 ,-0.5, 3.5);
+        fHNJets[ch][cut][sys]       = CreateH1F("H_NJets_"      +suffix, "NJets"     , 16 ,-0.5, 15.5);
+        fHNBtagJets[ch][cut][sys]   = CreateH1F("H_NBtagJets_"  +suffix, "NBtagJets" , 8 ,-0.5, 7.5);
         fHJet0Pt[ch][cut][sys]      = CreateH1F("H_Jet0Pt_"     +suffix, "Jet0Pt"    , 2700,30,300);
         fHJet1Pt[ch][cut][sys]      = CreateH1F("H_Jet1Pt_"     +suffix, "Jet1Pt"    , 2200,30,250);
         fHDiLepPt[ch][cut][sys]     = CreateH1F("H_DiLepPt_"    +suffix, "DiLepPt"   , 1600,20,180);
@@ -1018,8 +1038,14 @@ void TopAnalysis::FillHistos(Int_t ch, Int_t cut, Int_t sys){
   fHDiLepPt[ch][cut][sys]     -> Fill(dileppt, weight);
   fHDelLepPhi[ch][cut][sys]   -> Fill(TMath::Abs(deltaphi)/3.141592, weight);
   fHDelLepEta[ch][cut][sys]   -> Fill(TMath::Abs(deltaeta), weight);
-  fHInvMass[ch][cut][sys]     -> Fill(invmass, weight);
+  fHDelLepR[ch][cut][sys]     -> Fill(deltaR, weight);
   fHInvMass2[ch][cut][sys]    -> Fill(invmass, weight);
+  
+  //Endcaps and barrel
+  if(lep0eta <= 1.479 & lep1eta <= 1.479) fHInvMass2BB[ch][cut][sys]     -> Fill(invmass, weight);
+  if(lep0eta <= 1.479 & lep1eta > 1.479) fHInvMass2BE[ch][cut][sys]     -> Fill(invmass, weight);
+  if(lep0eta > 1.479 & lep1eta <= 1.479) fHInvMass2EB[ch][cut][sys]     -> Fill(invmass, weight);
+  if(lep0eta > 1.479 & lep1eta > 1.479) fHInvMass2EE[ch][cut][sys]     -> Fill(invmass, weight);
 
   // Jets
   if(njets > 0){ 
@@ -1304,7 +1330,7 @@ void TopAnalysis::SetVariables(int sys){
   // that you choose
   // Global
 
-  nleps = selLeptons.size(); weight = TWeight;//quitar: dejar TWeight
+  nleps = selLeptons.size(); weight = TWeight;
   met = TMET; mt2 = TMT2; nvert = TNVert; invmass = TMll; nvert_pu = TNVert_pu;
   // Leptons
   if(nleps >= 2){
@@ -1313,6 +1339,7 @@ void TopAnalysis::SetVariables(int sys){
     dileppt = (selLeptons.at(0).p + selLeptons.at(1).p).Pt();
     deltaphi = selLeptons.at(0).p.DeltaPhi(selLeptons.at(1).p);
     deltaeta = selLeptons.at(0).p.Eta() - selLeptons.at(1).p.Eta();
+    deltaR = selLeptons.at(0).p.DeltaR(selLeptons.at(1).p);
   }
 
   // Jets
@@ -1352,7 +1379,7 @@ void TopAnalysis::SetVariables(int sys){
       pt = Get<Float_t>("Jet_pt_jerDown", i);
       m  = Get<Float_t>("Jet_mass_jerDown", i);
     }
-    Float_t alg = deepflav; 
+    Float_t alg = deepflav; //quitar: dejar deepflav
     if     (sys == kBtagUp)      isbtag = fBTagSFbUp->IsTagged(alg, flav, pt, eta);
     else if(sys == kBtagDown)    isbtag = fBTagSFbDo->IsTagged(alg, flav, pt, eta);
     else if(sys == kMistagUp)    isbtag = fBTagSFlUp->IsTagged(alg, flav, pt, eta);

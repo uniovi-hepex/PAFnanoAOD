@@ -289,7 +289,7 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t met, ht, nvert,mt2, invmass; 
     Int_t   nleps, njets, nbtags;
     Float_t lep0pt, lep1pt, lep0eta, lep1eta, lep0iso, lep1iso;
-    Float_t dileppt, deltaphi, deltaeta;
+    Float_t dileppt, deltaphi, deltaeta, deltaR;
 
     TString metvar;
     TString metvarpt;
@@ -317,6 +317,7 @@ class TopAnalysis : public PAFChainItemSelector{
   TH1F* fHElecEta[nChannels][nLevels][nSysts];
   TH1F* fHDelLepPhi[nChannels][nLevels][nSysts];
   TH1F* fHDelLepEta[nChannels][nLevels][nSysts];
+  TH1F* fHDelLepR[nChannels][nLevels][nSysts];
   TH1F* fHHT[nChannels][nLevels][nSysts];
   TH1F* fHJet0Eta[nChannels][nLevels][nSysts];
   TH1F* fHJet1Eta[nChannels][nLevels][nSysts];
@@ -345,6 +346,10 @@ class TopAnalysis : public PAFChainItemSelector{
   TH1F* fHDYInvMassSF[nChannels][nLevels][nSysts];
   TH1F* fHInvMass[nChannels][nLevels][nSysts];
   TH1F* fHInvMass2[nChannels][nLevels][nSysts];
+  TH1F* fHInvMass2BB[nChannels][nLevels][nSysts];
+  TH1F* fHInvMass2EE[nChannels][nLevels][nSysts];
+  TH1F* fHInvMass2BE[nChannels][nLevels][nSysts];
+  TH1F* fHInvMass2EB[nChannels][nLevels][nSysts];
   TH1F* fHNBtagsNJets[nChannels][nLevels][nSysts];
   TH1F* fHJetCSV[nChannels][nLevels][nSysts];
   TH1F* fHJet0CSV[nChannels][nLevels][nSysts];
