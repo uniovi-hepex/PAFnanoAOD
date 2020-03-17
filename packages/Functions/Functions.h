@@ -139,4 +139,11 @@ TLorentzVector GetColVector(vector<TLorentzVector> col);
 Double_t GetDeltaPhi(vector<TLorentzVector> col1, vector<TLorentzVector> col2);
 Double_t GetDeltaR(vector<TLorentzVector> col1, vector<TLorentzVector> col2);
 
+Float_t GetDeltaHTmiss(TLorentzVector jet, std::vector<Jet> jets, std::vector<Lepton> leptons);
+
+TLorentzVector GetHTMiss(std::vector<Jet> jets, std::vector<Lepton> leptons);
+Float_t GetDeltaHTmiss(TLorentzVector jet, std::vector<Jet> jets, std::vector<Lepton> leptons);
+Bool_t PassJetHEM18problem(TLorentzVector jet, std::vector<Jet> jets, std::vector<Lepton> leptons);
+Bool_t PassElecHEM18problem(TLorentzVector elec);
+
 #endif

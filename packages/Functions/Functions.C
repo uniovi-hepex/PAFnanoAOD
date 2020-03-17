@@ -960,3 +960,38 @@ Double_t GetDeltaPhi(vector<TLorentzVector> col1, vector<TLorentzVector> col2) {
 Double_t GetDeltaR(vector<TLorentzVector> col1, vector<TLorentzVector> col2) {
   return GetColVector(col1).DeltaR(GetColVector(col2));
 }
+
+TLorentzVector GetHTMiss(std::vector<Jet> jets, std::vector<Lepton> leptons){
+  TLorentzVector pHTmiss;
+  TLorentzVector pjet=TLorentzVector(0,0,0,0); if((int) jets.size()>0) pjet=jets.at(0).p;
+  TLorentzVector plepton=TLorentzVector(0,0,0,0); if((int) leptons.size()>0) plepton=leptons.at(0).p;
+  Int_t njets = GetNJets(jets);
+  Int_t nleps = leptons.size();
+  for(Int_t i = 1; i < njets; i++) pjet += jets.at(i).p;
+  for(Int_t i = 1; i < nleps; i++) plepton += leptons.at(i).p; 
+  pHTmiss = -(pjet+plepton);
+  return pHTmiss;
+}
+
+Float_t GetDeltaHTmiss(TLorentzVector jet, std::vector<Jet> jets, std::vector<Lepton> leptons){
+  TLorentzVector pHTmiss = GetHTMiss(jets, leptons);
+  Float_t dht = jet.DeltaPhi(pHTmiss);
+  return dht;
+}
+
+Bool_t PassJetHEM18problem(TLorentzVector jet, std::vector<Jet> jets, std::vector<Lepton> leptons){
+  Float_t dht = TMath::Abs(GetDeltaHTmiss(jet, jets, leptons));
+  Float_t phi = jet.Phi();
+  Float_t eta = jet.Eta();
+  Float_t pt  = jet.Pt();
+  return (dht<0.5) && ((phi<0.67)&&(phi>-1.77)) && ((eta<-1.2)&&(eta>-3.2)) && (pt>30);
+
+}
+
+Bool_t PassElecHEM18problem(TLorentzVector elec){
+  Float_t pt  = elec.Pt();
+  Float_t eta = elec.Eta();
+  Float_t phi = elec.Phi();
+  return (pt>30) && ((eta>-3.0)&&(eta<-1.3)) && ((phi>-1.57)&&(phi<-0.87));
+}
+

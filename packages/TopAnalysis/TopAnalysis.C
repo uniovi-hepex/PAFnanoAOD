@@ -260,15 +260,6 @@ void TopAnalysis::InsideLoop(){
 
   if( (int)selLeptons.size() < 2) return;
   
-  //HEM ISSUE
-  /*
-  if((int)selJets.size() >= 1){
-   for(Int_t i = 0; i < selJets.size(); i++){ //quitar
-    if (TMath::Abs(GetDeltaHTmiss(selJets.at(i).p, selJets, selLeptons))<0.5 && selJets.at(i).p.Phi() <-0.67 && selJets.at(i).p.Phi() >-1.77 && selJets.at(i).p.Eta()<-1.2 && selJets.at(i).p.Phi()>-3.2) return;}}
-
-  for(Int_t i = 0; i < selLeptons.size(); i++){ //quitar
-    if (selLeptons.at(i).isElec && selLeptons.at(i).p.Phi() <-0.87 && selLeptons.at(i).p.Phi() >-1.57 && selLeptons.at(i).p.Eta()<-1.4 && selLeptons.at(i).p.Phi()>-3.0) return;}
-  */
   // Weights and SFs
   NormWeight     = GetParam<Double_t>("NormWeight");
   TrigSF         = GetParam<Float_t>("TriggerSF");
@@ -299,6 +290,7 @@ void TopAnalysis::InsideLoop(){
   TPassMETFilters = GetParam<Bool_t>("METfilters");
   TPassTrigger    = GetParam<Bool_t>("passTrigger");
   isSS           = GetParam<Bool_t>("isSS");
+  TIsHEM          = GetParam<Bool_t>("isHEM");
 
   // Leptons and Jets
   GetLeptonVariables(selLeptons, vetoLeptons);
@@ -1276,6 +1268,7 @@ void TopAnalysis::SetEventVariables(){
     fTree->Branch("TMT2UnclDown", &TMT2UnclDown,  "TMT2UnclDown/F");
   }
 
+  if(gIs2018) fTree->Branch("TIsHEM",          &TIsHEM,    "TIsHEM/B");
   fTree->Branch("TNVert",          &TNVert,          "TNVert/I");
   if(gIs2017){
     fTree->Branch("TMETorig",            &TMETorig,            "TMETorig/F");

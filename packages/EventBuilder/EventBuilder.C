@@ -100,6 +100,7 @@ void EventBuilder::Initialise(){
   
 
   selLeptons = std::vector<Lepton>();
+  selJets    = std::vector<Jet>();
   vetoLeptons = std::vector<Lepton>();
 
   gIsDoubleElec = false; gIsDoubleMuon = false; gIsSingleElec = false;
@@ -139,6 +140,7 @@ void EventBuilder::InsideLoop(){
   nProcessedEvents++;
   // >>>>>>>>>>>>>> Get selected leptons:
   selLeptons = GetParam<std::vector<Lepton>>("selLeptons");
+  selJets    = GetParam<std::vector<Jet>>("selJets");
   vetoLeptons = GetParam<std::vector<Lepton>>("vetoLeptons");
 
   // Set channel
@@ -206,6 +208,24 @@ void EventBuilder::InsideLoop(){
 
   METfilters = PassesMETfilters();
 
+  // HEM18 problem
+  Int_t i = 0;
+  Bool_t isHEM = false;
+  if(gIs2018){
+    TLorentzVector tP;
+    Int_t nElec = Get<Int_t>("nElectron");
+    Int_t nJet  = Get<Int_t>("nJet");
+    for(i=0; i<nElec; i++){
+      tP.SetPtEtaPhiM(Get<Float_t>("Electron_pt", i), Get<Float_t>("Electron_eta", i), Get<Float_t>("Electron_phi", i), Get<Float_t>("Electron_mass", i));
+      isHEM = isHEM || PassElecHEM18problem(tP);
+    }
+    for(i=0; i<nJet ; i++){
+      tP.SetPtEtaPhiM(Get<Float_t>("Jet_pt", i), Get<Float_t>("Jet_eta", i), Get<Float_t>("Jet_phi",i), Get<Float_t>("Jet_mass",i));
+      isHEM = isHEM || PassJetHEM18problem(tP, selJets, selLeptons);
+    }
+  }
+ 
+
   // >>>>>>>>> Calculate norm weight
   if(gIsMCatNLO) genWeight = (Double_t)Get<Float_t>("genWeight");
   else           genWeight = 1;
@@ -217,6 +237,7 @@ void EventBuilder::InsideLoop(){
   SetParam("passTrigger",     passTrigger);
   SetParam("isSS",            isSS);
   SetParam("METfilters",      METfilters);
+  SetParam("isHEM",           isHEM);
 }
 
 

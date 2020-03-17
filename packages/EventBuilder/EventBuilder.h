@@ -52,6 +52,7 @@ class EventBuilder : public PAFChainItemSelector{
     Float_t nTrueInt;
     Int_t   gChannel;
     std::vector<Lepton> selLeptons;
+    std::vector<Jet> selJets;
     std::vector<Lepton> vetoLeptons;
 
   protected:

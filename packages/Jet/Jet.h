@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include "TLorentzVector.h"
-#include "Lepton.h"
 
 class Jet{
   public:
@@ -73,6 +72,5 @@ class Jet{
 Int_t GetNJets(std::vector<Jet> jets);
 Int_t GetBtags(std::vector<Jet> jets, Int_t dir = 0);
 Float_t GetHT(std::vector<Jet> jets);
-Float_t GetDeltaHTmiss(TLorentzVector jet, std::vector<Jet> jets, std::vector<Lepton> leptons);
 
 #endif
