@@ -75,20 +75,40 @@ def GetXsec(xsec, s, verbose, isdata):
     else: xsec = xsecdic[re.sub("_(([0-9])|([1-9][0-9])|([1-9][0-9][0-9]))$", "", s)]
   return xsec
 
+def GetSampleAndIndex(sample):
+  ''' Takes (for example) TT[0-2;7] and returns TT and [0,1,2,7] '''
+  listOfIndices = []
+  if '[' in sample and ']' in sample:
+    index = sample[sample.index('[')+1:sample.index(']')].replace(' ', '')
+    sample = sample[:sample.index('[')]
+    index = index.split(';') if ';' in index else [index]
+    for i in index:
+      if '-' in i:
+        first,last = i.split('-')
+        listOfIndices += list(range(int(first), int(last)+1))
+      else: 
+        listOfIndices.append(int(i))
+  return sample, listOfIndices
 
 def GetSampleList(path, sample):
   dic = getDicFiles(path)
   nfileInPath = len(dic)
   if verbose: print 'Found %i files in path %s'%(nfileInPath, path)
-
   samples = []
   for s in sample:
+    s, indices = GetSampleAndIndex(s)
     dk = dic.keys()
     if not s in dk: s = prefix+'_'+s
     if not s in dk:
       print 'WARNING: file %s not in path %s'%(s, path)
     else:
-      samples += dic[s]
+      allsamples = dic[s]
+      if len(indices) > 0:
+        for si in allsamples: 
+          i = int(si[len(s)+1:si.index('.root')])
+          if i in indices: samples += [si]
+      else:
+        samples += allsamples
   return samples
 
 
