@@ -1201,8 +1201,8 @@ void TopAnalysis::SetJetVariables(){
   fTree->Branch("TJet1Pt",       &TJet1Pt,     "TJet1Pt/F");
   fTree->Branch("TJet1Eta",      &TJet1Eta,    "TJet1Eta/F");
   fTree->Branch("THT",          &THT,          "THT/F");
-  fTree->Branch("TNJets",        &njets,      "TNJets/I");
-  fTree->Branch("TNBtags",       &nbtags,     "TNBtags/I");
+  fTree->Branch("TNJets",        &TNJets,      "TNJets/I");
+  fTree->Branch("TNBtags",       &TNBtags,     "TNBtags/I");
 }
 
 void TopAnalysis::SetEventVariables(){
