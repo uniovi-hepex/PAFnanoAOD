@@ -1131,6 +1131,7 @@ void TopAnalysis::SetLeptonVariables(){
   fTree->Branch("TLep1Eta",     &TLep1Eta,     "TLep1Eta/F");
   fTree->Branch("TLep1Phi",     &TLep1Phi,     "TLep1Phi/F");
 
+
   fTree->Branch("TGenLep0Pt",      &TGenLep0Pt,      "TGenLep0Pt/F");
   fTree->Branch("TGenLep0Eta",     &TGenLep0Eta,     "TGenLep0Eta/F");
   fTree->Branch("TGenLep0Phi",     &TGenLep0Phi,     "TGenLep0Phi/F");
@@ -1195,7 +1196,8 @@ void TopAnalysis::SetJetVariables(){
     fTree->Branch("TNBtagsMisTagUp",     &TNBtagsMisTagUp,   "TNBtagsMisTagUp/I");
     fTree->Branch("TNBtagsMisTagDown",   &TNBtagsMisTagDown, "TNBtagsMisTagDown/I");
   }
-
+  fTree->Branch("TJet0Phi",      &TJet0Phi,    "TJet0Phi/F");
+  fTree->Branch("TJet1Phi",      &TJet1Phi,    "TJet1Phi/F");
   fTree->Branch("TJet0Pt",       &TJet0Pt,     "TJet0Pt/F");
   fTree->Branch("TJet0Eta",      &TJet0Eta,    "TJet0Eta/F");
   fTree->Branch("TJet1Pt",       &TJet1Pt,     "TJet1Pt/F");
@@ -1268,7 +1270,7 @@ void TopAnalysis::SetEventVariables(){
     fTree->Branch("TMT2UnclDown", &TMT2UnclDown,  "TMT2UnclDown/F");
   }
 
-  if(gIs2018) fTree->Branch("TIsHEM",          &TIsHEM,    "TIsHEM/B");
+  if(gIs2018) fTree->Branch("TIsHEM",          &TIsHEM,    "TIsHEM/I");
   fTree->Branch("TNVert",          &TNVert,          "TNVert/I");
   if(gIs2017){
     fTree->Branch("TMETorig",            &TMETorig,            "TMETorig/F");
