@@ -60,6 +60,7 @@ void run(TString samp, TString selection, Double_t xsec, Double_t sumofweights, 
   // Parameters for the analysis
   if(workingdir == "") workingdir = gSystem->pwd();
   myProject->SetInputParam("sampleName", outname);
+  myProject->SetInputParam("sampString",  samp);
   myProject->SetInputParam("IsData",     isData);
   myProject->SetInputParam("weight",     tmpw);
   myProject->SetInputParam("IsMCatNLO",  isamcatnlo);

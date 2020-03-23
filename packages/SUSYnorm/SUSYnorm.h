@@ -28,6 +28,7 @@ class SUSYnorm {
   vector<TString> GetAllFiles(TString path, TString  filename , Bool_t verbose =1);
   TH1* GetHistoFromFiles(vector<TString> Files, TString histoName);
   TH2* GetHistoFromFiles2(vector<TString> Files, TString histoName);
+  std::vector<TString> TStringToVector(TString t, char separator = ',');
   
  private:
   // Muon SFs

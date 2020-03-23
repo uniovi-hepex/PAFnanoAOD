@@ -13,14 +13,25 @@ SUSYnorm::SUSYnorm(TString _path, TString _filename): fhSMS(0) {
 };
 
 void SUSYnorm::loadHisto(){
-
   vector<TString> files = GetAllFiles(path, filename);
+  for(int i=0; i<(int)files.size(); i++){
+    cout << Form("[%i] ",i) << files[i] << endl;
+  }
   fhSMS = (TH2D*)GetHistoFromFiles2(files, hname);
 }
 
 vector<TString> SUSYnorm::GetAllFiles(TString path, TString  filename, Bool_t verbose) {
   if(verbose) cout << Form("[GetAllFiles]: Obtaining files of form %s in folder %s\n", filename.Data(), path.Data());
   vector<TString> theFiles;
+  if(!path.EndsWith("/")) path += "/";
+
+  if(filename.Contains(",")){
+    theFiles = TStringToVector(filename);
+    for(int i=0; i<(int)theFiles.size(); i++){
+      theFiles[i] = path+theFiles[i];
+    }
+    return theFiles;
+  }
 
   TString command("ls ");
   if(filename != "")
@@ -328,3 +339,18 @@ Double_t SUSYnorm::GetStopXSec(Int_t StopMass){
     return newXsec;
   }
 }
+
+std::vector<TString> SUSYnorm::TStringToVector(TString t, char separator){
+  std::vector<TString> v;
+  t.ReplaceAll(" ", "");
+  Int_t n = t.CountChar(separator);
+  TString element;
+  for(Int_t i = 0; i < n; i++){
+    element = t(0, t.First(separator));
+    t = t(t.First(separator)+1, t.Sizeof());
+    v.push_back(element);
+  }
+  v.push_back(t);
+  return v;
+}
+
