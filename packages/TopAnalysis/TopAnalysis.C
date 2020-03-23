@@ -88,6 +88,7 @@ void TopAnalysis::Summary(){}
 void TopAnalysis::Initialise(){
   gIsData      = GetParam<Bool_t>("IsData");
   selection    = GetParam<TString>("selection");
+  sampString   = GetParam<TString>("sampString");
   gSampleName  = GetParam<TString>("sampleName");
   gOptions     = GetParam<TString>("_options");
   gDoSyst      = true;// gOptions.Contains("doSyst")? true : false;
@@ -125,13 +126,7 @@ void TopAnalysis::Initialise(){
   
   if(gIsSignal){
 	  TString path = GetParam<TString>("path");
-
-	  //snorm = new SUSYnorm(path, gSampleName);
-    cout<<path<<endl;
-    if(year==2016){
-    snorm = new SUSYnorm(path ,  "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCUETP8M2T4_madgra");// "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCP5_MLM_p, SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCUETP8M2T4_madgra");
-}
-    else{snorm = new SUSYnorm(path ,  "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCP5_MLM_p");}
+    snorm = new SUSYnorm(path ,  sampString);// "SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCP5_MLM_p, SMS_T2tt_3J_xqcut_20_top_corridor_2Lfilter_TuneCUETP8M2T4_madgra");
   }
      
   // Uncertainties

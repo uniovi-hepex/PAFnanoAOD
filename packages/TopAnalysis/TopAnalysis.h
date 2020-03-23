@@ -398,6 +398,7 @@ class TopAnalysis : public PAFChainItemSelector{
     Bool_t  gDoSyst;
     Int_t   gSelection;
     TString gSampleName;
+    TString sampString;
     
     TString gOptions;
     Bool_t  gIsTTbar;
