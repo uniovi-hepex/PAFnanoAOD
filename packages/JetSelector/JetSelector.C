@@ -139,6 +139,10 @@ void JetSelector::GetJetVariables(Int_t i){
   deepcsvC    = Get<Float_t>("Jet_btagDeepC", i);
   deepflav    = Get<Float_t>("Jet_btagDeepFlavB", i);
   flav = -999999; if(!gIsData) flav = Get<Int_t>("Jet_hadronFlavour", i);
+  gid         = Get<Int_t>("Jet_genJetIdx", i);
+  Int_t nGenJet = Get<Int_t>("nGenJet");
+  if(gid >= 0)  tgpJ.SetPtEtaPhiM(Get<Float_t>("GenJet_pt", gid), Get<Float_t>("GenJet_eta", gid), Get<Float_t>("GenJet_phi", gid), Get<Float_t>("GenJet_mass", gid));
+  else         tgpJ.SetPtEtaPhiM(0,0,0,0);
 }
 
 void JetSelector::GetGenJetVariables(Int_t i){
@@ -199,6 +203,12 @@ void JetSelector::InsideLoop(){
   Jet tJESUp; Jet tJESDo; Jet tJERUp; Jet tJERDo; Jet tJESCorUp; Jet tJESUnCorUp; Jet tJESCorDo; Jet tJESUnCorDo;
 
   // Loop over all the jets
+  
+  // Gaussian   : sum of jet_pt - genjet_pt > 40 GeV
+  // NonGaussian: For some jet, jet_pt - genjet_pt > 40 GeV
+  JERindex = 0; // 0 : normal, 1 : gaussian, 2 : non gaussian
+  Float_t sumdifpt = 0;
+  
   for (Int_t i = 0; i < nJet; i++) {
     // Get all jet variables
     GetJetVariables(i);
@@ -208,6 +218,11 @@ void JetSelector::InsideLoop(){
     tJ.SetDeepFlav(deepflav);
     //tJ.isBtag = IsBtag(tJ);
 
+    Float_t dpt = 0;
+    if(gid >= 0) dpt = tpJ.Pt() - tgpJ.Pt();
+    sumdifpt += dpt;
+    if(dpt > 40) JERindex = 2;
+    
     // Check and clean
     if(tJ.id > 1 && Cleaning(tJ, Leptons, minDR)){ // Jet id == 2, 6
 
@@ -228,7 +243,9 @@ void JetSelector::InsideLoop(){
       if (TMath::Abs(tJ.p.Eta()) < jet_MaxEta){
         if(tJ.p.Pt() > 15 || tJ.pTJESUp > 15 || tJ.pTJESDown > 15 || tJ.pTJERUp > 15 ) Jets15.push_back(tJ);
         if(tJ.p.Pt() > jet_MinPt){
+          
           selJets.push_back(tJ);
+          
           if(tJ.isBtag) nBtagJets++;
         }
       }
@@ -324,6 +341,7 @@ void JetSelector::InsideLoop(){
       }
     }
   }
+  if((sumdifpt > 40) && (JERindex == 0)) JERindex = 1;
 
   BtagSF           *= (dataNoTag * dataTag) / (mcNoTag * mcTag);
   BtagSFBtagUp     *= BtagSF * ( 1 + errHup );
@@ -389,6 +407,7 @@ void JetSelector::InsideLoop(){
   SetParam("BtagSFMistagUp",  BtagSFMistagUp);
   SetParam("BtagSFMistagDown",BtagSFMistagDown);
   SetParam("BtagSFFS",        BtagSFFS);
+  SetParam("JERindex",        JERindex);
 }
 
 Bool_t JetSelector::IsBtag(Jet j){

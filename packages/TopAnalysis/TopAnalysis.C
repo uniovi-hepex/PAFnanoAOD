@@ -251,6 +251,7 @@ void TopAnalysis::InsideLoop(){
   //vetoJets       = GetParam<vector<Jet>>("vetoJets");
   //genJets        = GetParam<vector<Jet>>("genJets");
   //mcJets         = GetParam<vector<Jet>>("mcJets");
+  JERindex         = GetParam<Int_t>("JERindex");
   fhDummy->Fill(1);
 
   if( (int)selLeptons.size() < 2) return;
@@ -1206,6 +1207,7 @@ void TopAnalysis::SetJetVariables(){
   fTree->Branch("THT",          &THT,          "THT/F");
   fTree->Branch("TNJets",        &njets,      "TNJets/I");
   fTree->Branch("TNBtags",       &nbtags,     "TNBtags/I");
+  fTree->Branch("TJERindex",    &JERindex,     "TJERindex/I");
 }
 
 void TopAnalysis::SetEventVariables(){

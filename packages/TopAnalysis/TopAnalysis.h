@@ -38,6 +38,7 @@ class TopAnalysis : public PAFChainItemSelector{
     std::vector<Jet> selJetsJecCorDown ;
     std::vector<Jet> selJetsJecUnCorUp   ;
     std::vector<Jet> selJetsJecUnCorDown ;
+    Int_t JERindex;
 
     std::vector<Jet> Jets15  ;
     std::vector<Jet> genJets  ;
