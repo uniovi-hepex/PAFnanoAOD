@@ -690,3 +690,76 @@ Float_t getMT2llLepScale(Lepton l1, Lepton l2, Float_t met, Float_t met_phi, int
   return MT2;
 }
 
+Float_t getMT2lb(TLorentzVector plep0, TLorentzVector plep1, TLorentzVector pjet0, TLorentzVector pjet1, Float_t met, Float_t met_phi){
+  TLorentzVector pmet = TLorentzVector();
+  pmet.SetPtEtaPhiM(met, 0, met_phi, 0);
+  return getMT2lb(plep0, plep1, pjet0, pjet1, pmet);
+}
+
+
+Float_t getMT2lb(TLorentzVector plep0, TLorentzVector plep1, TLorentzVector pjet0, TLorentzVector pjet1, TLorentzVector pmet){
+  float MT2llbb;
+  TLorentzVector LepPlusBtagJet00 = plep0 + pjet0;
+  TLorentzVector LepPlusBtagJet10 = plep1 + pjet0;
+  TLorentzVector LepPlusBtagJet11 = plep1 + pjet1;
+  TLorentzVector LepPlusBtagJet01 = plep0 + pjet1;
+  if (LepPlusBtagJet11.M()<173 && LepPlusBtagJet00.M()<173 && (LepPlusBtagJet10.M()>173 || LepPlusBtagJet01.M()>173))
+    MT2llbb=getMT2(LepPlusBtagJet00, LepPlusBtagJet11, pmet, 0.);
+  else if ((LepPlusBtagJet11.M()>173 || LepPlusBtagJet00.M()>173) && LepPlusBtagJet10.M()<173 && LepPlusBtagJet01.M()<173)
+    MT2llbb=getMT2(LepPlusBtagJet01, LepPlusBtagJet10, pmet, 0.);
+  else if (LepPlusBtagJet11.M()<173 && LepPlusBtagJet00.M()<173 && LepPlusBtagJet10.M()<173 && LepPlusBtagJet01.M()<173) {
+    if ( fabs(LepPlusBtagJet11.M()-LepPlusBtagJet00.M()) < fabs(LepPlusBtagJet10.M()-LepPlusBtagJet01.M()) )
+      MT2llbb=getMT2(LepPlusBtagJet00, LepPlusBtagJet11, pmet, 0.);
+    else
+      MT2llbb=getMT2(LepPlusBtagJet01, LepPlusBtagJet10, pmet, 0.);
+  }
+  else
+    MT2llbb=0;
+  return MT2llbb;
+}
+
+Float_t getMT2lb(TLorentzVector plep0, TLorentzVector plep1, TLorentzVector pmet, std::vector<Jet> jets){
+  Int_t njets = jets.size();
+  if(njets < 2) return 0.;
+  if(njets == 2) return getMT2lb(plep0, plep1, jets.at(0).p, jets.at(1).p, pmet);
+  
+  TLorentzVector b0; TLorentzVector b1;
+  Int_t nbtags; Bool_t isBtag;
+  Float_t val = 0; Int_t bestIndex = 0; Float_t bestVal = 0;
+  for(Int_t i = 0; i < njets; i++){
+    isBtag = jets.at(i).isBtag;
+    if(isBtag) nbtags += 1; 
+  }
+  if(nbtags==0) return getMT2lb(plep0, plep1, jets.at(0).p, jets.at(1).p, pmet);
+  else if(nbtags==1){
+    bestIndex = -1; bestVal = -99;
+    for(Int_t i = 0; i < njets; i++){
+      isBtag = jets.at(i).isBtag;
+      if(isBtag) b0 = jets.at(i).p;
+      else{
+        val = jets.at(i).GetDeepFlav();
+        if(val > bestVal){
+          bestVal = val;
+          bestIndex = i;
+        }
+      }
+    }
+    b1 = jets.at(bestIndex).p;
+    return getMT2lb(plep0, plep1, b0, b1, pmet);
+  }
+  else{
+    Int_t nIDB = 0;
+    for(Int_t i = 0; i < njets; i++){
+      isBtag = jets.at(i).isBtag;
+      if(isBtag){
+        nIDB++;
+        if     (nIDB == 1) b0 = jets.at(i).p;
+        else if(nIDB == 2) b1 = jets.at(i).p;
+      }
+    }
+    return getMT2lb(plep0, plep1, b0, b1, pmet);
+  }
+  return 0.;
+}
+
+
