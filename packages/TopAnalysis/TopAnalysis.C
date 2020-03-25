@@ -374,6 +374,10 @@ void TopAnalysis::InsideLoop(){
       if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill(); //quitar:sincro, dejar esta o la otra  
       //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny) fTree->Fill();
       
+      // ee, mm
+      //if (sys == 0 && makeTree && TChannel == iElec && !TIsOnZ && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill(); //quitar:sincro, dejar esta o la otra  
+      //if (sys == 0 && makeTree && TChannel == iMuon && !TIsOnZ && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill(); //quitar:sincro, dejar esta o la otra  
+      
       //if (!isSS) fHyields[gChannel][sys] -> Fill(iZVeto, weight); //quitar: sincro
       if (invmass > 20 && lep0pt > 25 && lep1pt > 20) {
 
@@ -442,6 +446,7 @@ void TopAnalysis::GetLeptonVariables(std::vector<Lepton> selLeptons, std::vector
   }
   TChannel = gChannel;
   TIsSS = isSS;
+  TIsOnZ = false;
   gChannel = gChannel -1; // gchannel used for chan index of histograms
 
   Int_t id0 = 0; Int_t id1 = 0; Int_t indexMuon = 0; Int_t indexElec = 1;
@@ -502,6 +507,7 @@ void TopAnalysis::GetLeptonVariables(std::vector<Lepton> selLeptons, std::vector
       elec.SetPtEtaPhiM(TElecPtDo, TElecEta, TElecPhi, TElecM);
       TMllElecDo = (muon+elec).M();
     }
+    TIsOnZ             = abs( (selLeptons.at(0).p+selLeptons.at(1).p).M() - 91 ) < 15;
   }
   TPassDilep         = ( (TMuonPt   > 25 && TElecPt   > 20) || (TMuonPt   > 20 && TElecPt   > 25) ) && TMll       > 20;
   if(gIsData){
@@ -625,9 +631,12 @@ void TopAnalysis::GetMET(){
   TMETPhi    = Get<Float_t>(metvarphi);  // MET phi
   TMETorig    = Get<Float_t>("MET_pt"); TMT2orig = 0;
   TMETsig = Get<Float_t>("MET_significance");
+  TLorentzVector pmet; pmet.SetPtEtaPhiM(TMET, 0, TMETPhi, 0);
   if((Int_t) selLeptons.size() >= 2){
     TMT2 = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMET, TMETPhi);
     if(gIs2017) TMT2orig = getMT2ll(selLeptons.at(0), selLeptons.at(1), TMETorig, Get<Float_t>("MET_phi"));
+    
+    TMT2lblb = getMT2lb(selLeptons.at(0).p, selLeptons.at(1).p, pmet, selJets);
   }
   
 
@@ -644,7 +653,6 @@ void TopAnalysis::GetMET(){
     TPassMT2Any = TMT2 > mt2cut;
   }
 
-  TLorentzVector pmet; pmet.SetPtEtaPhiM(TMET, 0, TMETPhi, 0);
 
   TNVert_pu = 0; TgenTop1Pt = 0; TgenTop2Pt = 0; TGenMET = 0; 
   TMETJESUp = 0; TMETJESDown = 0; TMETJERUp = 0; TMETJERDown = 0; TMETUnclUp = 0; TMETUnclDown = 0; TMETMuonESUp = 0; TMETMuonESDown = 0; TMETElecESUp = 0; TMETElecESDown = 0; TMETPhiJESUp = 0; TMETPhiJESDown = 0; TMETPhiJERUp = 0; TMETPhiJERDown = 0; TMETPhiUnclUp = 0; TMETPhiUnclDown = 0; TMETPhiMuonESUp = 0; TMETPhiMuonESDown = 0; TMETPhiElecESUp = 0; TMETPhiElecESDown = 0; TMT2JESUp = 0; TMT2JESDown = 0; TMT2JERUp = 0; TMT2JERDown = 0; TMT2UnclUp = 0; TMT2UnclDown = 0; TMT2MuonESUp = 0; TMT2MuonESDown = 0; TMT2ElecESUp = 0; TMT2ElecESDown = 0;
@@ -1207,6 +1215,7 @@ void TopAnalysis::SetEventVariables(){
   fTree->Branch("TMET",            &TMET,            "TMET/F");
   fTree->Branch("TMETPhi",     &TMETPhi,     "TMETPhi/F");
   fTree->Branch("TMT2",            &TMT2,            "TMT2/F");
+  fTree->Branch("TMT2lblb",       &TMT2lblb,          "TMT2lblb/F");
   fTree->Branch("TMETsig", &TMETsig, "TMETsig/F");
   if(!gIsData){
     fTree->Branch("TWeight_ElecEffUp",      &TWeight_ElecEffUp,     "TWeight_ElecEffUp/F");

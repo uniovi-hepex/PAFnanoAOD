@@ -138,6 +138,7 @@ class TopAnalysis : public PAFChainItemSelector{
     //Int_t   TNVert;
     Float_t TMET;      // MET
     Float_t TMT2;      // MET
+    Float_t TMT2lblb; 
     Float_t TMT2orig;
     Float_t TMETorig;
     Float_t TMETpuppi;      // MET
@@ -148,6 +149,7 @@ class TopAnalysis : public PAFChainItemSelector{
 	Float_t TMETsig; //MET significance
     Float_t TgenTop1Pt = 0;
     Float_t TgenTop2Pt = 0;
+    Int_t  TIsOnZ;
     Int_t  TPassDilep;
     Int_t  TPassDilepMuonESUp;
     Int_t  TPassDilepMuonESDo;

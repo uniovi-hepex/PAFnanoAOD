@@ -86,5 +86,8 @@ int mt2::signchange_p( long double t1, long double t2, long double t3, long doub
 Float_t getMT2(TLorentzVector plep1, TLorentzVector plep2, TLorentzVector pmet, Float_t mass);
 Float_t getMT2ll(Lepton l1, Lepton l2, Float_t met, Float_t met_phi);
 Float_t getMT2llLepScale(Lepton l1, Lepton l2, Float_t met, Float_t met_phi, int id, int dir);
+Float_t getMT2lb(TLorentzVector plep0, TLorentzVector plep1, TLorentzVector pjet0, TLorentzVector pjet1, Float_t met, Float_t met_phi);
+Float_t getMT2lb(TLorentzVector plep0, TLorentzVector plep1, TLorentzVector pmet, std::vector<Jet> jets);
+Float_t getMT2lb(TLorentzVector plep0, TLorentzVector plep1, TLorentzVector pjet0, TLorentzVector pjet1, TLorentzVector pmet);
 
 #endif
