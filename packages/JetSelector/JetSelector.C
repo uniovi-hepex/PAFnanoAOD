@@ -208,6 +208,7 @@ void JetSelector::InsideLoop(){
   // NonGaussian: For some jet, jet_pt - genjet_pt > 40 GeV
   JERindex = 0; // 0 : normal, 1 : gaussian, 2 : non gaussian
   Float_t sumdifpt = 0;
+  TLorentzVector sumdifptvec(0,0,0,0);
   
   for (Int_t i = 0; i < nJet; i++) {
     // Get all jet variables
@@ -218,9 +219,13 @@ void JetSelector::InsideLoop(){
     tJ.SetDeepFlav(deepflav);
     //tJ.isBtag = IsBtag(tJ);
 
-    Float_t dpt = 0;
-    if(gid >= 0) dpt = tpJ.Pt() - tgpJ.Pt();
-    sumdifpt += dpt;
+    Float_t dpt = 0; TLorentzVector deltavec(0,0,0,0);
+    if(gid >= 0){
+       dpt = TMath::Abs(tpJ.Pt() - tgpJ.Pt());
+      deltavec = tpJ - tgpJ;
+    }
+    sumdifpt    += dpt;
+    sumdifptvec += deltavec;
     if(dpt > 40) JERindex = 2;
     
     // Check and clean
@@ -341,7 +346,7 @@ void JetSelector::InsideLoop(){
       }
     }
   }
-  if((sumdifpt > 40) && (JERindex == 0)) JERindex = 1;
+  if((TMath::Abs(sumdifptvec.Pt()) > 40) && (JERindex == 0)) JERindex = 1;
 
   BtagSF           *= (dataNoTag * dataTag) / (mcNoTag * mcTag);
   BtagSFBtagUp     *= BtagSF * ( 1 + errHup );
