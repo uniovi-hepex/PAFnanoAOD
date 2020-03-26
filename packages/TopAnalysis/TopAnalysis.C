@@ -371,11 +371,11 @@ void TopAnalysis::InsideLoop(){
 
       SetVariables(useSyst.at(sys));
       //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();
-      if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill(); //quitar:sincro, dejar esta o la otra  
+      //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill(); //quitar:sincro, dejar esta o la otra  
       //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny) fTree->Fill();
       
       // ee, mm
-      //if (sys == 0 && makeTree && TChannel == iElec && !TIsOnZ && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill(); //quitar:sincro, dejar esta o la otra  
+      if (sys == 0 && makeTree && TChannel == iElec && !TIsOnZ && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill(); //quitar:sincro, dejar esta o la otra  
       //if (sys == 0 && makeTree && TChannel == iMuon && !TIsOnZ && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill(); //quitar:sincro, dejar esta o la otra  
       
       //if (!isSS) fHyields[gChannel][sys] -> Fill(iZVeto, weight); //quitar: sincro
