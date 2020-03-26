@@ -90,7 +90,10 @@ class JetSelector : public PAFChainItemSelector{
     Int_t nJet;
     Jet tJ;
     TLorentzVector tpJ; 
+    TLorentzVector tgpJ; 
     TLorentzVector tmcJ; 
+    Int_t gid;
+    Int_t JERindex;
     Int_t jetId;
     Int_t flavmc;
     Int_t flav;
