@@ -96,7 +96,7 @@ void TopAnalysis::Initialise(){
   gIsTTbar     = false;
   gIsTTany     = false;
   gSelection   = GetSelection(selection);
-  gDoElecES    = false;
+  gDoElecES    = true;
   gDoMuonES    = gOptions.Contains("MuonES")? true : false;
   gDoJECunc    = gOptions.Contains("JECunc")? true : false;
   gDoPDFunc    = gOptions.Contains("PDF")? true : false;
@@ -286,7 +286,7 @@ void TopAnalysis::InsideLoop(){
   TPassMETFilters = GetParam<Bool_t>("METfilters");
   TPassTrigger    = GetParam<Bool_t>("passTrigger");
   isSS           = GetParam<Bool_t>("isSS");
-  TIsHEM          = GetParam<Bool_t>("isHEM");
+  TIsHEM          = GetParam<Int_t>("isHEM");
 
   // Leptons and Jets
   GetLeptonVariables(selLeptons, vetoLeptons);
@@ -500,8 +500,8 @@ void TopAnalysis::GetLeptonVariables(std::vector<Lepton> selLeptons, std::vector
     }
     if(gDoElecES){
       //GetEnergyUnc
-      TElecPtUp = selLeptons.at(indexMuon).Pt();//.PtUp();
-      TElecPtDo = selLeptons.at(indexMuon).Pt();//.PtDo();
+      TElecPtUp = selLeptons.at(indexElec).GetPtUp();//.PtUp();
+      TElecPtDo = selLeptons.at(indexElec).GetPtDo();//.PtDo();
       muon.SetPtEtaPhiM(TMuonPt,   TMuonEta, TMuonPhi, TMuonM);
       elec.SetPtEtaPhiM(TElecPtUp, TElecEta, TElecPhi, TElecM);
       TMllElecUp = (muon+elec).M();
@@ -739,13 +739,13 @@ TMT2JESCorUp = 0; TMT2JESCorDown = 0; TMT2JESUnCorUp = 0; TMT2JESUnCorDown = 0; 
   if(gDoElecES){
     TLorentzVector elec; TLorentzVector elecup; TLorentzVector elecdo; TLorentzVector muon;
     elec  .SetPtEtaPhiM(TElecPt,   TElecEta, TElecPhi, TElecM);
-    elecup.SetPtEtaPhiM(TElecPtUp, TElecEta, TElecPhi, TElecM);
-    elecdo.SetPtEtaPhiM(TElecPtDo, TElecEta, TElecPhi, TElecM);
+    elecup = elec*(TElecPtUp/TElecPt);//.SetPtEtaPhiM(TElecPtUp, TElecEta, TElecPhi, TElecM);
+    elecdo = elec*(TElecPtDo/TElecPt);//.SetPtEtaPhiM(TElecPtDo, TElecEta, TElecPhi, TElecM);
     TLorentzVector metelup = LEStoMET(pmet, elec, elecup);
     TLorentzVector meteldo = LEStoMET(pmet, elec, elecdo);
     TMETElecESDown    = meteldo.Pt();
-    TMETPhiElecESDown = meteldo.Pt();
-    TMETElecESUp      = metelup.Phi();
+    TMETElecESUp      = metelup.Pt();
+    TMETPhiElecESDown = meteldo.Phi();
     TMETPhiElecESUp   = metelup.Phi();
     if((Int_t) selLeptons.size() >= 2){
       muon  .SetPtEtaPhiM(TMuonPt,   TMuonEta, TMuonPhi, TMuonM);
@@ -767,6 +767,7 @@ void TopAnalysis::GetWeights(){
   TWeight_ElecEffUp = 1; TWeight_ElecEffDown = 1; TWeight_MuonEffUp = 1; TWeight_MuonEffDown = 1;
   TWeight_TrigUp = 1; TWeight_TrigDown = 1; TWeight_PUDown = 1; TWeight_PUUp = 1; TWeight = 1; TWeight_noPU = 1; 
   TWeight_ISRUp   = 1; TWeight_ISRDown = 1; TWeight_FSRUp   = 1; TWeight_FSRDown = 1; TWeight_PrefUp = 1; TWeight_PrefDown = 1; TWeight_TopPtUp = 1; TWeight_TopPtDown = 1;
+  TWeight_ME0 = 1; TWeight_ME1 = 1; TWeight_ME2 = 1; TWeight_ME3 = 1; TWeight_ME4 = 1; TWeight_ME5 = 1; TWeight_ME6 = 1; TWeight_ME7 = 1; TWeight_ME8 = 1;
   if(gIsData) return;
   if(TNSelLeps < 2) return;
   Float_t lepSF   = selLeptons.at(0).GetSF( 0)*selLeptons.at(1).GetSF( 0);
@@ -844,6 +845,15 @@ void TopAnalysis::GetWeights(){
   TWeight_TopPtUp   = TWeight;
   TWeight_TopPtDown = TWeight;
   if(gIsTTany) TWeight_TopPtUp    = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeight*GetTopPtWeight(TTop0Pt, TTop1Pt);
+  TWeight_ME0 = TWeight*Get<Float_t>("LHEScaleWeight",0);
+  TWeight_ME1 = TWeight*Get<Float_t>("LHEScaleWeight",1);
+  TWeight_ME2 = TWeight*Get<Float_t>("LHEScaleWeight",2);
+  TWeight_ME3 = TWeight*Get<Float_t>("LHEScaleWeight",3);
+  TWeight_ME4 = TWeight*Get<Float_t>("LHEScaleWeight",4);
+  TWeight_ME5 = TWeight*Get<Float_t>("LHEScaleWeight",5);
+  TWeight_ME6 = TWeight*Get<Float_t>("LHEScaleWeight",6);
+  TWeight_ME7 = TWeight*Get<Float_t>("LHEScaleWeight",7);
+  TWeight_ME8 = TWeight*Get<Float_t>("LHEScaleWeight",8);
 }
 
 void TopAnalysis::InitHistos(){
@@ -1234,6 +1244,16 @@ void TopAnalysis::SetEventVariables(){
     fTree->Branch("TWeight_FSRDown",         &TWeight_FSRDown,        "TWeight_FSRDown/F");
     fTree->Branch("TWeight_PrefUp",           &TWeight_PrefUp,          "TWeight_PrefUp/F");
     fTree->Branch("TWeight_PrefDown",         &TWeight_PrefDown,        "TWeight_PrefDown/F");
+    fTree->Branch("TWeight_ME0",          &TWeight_ME0,          "TWeight_ME0/F");
+    fTree->Branch("TWeight_ME1",          &TWeight_ME1,          "TWeight_ME1/F");
+    fTree->Branch("TWeight_ME2",          &TWeight_ME2,          "TWeight_ME2/F");
+    fTree->Branch("TWeight_ME3",          &TWeight_ME3,          "TWeight_ME3/F");
+    fTree->Branch("TWeight_ME4",          &TWeight_ME4,          "TWeight_ME4/F");
+    fTree->Branch("TWeight_ME5",          &TWeight_ME5,          "TWeight_ME5/F");
+    fTree->Branch("TWeight_ME6",          &TWeight_ME6,          "TWeight_ME6/F");
+    fTree->Branch("TWeight_ME7",          &TWeight_ME7,          "TWeight_ME7/F");
+    fTree->Branch("TWeight_ME8",          &TWeight_ME8,          "TWeight_ME8/F");
+
     if(gIsTTany) fTree->Branch("TWeight_TopPtUp",         &TWeight_TopPtUp,        "TWeight_TopPtUp/F");
     if(gIsTTany) fTree->Branch("TWeight_TopPtDown",         &TWeight_TopPtDown,        "TWeight_TopPtDown/F");
     fTree->Branch("TNVert_pu",       &TNVert_pu,          "TNVert_pu/F");
@@ -1274,7 +1294,7 @@ void TopAnalysis::SetEventVariables(){
     fTree->Branch("TMT2UnclDown", &TMT2UnclDown,  "TMT2UnclDown/F");
   }
 
-  if(gIs2018) fTree->Branch("TIsHEM",          &TIsHEM,    "TIsHEM/B");
+  if(gIs2018) fTree->Branch("TIsHEM",          &TIsHEM,    "TIsHEM/I");
   fTree->Branch("TNVert",          &TNVert,          "TNVert/I");
   if(gIs2017){
     fTree->Branch("TMETorig",            &TMETorig,            "TMETorig/F");

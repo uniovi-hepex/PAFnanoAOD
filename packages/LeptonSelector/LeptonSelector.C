@@ -328,6 +328,11 @@ void LeptonSelector::InsideLoop(){
     else{
       tL.SetIso(RelIso03);
       tL.SetR9(R9);
+      Float_t fact = energyerr/tP.Energy();
+      ptUp = tL.Pt()*(1+fact);
+      ptDo = tL.Pt()*(1-fact);
+      tL.SetPtUp(ptUp);
+      tL.SetPtDo(ptDo);
       //if(gDoElecES) 
     }
     tL.SetSIP3D(sip);

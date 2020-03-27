@@ -85,7 +85,7 @@ class TopAnalysis : public PAFChainItemSelector{
     Int_t   gChannel;
     Bool_t  TPassMETFilters;
     Bool_t  TPassTrigger;
-    Bool_t  TIsHEM;
+    Int_t TIsHEM;
     Bool_t  isSS;
     Double_t NormWeight;
 
@@ -285,6 +285,15 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t  TWeight_PrefDown;
     Float_t  TWeight_TopPtUp;
     Float_t  TWeight_TopPtDown;
+    Float_t  TWeight_ME0;
+    Float_t  TWeight_ME1;
+    Float_t  TWeight_ME2;
+    Float_t  TWeight_ME3;
+    Float_t  TWeight_ME4;
+    Float_t  TWeight_ME5;
+    Float_t  TWeight_ME6;
+    Float_t  TWeight_ME7;
+    Float_t  TWeight_ME8;
     
     
     std::vector<Jet> jets;
