@@ -139,10 +139,11 @@ void JetSelector::GetJetVariables(Int_t i){
   deepcsvC    = Get<Float_t>("Jet_btagDeepC", i);
   deepflav    = Get<Float_t>("Jet_btagDeepFlavB", i);
   flav = -999999; if(!gIsData) flav = Get<Int_t>("Jet_hadronFlavour", i);
+  if(!gIsData){
   gid         = Get<Int_t>("Jet_genJetIdx", i);
   Int_t nGenJet = Get<Int_t>("nGenJet");
   if(gid >= 0)  tgpJ.SetPtEtaPhiM(Get<Float_t>("GenJet_pt", gid), Get<Float_t>("GenJet_eta", gid), Get<Float_t>("GenJet_phi", gid), Get<Float_t>("GenJet_mass", gid));
-  else         tgpJ.SetPtEtaPhiM(0,0,0,0);
+  else         tgpJ.SetPtEtaPhiM(0,0,0,0);}
 }
 
 void JetSelector::GetGenJetVariables(Int_t i){
@@ -218,7 +219,7 @@ void JetSelector::InsideLoop(){
     tJ.SetDeepCSVC(deepcsvC);
     tJ.SetDeepFlav(deepflav);
     //tJ.isBtag = IsBtag(tJ);
-
+    if(!gIsData){
     Float_t dpt = 0; TLorentzVector deltavec(0,0,0,0);
     if(gid >= 0){
        dpt = TMath::Abs(tpJ.Pt() - tgpJ.Pt());
@@ -226,7 +227,7 @@ void JetSelector::InsideLoop(){
     }
     sumdifpt    += dpt;
     sumdifptvec += deltavec;
-    if(dpt > 40) JERindex = 2;
+    if(dpt > 40) JERindex = 2;}
     
     // Check and clean
     if(tJ.id > 1 && Cleaning(tJ, Leptons, minDR)){ // Jet id == 2, 6
