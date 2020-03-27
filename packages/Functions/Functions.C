@@ -984,7 +984,7 @@ Bool_t PassJetHEM18problem(TLorentzVector jet, std::vector<Jet> jets, std::vecto
   Float_t phi = jet.Phi();
   Float_t eta = jet.Eta();
   Float_t pt  = jet.Pt();
-  return (dht<0.5) && ((phi<0.67)&&(phi>-1.77)) && ((eta<-1.2)&&(eta>-3.2)) && (pt>30);
+  return (dht<0.5) && ((phi<-0.67)&&(phi>-1.77)) && ((eta<-1.2)&&(eta>-3.2)) && (pt>30);
 
 }
 
@@ -992,6 +992,6 @@ Bool_t PassElecHEM18problem(TLorentzVector elec){
   Float_t pt  = elec.Pt();
   Float_t eta = elec.Eta();
   Float_t phi = elec.Phi();
-  return (pt>30) && ((eta>-3.0)&&(eta<-1.3)) && ((phi>-1.57)&&(phi<-0.87));
+  return (pt>30) && ((eta>-3.0)&&(eta<-1.4)) && ((phi>-1.57)&&(phi<-0.87));
 }
 

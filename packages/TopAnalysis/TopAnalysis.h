@@ -85,7 +85,7 @@ class TopAnalysis : public PAFChainItemSelector{
     Int_t   gChannel;
     Bool_t  TPassMETFilters;
     Bool_t  TPassTrigger;
-    Int_t TIsHEM;
+    Int_t  TIsHEM;
     Bool_t  isSS;
     Double_t NormWeight;
 
