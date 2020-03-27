@@ -371,15 +371,15 @@ void TopAnalysis::InsideLoop(){
       // Get values or the corresponding variation
 
       SetVariables(useSyst.at(sys));
-      //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();
-      //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill(); //quitar:sincro, dejar esta o la otra  
+      if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();
+      //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill();  
       //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny) fTree->Fill();
       
       // ee, mm
-      if (sys == 0 && makeTree && TChannel == iElec && !TIsOnZ && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill(); //quitar:sincro, dejar esta o la otra  
-      //if (sys == 0 && makeTree && TChannel == iMuon && !TIsOnZ && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill(); //quitar:sincro, dejar esta o la otra  
+      //if (sys == 0 && makeTree && TChannel == iElec && !TIsOnZ && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill();  
+      //if (sys == 0 && makeTree && TChannel == iMuon && !TIsOnZ && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill();   
       
-      //if (!isSS) fHyields[gChannel][sys] -> Fill(iZVeto, weight); //quitar: sincro
+     
       if (invmass > 20 && lep0pt > 25 && lep1pt > 20) {
 
         if(isSS) fHSSyields[gChannel][sys] -> Fill(idilepton, weight);
@@ -392,7 +392,7 @@ void TopAnalysis::InsideLoop(){
         if (TChannel == iElMu || (TMath::Abs(invmass - 91) > 15)  ){ //  Z Veto in ee, µµ
 
           if (isSS) fHSSyields[gChannel][sys] -> Fill(iZVeto, weight);
-          else {      fHyields[gChannel][sys] -> Fill(iZVeto, weight); //quitar: sincro, descomentar
+          else {      fHyields[gChannel][sys] -> Fill(iZVeto, weight); 
             FillHistos(gChannel, iZVeto, sys);}
 
           if(TChannel == iElMu || met > 40){   // MET > 40 in ee, µµ
@@ -1210,7 +1210,7 @@ void TopAnalysis::SetJetVariables(){
 
   fTree->Branch("TNJets",        &TNJets,      "TNJets/I");
   fTree->Branch("TNBtags",       &TNBtags,     "TNBtags/I");
-  fTree->Branch("TJERindex",    &JERindex,     "TJERindex/I");
+  if(!gIsData) fTree->Branch("TJERindex",    &JERindex,     "TJERindex/I");
 
 }
 
