@@ -197,6 +197,31 @@ def GetAllInfoFromFile(fname, treeName = 'Events'):
     return [nEvents, nGenEvents, nSumOfWeights, isData]
   else: print '[ERROR] [GetAllInfoFromFile]: wrong input' 
 
+def GetSumOfLHEweights(fname, treeName = 'Runs'):
+  slist = lambda X,Y : [x+y for x,y in zip(X, Y)]
+  if isinstance(fname, str) and ',' in fname:
+    fname = fname.replace(' ', '').split(',')
+  vME = []; vPDF = [];
+  if isinstance(fname, list):
+    for f in fname:
+      ME, PDF = GetSumOfLHEweights(f, treeName)
+      if vME  == []: vME  = ME
+      else         : vME  = slist(vME,  ME)
+      if vPDF == []: vPDF = PDF
+      else         : vPDF = slist(vPDF, PDF)
+  else:
+    f = TFile.Open(fname)
+    t = f.Get(treeName)
+    for e in t:
+      if vME == [] or vPDF == []:
+        nPDF = e.nLHEPdfSumw_
+        nME  = e.nLHEScaleSumw_
+        vPDF = [0]*nPDF
+        vME  = [0]*nME
+      vME  = slist(vME , e.LHEScaleSumw_)
+      vPDF = slist(vPDF, e.LHEPdfSumw_)
+  return vME, vPDF
+
 def GetProcessInfo(path, process='', treeName = 'Events'):
   ''' Prints all info from a process in path '''
   if isinstance(path, list): 
@@ -233,7 +258,7 @@ def GetValOfVarInTree(fname, var, treeName = 'Events'):
     return False
   f = TFile.Open(fname)
   t = f.Get(treeName)
-  t.GetEntry(1)
+  t.GetEntry(0)
   return getattr(t,var)
 
 

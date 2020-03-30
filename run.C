@@ -17,9 +17,17 @@ std::vector<TString> TStringToVector(TString t, char separator = ','){
   return v;
 }
 
-void run(TString samp, TString selection, Double_t xsec, Double_t sumofweights, Int_t year, TString outname, Int_t nSlots = 1, TString outpath = "", TString options = "", Bool_t isamcatnlo = false, Bool_t isData = false, Long64_t nEvents = 0, Long64_t FirstEvent = 0, TString workingdir = "", TString path = "", Bool_t debug = false) {
+std::vector<Double_t> TStringToDouble(TString t, char separator = ','){
+  std::vector<TString> tv = TStringToVector(t, separator);
+  std::vector<Double_t> fv;
+  Int_t n = tv.size();
+  for(int i = 0; i < n; i++){
+    fv.push_back(tv.at(i).Atof());
+  }
+  return fv;
+}
 
-
+void run(TString samp, TString selection, Double_t xsec, Double_t sumofweights, Int_t year, TString outname, Int_t nSlots = 1, TString outpath = "", TString options = "", Bool_t isamcatnlo = false, Bool_t isData = false, Long64_t nEvents = 0, Long64_t FirstEvent = 0, TString workingdir = "", TString path = "", Bool_t debug = false, TString SumOfMEweights = "", TString SumOfPDFweights = "") {
 
   if (debug) {
     gProofDebugMask = TProofDebug::kAll;
@@ -70,6 +78,8 @@ void run(TString samp, TString selection, Double_t xsec, Double_t sumofweights, 
   myProject->SetInputParam("path", path); //quitar
   myProject->SetInputParam("_options",   options);
   myProject->SetInputParam("year",       TString(Form("%i",year)));
+  myProject->SetInputParam("SumOfPDFweights", SumOfPDFweights);
+  myProject->SetInputParam("SumOfMEweights",  SumOfMEweights);
   
   if (selection == "TWAnalysis") {
     TString tmvalibpath = gSystem->Getenv("ROOTSYS");

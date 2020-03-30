@@ -45,6 +45,9 @@ class TopAnalysis : public PAFChainItemSelector{
     std::vector<Jet> mcJets  ;
     std::vector<Jet> vetoJets;
 
+    std::vector<Double_t> SumOfPDFweights;
+    std::vector<Double_t> SumOfMEweights;
+
     BTagSFUtil *fBTagSFnom;
     BTagSFUtil *fBTagSFbUp;
     BTagSFUtil *fBTagSFbDo;
@@ -52,6 +55,7 @@ class TopAnalysis : public PAFChainItemSelector{
     BTagSFUtil *fBTagSFlDo;
     Int_t era;
     Int_t nPDFweights;
+    Int_t nMEweights = 9;
     Int_t   TNVert;
     Float_t   TNVert_pu;
     TTree* fTree;
@@ -285,16 +289,8 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t  TWeight_PrefDown;
     Float_t  TWeight_TopPtUp;
     Float_t  TWeight_TopPtDown;
-    Float_t  TWeight_ME0;
-    Float_t  TWeight_ME1;
-    Float_t  TWeight_ME2;
-    Float_t  TWeight_ME3;
-    Float_t  TWeight_ME4;
-    Float_t  TWeight_ME5;
-    Float_t  TWeight_ME6;
-    Float_t  TWeight_ME7;
-    Float_t  TWeight_ME8;
-    
+    Float_t  TWeight_ME[9];
+    Float_t  TWeight_PDF[110];
     
     std::vector<Jet> jets;
     Double_t weight;

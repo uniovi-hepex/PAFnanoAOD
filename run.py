@@ -25,7 +25,7 @@ except ImportError:
   print 'Please, load PAF... (typically by executing \'source /opt/PAF/PAF_setup.sh\')'
   exit()
 
-from fileReader import getDicFiles, GetAllInfoFromFile, IsVarInTree
+from fileReader import getDicFiles, GetAllInfoFromFile, IsVarInTree, GetValOfVarInTree, GetSumOfLHEweights
 
 
 def ExecOrder(command, verbose = False, pretend = False):
@@ -153,6 +153,14 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
   samples = GetSampleList(path, sample)
 
   nEventsInTree, nGenEvents, nSumOfWeights, isData = GetAllInfoFromFile([path + x for x in samples])
+
+  MEweights  = ''; PDFweights = ''
+  if GetValOfVarInTree(path+samples[0], 'nLHEPdfSumw_', 'Runs') > 1 and GetValOfVarInTree(path+samples[0], 'nLHEScaleSumw_', 'Runs') > 1:
+    vME, vPDF = GetSumOfLHEweights([path + x for x in samples])
+    for m in vME : MEweights += '%1.6f,'%m
+    for m in vPDF: PDFweights+= '%1.6f,'%m
+    if MEweights .endswith(','): MEweights  = MEweights [:-1]
+    if PDFweights.endswith(','): PDFweights = PDFweights[:-1]
   xsec = GetXsec(xsec, outname, verbose, isData) if not dotest else 1
   isamcatnlo = True if nGenEvents != nSumOfWeights else False
   if isData: isamcatnlo = False
@@ -186,7 +194,7 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
     for s in samples: SampString += '%s/%s,'%(path,s)
   if SampString.endswith(','): SampString = SampString[:-1]
 
-  command = '\'run.C(\"%s\", \"%s\", %f, %f, %i, \"%s\", %i, \"%s\", \"%s\", %i, %i, %i, %i, \"%s\", \"%s\", %i)\''%(SampString, selection, xsec, nSumOfWeights, year, outname, nSlots, outpath, options, isamcatnlo, isData, nEvents, FirstEvent, workingdir, pathSamples, verbose)
+  command = '\'run.C(\"%s\", \"%s\", %f, %f, %i, \"%s\", %i, \"%s\", \"%s\", %i, %i, %i, %i, \"%s\", \"%s\", %i, \"%s\", \"%s\")\''%(SampString, selection, xsec, nSumOfWeights, year, outname, nSlots, outpath, options, isamcatnlo, isData, nEvents, FirstEvent, workingdir, pathSamples, verbose, MEweights, PDFweights)
   command = 'root -l -b -q ' + command
 
   if sendJobs:

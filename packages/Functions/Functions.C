@@ -995,3 +995,30 @@ Bool_t PassElecHEM18problem(TLorentzVector elec){
   return (pt>30) && ((eta>-3.0)&&(eta<-1.4)) && ((phi>-1.57)&&(phi<-0.87));
 }
 
+
+///////////////////// TString to...
+
+std::vector<TString> TStringToVector(TString t, char separator){
+  std::vector<TString> v;
+  t.ReplaceAll(" ", "");
+  Int_t n = t.CountChar(separator);
+  TString element;
+  for(Int_t i = 0; i < n; i++){
+    element = t(0, t.First(separator));
+    t = t(t.First(separator)+1, t.Sizeof());
+    v.push_back(element);
+  }
+  v.push_back(t);
+  return v;
+}
+
+std::vector<Double_t> TStringToDouble(TString t, char separator){
+  std::vector<TString> tv = TStringToVector(t, separator);
+  std::vector<Double_t> fv;
+  Int_t n = tv.size();
+  for(int i = 0; i < n; i++){
+    fv.push_back(tv.at(i).Atof());
+  }
+  return fv;
+}
+

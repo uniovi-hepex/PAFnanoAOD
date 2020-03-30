@@ -146,4 +146,8 @@ Float_t GetDeltaHTmiss(TLorentzVector jet, std::vector<Jet> jets, std::vector<Le
 Bool_t PassJetHEM18problem(TLorentzVector jet, std::vector<Jet> jets, std::vector<Lepton> leptons);
 Bool_t PassElecHEM18problem(TLorentzVector elec);
 
+
+std::vector<TString> TStringToVector(TString t, char separator = ',');
+std::vector<Double_t> TStringToDouble(TString t, char separator = ',');
+
 #endif
