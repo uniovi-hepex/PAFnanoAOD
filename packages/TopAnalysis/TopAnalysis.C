@@ -124,9 +124,9 @@ void TopAnalysis::Initialise(){
 
   nPDFweights = gIsTTbar ? 100 : 33;
 
-  makeTree   = true;
+  makeTree = true;
   miniTree = true;
-  makeHistos = true;
+  makeHistos = false;
 
   gIsSignal= false; //quitar
 	if ((gSampleName.BeginsWith("stop"))) gIsSignal = true; //quitar
@@ -387,8 +387,8 @@ void TopAnalysis::InsideLoop(){
       // Get values or the corresponding variation
 
       SetVariables(useSyst.at(sys));
-      if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();
-      //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill();  
+      //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();
+      if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill();  
       //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny) fTree->Fill();
       
       // ee, mm
@@ -477,11 +477,13 @@ void TopAnalysis::GetLeptonVariables(std::vector<Lepton> selLeptons, std::vector
     TLep0Phi = selLeptons.at(0).Phi();
     TLep0M   = selLeptons.at(0).p.M();
     TLep0Id  = id0*selLeptons.at(0).charge;
+    TLep0Iso = selLeptons.at(0).GetIso();
     TLep1Pt  = selLeptons.at(1).Pt();
     TLep1Eta = selLeptons.at(1).Eta();
     TLep1Phi = selLeptons.at(1).Phi();
     TLep1M   = selLeptons.at(1).p.M();
     TLep1Id  = id1*selLeptons.at(1).charge;
+    TLep1Iso = selLeptons.at(1).GetIso();
     indexMuon = id0 == 13? 0 : 1;
     indexElec = id0 == 13? 1 : 0;
     TMuonPt  = selLeptons.at(indexMuon).Pt();
@@ -1070,10 +1072,13 @@ void TopAnalysis::FillHistos(Int_t ch, Int_t cut, Int_t sys){
   fHInvMass2[ch][cut][sys]    -> Fill(invmass, weight);
   
   //Endcaps and barrel
-  if(lep0eta <= 1.479 & lep1eta <= 1.479) fHInvMass2BB[ch][cut][sys]     -> Fill(invmass, weight);
-  if(lep0eta <= 1.479 & lep1eta > 1.479) fHInvMass2BE[ch][cut][sys]     -> Fill(invmass, weight);
-  if(lep0eta > 1.479 & lep1eta <= 1.479) fHInvMass2EB[ch][cut][sys]     -> Fill(invmass, weight);
-  if(lep0eta > 1.479 & lep1eta > 1.479) fHInvMass2EE[ch][cut][sys]     -> Fill(invmass, weight);
+  Float_t r9cut = 0.94;
+  if(selLeptons.at(0).GetR9() > r9cut && selLeptons.at(1).GetR9() > r9cut){
+    if(lep0eta <= 1.479 && lep1eta <= 1.479) fHInvMass2BB[ch][cut][sys]     -> Fill(invmass, weight);
+    if(lep0eta <= 1.479 && lep1eta >  1.479) fHInvMass2BE[ch][cut][sys]     -> Fill(invmass, weight);
+    if(lep0eta >  1.479 && lep1eta <= 1.479) fHInvMass2EB[ch][cut][sys]     -> Fill(invmass, weight);
+    if(lep0eta >  1.479 && lep1eta >  1.479) fHInvMass2EE[ch][cut][sys]     -> Fill(invmass, weight);
+  }
 
   // Jets
   if(njets > 0){ 
@@ -1155,6 +1160,8 @@ void TopAnalysis::SetLeptonVariables(){
   fTree->Branch("TStatus",      &TStatus,      "TStatus/I");
   fTree->Branch("TLep0Id",      &TLep0Id,      "TLep0Id/I");
   fTree->Branch("TLep1Id",      &TLep1Id,      "TLep1Id/I");
+  fTree->Branch("TLep0Iso",     &TLep0Iso,     "TLep0Iso/F");
+  fTree->Branch("TLep1Iso",     &TLep1Iso,     "TLep1Iso/F");
   fTree->Branch("TMll",         &TMll,         "TMll/F");
   fTree->Branch("TDilep_Pt",    &TDilep_Pt,    "TDilep_Pt/F");
   fTree->Branch("TLep0Pt",      &TLep0Pt,      "TLep0Pt/F");

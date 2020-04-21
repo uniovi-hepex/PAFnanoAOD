@@ -176,11 +176,13 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t TLep0Phi;
     Float_t TLep0M;
     Int_t   TLep0Id;
+    Float_t TLep0Iso;
     Float_t TLep1Pt;    
     Float_t TLep1Eta;
     Float_t TLep1Phi;
     Float_t TLep1M;
     Int_t   TLep1Id;
+    Float_t TLep1Iso;
 
     Float_t TGenLep0Pt;    
     Float_t TGenLep0Eta;
