@@ -327,6 +327,8 @@ class TopAnalysis : public PAFChainItemSelector{
   TH1F* fHDelLepPhi[nChannels][nLevels][nSysts];
   TH1F* fHDelLepEta[nChannels][nLevels][nSysts];
   TH1F* fHDelLepR[nChannels][nLevels][nSysts];
+  TH1F* fHR9l0[nChannels][nLevels][nSysts];
+  TH1F* fHR9l1[nChannels][nLevels][nSysts];
   TH1F* fHHT[nChannels][nLevels][nSysts];
   TH1F* fHJet0Eta[nChannels][nLevels][nSysts];
   TH1F* fHJet1Eta[nChannels][nLevels][nSysts];

@@ -32,6 +32,8 @@ TopAnalysis::TopAnalysis() : PAFChainItemSelector() {
         fHDelLepPhi[ch][cut][sys]   = 0;
         fHDelLepEta[ch][cut][sys]   = 0;
         fHDelLepR[ch][cut][sys]   = 0;
+        fHR9l0[ch][cut][sys]   = 0;
+        fHR9l1[ch][cut][sys]   = 0;
         fHHT[ch][cut][sys]          = 0;
         fHJetEta[ch][cut][sys]     = 0;
         fHJetBtagEta[ch][cut][sys]     = 0;
@@ -128,8 +130,8 @@ void TopAnalysis::Initialise(){
   miniTree = true;
   makeHistos = true;
 
-  gIsSignal= false; //quitar
-	if ((gSampleName.BeginsWith("stop"))) gIsSignal = true; //quitar
+  gIsSignal= false; 
+	if ((gSampleName.BeginsWith("stop"))) gIsSignal = true; 
 
   if(makeTree){
     fTree   = CreateTree("MiniTree","Created with PAF");
@@ -387,13 +389,13 @@ void TopAnalysis::InsideLoop(){
       // Get values or the corresponding variation
 
       SetVariables(useSyst.at(sys));
-      if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();
-      //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill();  
+      //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();
+      //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill();  //BS
       //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny) fTree->Fill();
       
       // ee, mm
-      //if (sys == 0 && makeTree && TChannel == iElec && !TIsOnZ && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill();  
-      //if (sys == 0 && makeTree && TChannel == iMuon && !TIsOnZ && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill();   
+      if (sys == 0 && makeTree && TChannel == iElec && !TIsOnZ && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill();  
+      //if (sys == 0 && makeTree && TChannel == iElec && !TIsOnZ && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();   
       
      
       if (invmass > 20 && lep0pt > 25 && lep1pt > 20) {
@@ -859,6 +861,7 @@ void TopAnalysis::GetWeights(){
   TWeight_PrefDown   = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeightDo;
   TWeight_TopPtUp   = TWeight;
   TWeight_TopPtDown = TWeight;
+
   if(gIsTTany){
     TWeight_TopPtUp    = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeight*GetTopPtWeight(TTop0Pt, TTop1Pt);
     for(int i = 0; i < Get<Int_t>("nLHEScaleWeight"); i++) TWeight_ME [i] = TWeight*Get<Float_t>("LHEScaleWeight",i)/SumOfMEweights[i];
@@ -937,6 +940,8 @@ void TopAnalysis::InitHistos(){
         fHDelLepPhi[ch][cut][sys]   = CreateH1F("H_DelLepPhi_"  +suffix, "DelLepPhi" , 500, 0, 5);
         fHDelLepEta[ch][cut][sys]   = CreateH1F("H_DelLepEta_"  +suffix, "DelLepEta" ,  96,0, 4.8);
         fHDelLepR[ch][cut][sys]   = CreateH1F("H_DelLepR_"  +suffix, "DelLepR" ,  96,0, 4.8);
+        fHR9l0[ch][cut][sys]   = CreateH1F("H_R9l0_"  +suffix, "R9l0" ,  120,0, 1.2);
+        fHR9l1[ch][cut][sys]   = CreateH1F("H_R9l1_"  +suffix, "R9l1" ,  120,0, 1.2);
         fHHT[ch][cut][sys]          = CreateH1F("H_HT_"         +suffix, "HT"        , 4700,30,500);
         fHJet0Eta[ch][cut][sys]     = CreateH1F("H_Jet0Eta_"  +suffix, "Jet0Eta"   , 50,-2.5,2.5);
         fHJet1Eta[ch][cut][sys]     = CreateH1F("H_Jet1Eta_"  +suffix, "Jet1Eta"   , 50,-2.5,2.5);
@@ -1067,6 +1072,10 @@ void TopAnalysis::FillHistos(Int_t ch, Int_t cut, Int_t sys){
   fHDelLepPhi[ch][cut][sys]   -> Fill(TMath::Abs(deltaphi)/3.141592, weight);
   fHDelLepEta[ch][cut][sys]   -> Fill(TMath::Abs(deltaeta), weight);
   fHDelLepR[ch][cut][sys]     -> Fill(deltaR, weight);
+  fHR9l0[ch][cut][sys]          -> Fill(selLeptons.at(0).GetR9(), weight);
+  fHR9l1[ch][cut][sys]          -> Fill(selLeptons.at(1).GetR9(), weight);
+  Float_t r9cut = 0.94;
+  //if(selLeptons.at(0).GetR9() > r9cut && selLeptons.at(1).GetR9() > r9cut){ //quitar
   fHInvMass2[ch][cut][sys]    -> Fill(invmass, weight);
   
   //Endcaps and barrel
@@ -1074,7 +1083,7 @@ void TopAnalysis::FillHistos(Int_t ch, Int_t cut, Int_t sys){
   if(lep0eta <= 1.479 & lep1eta > 1.479) fHInvMass2BE[ch][cut][sys]     -> Fill(invmass, weight);
   if(lep0eta > 1.479 & lep1eta <= 1.479) fHInvMass2EB[ch][cut][sys]     -> Fill(invmass, weight);
   if(lep0eta > 1.479 & lep1eta > 1.479) fHInvMass2EE[ch][cut][sys]     -> Fill(invmass, weight);
-
+//}
   // Jets
   if(njets > 0){ 
     fHJet0Eta[ch][cut][sys]     -> Fill(selJets.at(0).Eta(), weight);

@@ -68,6 +68,7 @@ Bool_t LeptonSelector::getGoodVertex(Int_t wp){
     if(wp == iTight){
       if(etaSC <= 1.479 && ((dxy >= 0.05) || (dz  >= 0.10))) return false;
       if(etaSC >  1.479 && ((dxy >= 0.10) || (dz  >= 0.20))) return false;
+     
     }
   }
   else{ // muons
