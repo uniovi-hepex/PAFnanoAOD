@@ -699,19 +699,20 @@ Float_t getMT2lb(TLorentzVector plep0, TLorentzVector plep1, TLorentzVector pjet
 
 Float_t getMT2lb(TLorentzVector plep0, TLorentzVector plep1, TLorentzVector pjet0, TLorentzVector pjet1, TLorentzVector pmet){
   float MT2llbb;
+  mass = 80;
   TLorentzVector LepPlusBtagJet00 = plep0 + pjet0;
   TLorentzVector LepPlusBtagJet10 = plep1 + pjet0;
   TLorentzVector LepPlusBtagJet11 = plep1 + pjet1;
   TLorentzVector LepPlusBtagJet01 = plep0 + pjet1;
   if (LepPlusBtagJet11.M()<173 && LepPlusBtagJet00.M()<173 && (LepPlusBtagJet10.M()>173 || LepPlusBtagJet01.M()>173))
-    MT2llbb=getMT2(LepPlusBtagJet00, LepPlusBtagJet11, pmet, 0.);
+    MT2llbb=getMT2(LepPlusBtagJet00, LepPlusBtagJet11, pmet, mass);
   else if ((LepPlusBtagJet11.M()>173 || LepPlusBtagJet00.M()>173) && LepPlusBtagJet10.M()<173 && LepPlusBtagJet01.M()<173)
-    MT2llbb=getMT2(LepPlusBtagJet01, LepPlusBtagJet10, pmet, 0.);
+    MT2llbb=getMT2(LepPlusBtagJet01, LepPlusBtagJet10, pmet, mass);
   else if (LepPlusBtagJet11.M()<173 && LepPlusBtagJet00.M()<173 && LepPlusBtagJet10.M()<173 && LepPlusBtagJet01.M()<173) {
     if ( fabs(LepPlusBtagJet11.M()-LepPlusBtagJet00.M()) < fabs(LepPlusBtagJet10.M()-LepPlusBtagJet01.M()) )
-      MT2llbb=getMT2(LepPlusBtagJet00, LepPlusBtagJet11, pmet, 0.);
+      MT2llbb=getMT2(LepPlusBtagJet00, LepPlusBtagJet11, pmet, mass);
     else
-      MT2llbb=getMT2(LepPlusBtagJet01, LepPlusBtagJet10, pmet, 0.);
+      MT2llbb=getMT2(LepPlusBtagJet01, LepPlusBtagJet10, pmet, mass);
   }
   else
     MT2llbb=0;
