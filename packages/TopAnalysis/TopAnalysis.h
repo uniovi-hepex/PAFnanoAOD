@@ -78,6 +78,8 @@ class TopAnalysis : public PAFChainItemSelector{
     void GetWeights();
     Int_t nFiduJets; Int_t nFidubJets; 
     
+    Float_t TMuonSF;
+    Float_t TElecSF;
     Float_t TrigSF;
     Float_t TrigSFerr;
     Float_t PUSF;
@@ -170,17 +172,23 @@ class TopAnalysis : public PAFChainItemSelector{
     Int_t   TNSelLeps;
     Int_t   TChannel;
     Int_t   TStatus;
+    Int_t   TLep0IsPrompt;
+    Int_t   TLep1IsPrompt;
+    Int_t   TLep0IsConversion;
+    Int_t   TLep1IsConversion;
     Int_t   TIsSS;
     Float_t TLep0Pt;    
     Float_t TLep0Eta;
     Float_t TLep0Phi;
     Float_t TLep0M;
     Int_t   TLep0Id;
+    Float_t TLep0Iso;
     Float_t TLep1Pt;    
     Float_t TLep1Eta;
     Float_t TLep1Phi;
     Float_t TLep1M;
     Int_t   TLep1Id;
+    Float_t TLep1Iso;
 
     Float_t TGenLep0Pt;    
     Float_t TGenLep0Eta;
@@ -271,6 +279,7 @@ class TopAnalysis : public PAFChainItemSelector{
 
     
     Float_t m_stop; Float_t m_LSP; Int_t sumWeights; Int_t ngenPart; Int_t iSt; Int_t iLSP; Double_t xsec; Int_t j;Float_t norm;//quitar
+    Float_t  TWeightRaw;
     Float_t  TWeight_LepEffUp;
     Float_t  TWeight_LepEffDown;
     Float_t  TWeight_ElecEffUp;
