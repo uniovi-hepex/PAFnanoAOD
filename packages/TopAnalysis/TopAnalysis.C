@@ -187,7 +187,7 @@ void TopAnalysis::Initialise(){
   nSyst = useSyst.size();
   InitHistos();
   metvar    = year == 2017? "METFixEE2017"     : "MET";
-  metvarphi = year == 2017? "METFixEE2017_phi" : "MET_phi_nom";
+  metvarphi = year == 2017? "METFixEE2017_phi_nom" : "MET_phi_nom";
   metvarpt  = year == 2017? "METFixEE2017_pt_nom"  : "MET_pt_nom";
   if(gIsData){
     metvarphi = "MET_phi";
@@ -231,6 +231,23 @@ void TopAnalysis::InsideLoop(){
   if (gIsSignal || gIsTTany){
     ngenPart=Get<Int_t>("nGenPart");
     int i; iSt = 0; iLSP = 0;
+    if(gSampleName.BeginsWith("stop_RH")){
+	  for(Int_t i = 0; i < ngenPart; i++){
+      Int_t genpdgId = Get<Int_t>("GenPart_pdgId", i);
+      if     (genpdgId == -6 and Get<Int_t>("GenPart_status", i) == 22){
+        TTop0Pt  = Get<Float_t>("GenPart_pt",  i);
+        TTop0Eta = Get<Float_t>("GenPart_eta", i);
+        TTop0Phi = Get<Float_t>("GenPart_phi", i);
+      }
+      else if(genpdgId ==  6 and Get<Int_t>("GenPart_status", i) == 22){
+        TTop1Pt  = Get<Float_t>("GenPart_pt",  i);
+        TTop1Eta = Get<Float_t>("GenPart_eta", i);
+        TTop1Phi = Get<Float_t>("GenPart_phi", i);
+      }
+      if(genpdgId == 2000006)  iSt=i; 
+      if(genpdgId == 1000022)  iLSP=i; 
+    }}
+    else{
     for(Int_t i = 0; i < ngenPart; i++){
       Int_t genpdgId = Get<Int_t>("GenPart_pdgId", i);
       if     (genpdgId == -6 and Get<Int_t>("GenPart_status", i) == 22){
@@ -245,7 +262,7 @@ void TopAnalysis::InsideLoop(){
       }
       if(genpdgId == 1000006)  iSt=i; 
       if(genpdgId == 1000022)  iLSP=i; 
-    }
+    }}
     if(gIsSignal){
       m_stop = Get<Float_t>("GenPart_mass", iSt);
       m_LSP  = Get<Float_t>("GenPart_mass", iLSP);
@@ -390,13 +407,12 @@ void TopAnalysis::InsideLoop(){
       // Get values or the corresponding variation
 
       SetVariables(useSyst.at(sys));
-      if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();
-      //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill();  //BS
-      //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilep && TIsSS==0) fTree->Fill(); //victor
+      //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();
+      if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill();  //BS
       
       // ee, mm
-     // if (sys == 0 && makeTree && TChannel == iMuon && !TIsOnZ && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill();  
-      //if (sys == 0 && makeTree && TChannel == iElec && TIsOnZ && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();   
+      //if (sys == 0 && makeTree && TChannel == iMuon && !TIsOnZ && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill();  
+      //if (sys == 0 && makeTree && TChannel == iElec && !TIsOnZ && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();   
       
      
       if (invmass > 20 && lep0pt > 25 && lep1pt > 20) {
@@ -1174,6 +1190,7 @@ void TopAnalysis::SetLeptonVariables(){
     fTree->Branch("TLep1M",       &TLep1M,       "TLep1M/F");
   }
   fTree->Branch("TIsSS",        &TIsSS,        "TIsSS/I");
+  fTree->Branch("TNSelLeps",        &TNSelLeps,        "TNSelLeps/I");
   fTree->Branch("TStatus",      &TStatus,      "TStatus/I");
   fTree->Branch("TLep0Id",      &TLep0Id,      "TLep0Id/I");
   fTree->Branch("TLep1Id",      &TLep1Id,      "TLep1Id/I");
@@ -1273,6 +1290,7 @@ void TopAnalysis::SetJetVariables(){
 }
 
 void TopAnalysis::SetEventVariables(){
+  fTree->Branch("TEvent",          &event,           "TEvent/l");
   fTree->Branch("TWeight",      &TWeight,      "TWeight/D");
   fTree->Branch("TWeight_noPU",      &TWeight_noPU,      "TWeight_noPU/D");
   fTree->Branch("TMET",            &TMET,            "TMET/F");

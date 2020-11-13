@@ -66,8 +66,8 @@ Bool_t LeptonSelector::getSIPcut(Float_t cut){
 Bool_t LeptonSelector::getGoodVertex(Int_t wp){
   if(type == 1){ //electrons
     if(wp == iTight){
-      if(etaSC <= 1.479 && ((dxy >= 0.05) || (dz  >= 0.10))) return false;
-      if(etaSC >  1.479 && ((dxy >= 0.10) || (dz  >= 0.20))) return false;
+      if(etaSC <= 1.479 && ((dxy >= 0.05) || (dz  >= 0.10))) return false;      
+      if(etaSC >  1.479 && ((dxy >= 0.10) || (dz  >= 0.20))) return false; 
      
     }
   }
@@ -217,7 +217,7 @@ Bool_t LeptonSelector::isGoodLepton(Lepton lep){
   Bool_t passId; Bool_t passIso;
   if (lep.isMuon) {
     passId  = getMuonId(iTight);
-    passIso =getRelIso04POG(iTight);   
+    passIso = getRelIso04POG(iTight);   
   }
   if (lep.isElec) {
     passId = getElecCutBasedId(iTight) && lostHits <= 1;
