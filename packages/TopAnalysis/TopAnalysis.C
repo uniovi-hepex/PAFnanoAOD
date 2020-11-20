@@ -408,11 +408,11 @@ void TopAnalysis::InsideLoop(){
 
       SetVariables(useSyst.at(sys));
       //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();
-      if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill();  //BS
+      //if (sys == 0 && makeTree && TChannel == iElMu && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill();  //BS
       
       // ee, mm
       //if (sys == 0 && makeTree && TChannel == iMuon && !TIsOnZ && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill();  
-      //if (sys == 0 && makeTree && TChannel == iElec && !TIsOnZ && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();   
+      if (sys == 0 && makeTree && TChannel == iElec && !TIsOnZ && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();   
       
      
       if (invmass > 20 && lep0pt > 25 && lep1pt > 20) {
@@ -895,9 +895,9 @@ void TopAnalysis::GetWeights(){
     for(int i = 0; i < Get<Int_t>("nLHEScaleWeight"); i++) TWeight_ME [i] = TWeight*Get<Float_t>("LHEScaleWeight",i)/SumOfMEweights[i];
     for(int i = 0; i < Get<Int_t>("nLHEPdfWeight");   i++) TWeight_PDF[i] = TWeight*Get<Float_t>("LHEPdfWeight",i)/SumOfPDFweights[i];
   }
-  else if{gIsSignal){
-    for(int i = 0; i < Get<Int_t>("nLHEScaleWeight"); i++) TWeight_ME [i] = TWeight*Get<Float_t>("LHEScaleWeight",i)/SumOfMEweights[i];
-  }
+  //else if(gIsSignal){
+   // for(int i = 0; i < Get<Int_t>("nLHEScaleWeight"); i++) TWeight_ME [i] = TWeight*Get<Float_t>("LHEScaleWeight",i)/SumOfMEweights[i];
+  //}
  
   /*
   TWeight_ME0 = TWeight*Get<Float_t>("LHEScaleWeight",0);
@@ -1322,9 +1322,9 @@ void TopAnalysis::SetEventVariables(){
       for(int i = 0; i < nMEweights; i++)    fTree->Branch(Form("TWeight_ME%i",i),          &TWeight_ME[i],          Form("TWeight_ME%i/F",i));
       for(int i = 0; i < nPDFweights;   i++) fTree->Branch(Form("TWeight_PDF%i",i),         &TWeight_PDF[i],        Form("TWeight_PDF%i/F",i));
     }
-    else if(gIsSignal){
-      for(int i = 0; i < nMEweights; i++)    fTree->Branch(Form("TWeight_ME%i",i),          &TWeight_ME[i],          Form("TWeight_ME%i/F",i));
-    ]
+    //else if(gIsSignal){
+      //for(int i = 0; i < nMEweights; i++)    fTree->Branch(Form("TWeight_ME%i",i),          &TWeight_ME[i],          Form("TWeight_ME%i/F",i));
+    //}
 
     if(gIsTTany) fTree->Branch("TWeight_TopPtUp",         &TWeight_TopPtUp,        "TWeight_TopPtUp/F");
     if(gIsTTany) fTree->Branch("TWeight_TopPtDown",         &TWeight_TopPtDown,        "TWeight_TopPtDown/F");
