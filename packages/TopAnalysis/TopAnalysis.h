@@ -300,6 +300,9 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t  TWeight_TopPtDown;
     Float_t  TWeight_ME[9];
     Float_t  TWeight_PDF[110];
+    Float_t  TWeight_SUSYISRUp;
+    Float_t  TWeight_SUSYISRDown;
+    Float_t  TWeight_SUSYISR;
     
     std::vector<Jet> jets;
     Double_t weight;
