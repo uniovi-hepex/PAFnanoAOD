@@ -808,7 +808,7 @@ void TopAnalysis::GetWeights(){
   Float_t normFact = 0; Float_t delta;
   if(gIsSignal){
     Float_t wisr = Get<Float_t>("ISRweight");
-    if     (year == 2016) normfact = 1./;
+    if     (year == 2016) normfact = 1.;
     else if(year == 2017) normfact = 1.;
     else if(year == 2018) normfact = 1.;
     wsusyisr   = wisr*normfact;
