@@ -181,6 +181,10 @@ void TopAnalysis::Initialise(){
     if(gIsTTany){
       useSyst.push_back(kTopPt);
     }
+    if(gIsSignal){
+      useSyst.push_back(kSUSYISRUp);
+      useSyst.push_back(kSUSYISRDown);
+    }
   }
   nSyst = useSyst.size();
   InitHistos();
@@ -801,12 +805,16 @@ void TopAnalysis::GetWeights(){
     fsrUp = Get<Float_t>("PSWeight", 3);
   }
   Float_t wsusyisr = 1; Float_t wsusyisrup = 1; Float_t wsusyisrdo = 1;
-  Float_t normFact = 0;
-  Float_t wisr = Get<Float_t>("ISRweight");
+  Float_t normFact = 0; Float_t delta;
   if(gIsSignal){
-    if     (year == 2016) normfact = 1.;
+    Float_t wisr = Get<Float_t>("ISRweight");
+    if     (year == 2016) normfact = 1./;
     else if(year == 2017) normfact = 1.;
     else if(year == 2018) normfact = 1.;
+    wsusyisr   = wisr*normfact;
+    delta      = (wsusyisr-1)/2;
+    wsusyisrup = wsusyisr+delta;
+    wsusyisrdo = wsusyisr-delta;
   }
 
 
@@ -851,7 +859,7 @@ void TopAnalysis::GetWeights(){
   }
 
   //if(gIsSignal) PUSF = 1;
-  wsusyisr = 1;
+  //wsusyisr = 1;
   TWeight_noPU             = NormWeight*ElecSF*MuonSF*TrigSF*PrefWeight*wsusyisr;
 
   TWeight             = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeight*wsusyisr;
@@ -1291,6 +1299,10 @@ void TopAnalysis::SetEventVariables(){
     fTree->Branch("TWeight_FSRDown",         &TWeight_FSRDown,        "TWeight_FSRDown/F");
     fTree->Branch("TWeight_PrefUp",           &TWeight_PrefUp,          "TWeight_PrefUp/F");
     fTree->Branch("TWeight_PrefDown",         &TWeight_PrefDown,        "TWeight_PrefDown/F");
+    if(gIsSignal){
+      fTree->Branch("TWeight_SUSYISRUp",         &TWeight_SUSYISRUp,        "TWeight_SUSYISRUp/F");
+      fTree->Branch("TWeight_SUSYISRDown",         &TWeight_SUSYISRDown,        "TWeight_SUSYISRDown/F");
+    }
 
     if(gIsTTany){
       for(int i = 0; i < nMEweights; i++)    fTree->Branch(Form("TWeight_ME%i",i),          &TWeight_ME[i],          Form("TWeight_ME%i/F",i));
@@ -1482,6 +1494,8 @@ void TopAnalysis::SetVariables(int sys){
   else if(sys == kFSRDown    ) weight = TWeight_FSRDown;
   else if(sys == kPrefireUp  ) weight = TWeight_PrefUp;
   else if(sys == kPrefireDown) weight = TWeight_PrefDown;
+  else if(sys == kSUSYISRUp  ) weight = TWeight_SUSYISRUp;
+  else if(sys == kSUSYISRDown) weight = TWeight_SUSYISRDown;
   else if(sys == kTopPt      ) weight = TWeight_TopPtUp;
 }
 
