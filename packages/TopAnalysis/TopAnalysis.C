@@ -1588,6 +1588,7 @@ Int_t TopAnalysis::CountISRjets(){
   std::vector<TLorentzVector> cleanjets;// = std::vector<TLorentzVector>;
   TLorentzVector jet; Bool_t clean = true;
   for(int i=0; i<Get<Int_t>("nJet"); i++){
+    clean = true;
     pt  = Get<Float_t>("Jet_pt",i);
     eta = Get<Float_t>("Jet_eta",i);
     phi = Get<Float_t>("Jet_phi",i);
