@@ -210,7 +210,7 @@ void EventBuilder::InsideLoop(){
 
   // HEM18 problem
   Int_t i = 0;
-  Bool_t isHEM = false;
+  Int_t isHEM = 0;
   if(gIs2018){
     TLorentzVector tP;
     Int_t nElec = Get<Int_t>("nElectron");

@@ -153,9 +153,10 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
   samples = GetSampleList(path, sample)
 
   nEventsInTree, nGenEvents, nSumOfWeights, isData = GetAllInfoFromFile([path + x for x in samples])
-  print 'isData = ', isData
+  #print 'isData = ', isData
 
   MEweights  = (9*'1.0,')[:-1]; PDFweights = ''
+
   if not isData: 
     if IsVarInTree(path+samples[0], 'nLHEPdfSumw_', 'Runs') and IsVarInTree(path+samples[0], 'nLHEScaleSumw_', 'Runs') and GetValOfVarInTree(path+samples[0], 'nLHEPdfSumw_', 'Runs') > 1 and GetValOfVarInTree(path+samples[0], 'nLHEScaleSumw_', 'Runs') > 1:
       MEweights = ''
@@ -164,6 +165,7 @@ def RunSamplePAF(selection, path, sample, year = 2018, xsec = 1, nSlots = 1, out
       for m in vPDF: PDFweights+= '%1.6f,'%m
       if MEweights .endswith(','): MEweights  = MEweights [:-1]
       if PDFweights.endswith(','): PDFweights = PDFweights[:-1]
+
   xsec = GetXsec(xsec, outname, verbose, isData) if not dotest else 1
   isamcatnlo = True if nGenEvents != nSumOfWeights else False
   if isData: isamcatnlo = False

@@ -699,7 +699,7 @@ Float_t getMT2lb(TLorentzVector plep0, TLorentzVector plep1, TLorentzVector pjet
 
 Float_t getMT2lb(TLorentzVector plep0, TLorentzVector plep1, TLorentzVector pjet0, TLorentzVector pjet1, TLorentzVector pmet){
   float MT2llbb;
-  mass = 80;
+  float mass = 0.;
   TLorentzVector LepPlusBtagJet00 = plep0 + pjet0;
   TLorentzVector LepPlusBtagJet10 = plep1 + pjet0;
   TLorentzVector LepPlusBtagJet11 = plep1 + pjet1;

@@ -78,6 +78,8 @@ class TopAnalysis : public PAFChainItemSelector{
     void GetWeights();
     Int_t nFiduJets; Int_t nFidubJets; 
     
+    Float_t TMuonSF;
+    Float_t TElecSF;
     Float_t TrigSF;
     Float_t TrigSFerr;
     Float_t PUSF;
@@ -170,6 +172,10 @@ class TopAnalysis : public PAFChainItemSelector{
     Int_t   TNSelLeps;
     Int_t   TChannel;
     Int_t   TStatus;
+    Int_t   TLep0IsPrompt;
+    Int_t   TLep1IsPrompt;
+    Int_t   TLep0IsConversion;
+    Int_t   TLep1IsConversion;
     Int_t   TIsSS;
     Float_t TLep0Pt;    
     Float_t TLep0Eta;
@@ -273,6 +279,7 @@ class TopAnalysis : public PAFChainItemSelector{
 
     
     Float_t m_stop; Float_t m_LSP; Int_t sumWeights; Int_t ngenPart; Int_t iSt; Int_t iLSP; Double_t xsec; Int_t j;Float_t norm;//quitar
+    Float_t  TWeightRaw;
     Float_t  TWeight_LepEffUp;
     Float_t  TWeight_LepEffDown;
     Float_t  TWeight_ElecEffUp;
@@ -293,6 +300,9 @@ class TopAnalysis : public PAFChainItemSelector{
     Float_t  TWeight_TopPtDown;
     Float_t  TWeight_ME[9];
     Float_t  TWeight_PDF[110];
+    Float_t  TWeight_SUSYISRUp;
+    Float_t  TWeight_SUSYISRDown;
+    Float_t  TWeight_SUSYISR;
     
     std::vector<Jet> jets;
     Double_t weight;
@@ -329,6 +339,8 @@ class TopAnalysis : public PAFChainItemSelector{
   TH1F* fHDelLepPhi[nChannels][nLevels][nSysts];
   TH1F* fHDelLepEta[nChannels][nLevels][nSysts];
   TH1F* fHDelLepR[nChannels][nLevels][nSysts];
+  TH1F* fHR9l0[nChannels][nLevels][nSysts];
+  TH1F* fHR9l1[nChannels][nLevels][nSysts];
   TH1F* fHHT[nChannels][nLevels][nSysts];
   TH1F* fHJet0Eta[nChannels][nLevels][nSysts];
   TH1F* fHJet1Eta[nChannels][nLevels][nSysts];
