@@ -183,6 +183,10 @@ void TopAnalysis::Initialise(){
     if(gIsTTany){
       useSyst.push_back(kTopPt);
     }
+    if(gIsSignal){
+      useSyst.push_back(kSUSYISRUp);
+      useSyst.push_back(kSUSYISRDown);
+    }
   }
   nSyst = useSyst.size();
   InitHistos();
@@ -412,7 +416,7 @@ void TopAnalysis::InsideLoop(){
       
       // ee, mm
       //if (sys == 0 && makeTree && TChannel == iMuon && !TIsOnZ && TPassDilepAny && TPassJetsAny && TPassBtagAny) fTree->Fill();  
-      //if (sys == 0 && makeTree && TChannel == iMuon && !TIsOnZ && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();   
+      //if (sys == 0 && makeTree && TChannel == iElec && !TIsOnZ && TPassDilepAny && TPassJetsAny && TPassBtagAny && TPassMETAny && TPassMT2Any) fTree->Fill();   
       
      
       if (invmass > 20 && lep0pt > 25 && lep1pt > 20) {
@@ -829,12 +833,16 @@ void TopAnalysis::GetWeights(){
     fsrUp = Get<Float_t>("PSWeight", 3);
   }
   Float_t wsusyisr = 1; Float_t wsusyisrup = 1; Float_t wsusyisrdo = 1;
-  Float_t normfact = 0;
-  Float_t wisr = Get<Float_t>("ISRweight");
+  Float_t normfact = 0; Float_t delta;
   if(gIsSignal){
-    if     (year == 2016) normfact = 1.;
-    else if(year == 2017) normfact = 1.;
-    else if(year == 2018) normfact = 1.;
+    Float_t wisr = Get<Float_t>("ISRweight");
+    if     (year == 2016) normfact = 1./0.91512654949;
+    else if(year == 2017) normfact = 1./0.8887855814734756;
+    else if(year == 2018) normfact = 1./0.8840396772766714;
+    wsusyisr   = wisr*normfact;
+    delta      = (wsusyisr-1.)/2.;
+    wsusyisrup = wsusyisr+delta;
+    wsusyisrdo = wsusyisr-delta;
   }
 
 
@@ -880,7 +888,7 @@ void TopAnalysis::GetWeights(){
 
   //if(gIsSignal) PUSF = 1;
 
-  wsusyisr = 1;
+  //wsusyisr = 1;
   TWeight_noPU             = NormWeight*ElecSF*MuonSF*TrigSF*PrefWeight*wsusyisr;
   TWeight             = NormWeight*ElecSF*MuonSF*TrigSF*PUSF*PrefWeight*wsusyisr;
   TWeight_ElecEffUp   = NormWeight*ElecSFUp*MuonSF*TrigSF*PUSF*PrefWeight*wsusyisr;
@@ -907,9 +915,9 @@ void TopAnalysis::GetWeights(){
     for(int i = 0; i < Get<Int_t>("nLHEScaleWeight"); i++) TWeight_ME [i] = TWeight*Get<Float_t>("LHEScaleWeight",i)/SumOfMEweights[i];
     for(int i = 0; i < Get<Int_t>("nLHEPdfWeight");   i++) TWeight_PDF[i] = TWeight*Get<Float_t>("LHEPdfWeight",i)/SumOfPDFweights[i];
   }
-  else if(gIsSignal){
-    for(int i = 0; i < Get<Int_t>("nLHEScaleWeight"); i++) TWeight_ME [i] = TWeight*Get<Float_t>("LHEScaleWeight",i)/SumOfMEweights[i];
-  }
+  //else if(gIsSignal){
+    //for(int i = 0; i < Get<Int_t>("nLHEScaleWeight"); i++) TWeight_ME [i] = TWeight*Get<Float_t>("LHEScaleWeight",i)/SumOfMEweights[i];
+  //}
  
   /*
   TWeight_ME0 = TWeight*Get<Float_t>("LHEScaleWeight",0);
@@ -1329,14 +1337,18 @@ void TopAnalysis::SetEventVariables(){
     fTree->Branch("TWeight_FSRDown",         &TWeight_FSRDown,        "TWeight_FSRDown/F");
     fTree->Branch("TWeight_PrefUp",           &TWeight_PrefUp,          "TWeight_PrefUp/F");
     fTree->Branch("TWeight_PrefDown",         &TWeight_PrefDown,        "TWeight_PrefDown/F");
+    if(gIsSignal){
+      fTree->Branch("TWeight_SUSYISRUp",         &TWeight_SUSYISRUp,        "TWeight_SUSYISRUp/F");
+      fTree->Branch("TWeight_SUSYISRDown",         &TWeight_SUSYISRDown,        "TWeight_SUSYISRDown/F");
+    }
 
     if(gIsTTany){
       for(int i = 0; i < nMEweights; i++)    fTree->Branch(Form("TWeight_ME%i",i),          &TWeight_ME[i],          Form("TWeight_ME%i/F",i));
       for(int i = 0; i < nPDFweights;   i++) fTree->Branch(Form("TWeight_PDF%i",i),         &TWeight_PDF[i],        Form("TWeight_PDF%i/F",i));
     }
-    else if(gIsSignal){
-      for(int i = 0; i < nMEweights; i++)    fTree->Branch(Form("TWeight_ME%i",i),          &TWeight_ME[i],          Form("TWeight_ME%i/F",i));
-    }
+    //else if(gIsSignal){
+     // for(int i = 0; i < nMEweights; i++)    fTree->Branch(Form("TWeight_ME%i",i),          &TWeight_ME[i],          Form("TWeight_ME%i/F",i));
+    //}
 
     if(gIsTTany) fTree->Branch("TWeight_TopPtUp",         &TWeight_TopPtUp,        "TWeight_TopPtUp/F");
     if(gIsTTany) fTree->Branch("TWeight_TopPtDown",         &TWeight_TopPtDown,        "TWeight_TopPtDown/F");
@@ -1520,6 +1532,8 @@ void TopAnalysis::SetVariables(int sys){
   else if(sys == kFSRDown    ) weight = TWeight_FSRDown;
   else if(sys == kPrefireUp  ) weight = TWeight_PrefUp;
   else if(sys == kPrefireDown) weight = TWeight_PrefDown;
+  else if(sys == kSUSYISRUp  ) weight = TWeight_SUSYISRUp;
+  else if(sys == kSUSYISRDown) weight = TWeight_SUSYISRDown;
   else if(sys == kTopPt      ) weight = TWeight_TopPtUp;
 }
 
