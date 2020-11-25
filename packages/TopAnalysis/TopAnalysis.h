@@ -116,6 +116,10 @@ class TopAnalysis : public PAFChainItemSelector{
     Double_t getSysM(const TString& sys = "Norm");
     Double_t getM(vector<TLorentzVector>);
 
+    Int_t CountISRjets();
+    Float_t GetISRweight2016(Int_t n);
+    Float_t GetISRweight1718(Int_t n);
+
     Float_t metcut = 50.;
     Float_t mt2cut = 80.;
 
@@ -399,6 +403,7 @@ class TopAnalysis : public PAFChainItemSelector{
   TH1F* fhDummy_njets[nChannels];
   TH1F* fhDummy_nbtags[nChannels];
   TH1F*  fHWeightsFidu;
+  TH1D*  fHsumwisr;
   TH1D*  fHyields[nChannels][nSysts];
   TH1F*  fHFiduYields[nChannels][nSysts];
   TH1F*  fHSSyields[nChannels][nSysts];

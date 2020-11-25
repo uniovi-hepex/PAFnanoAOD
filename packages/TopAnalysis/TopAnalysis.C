@@ -835,14 +835,19 @@ void TopAnalysis::GetWeights(){
   Float_t wsusyisr = 1; Float_t wsusyisrup = 1; Float_t wsusyisrdo = 1;
   Float_t normfact = 0; Float_t delta;
   if(gIsSignal){
-    Float_t wisr = Get<Float_t>("ISRweight");
+    //Int_t   nisr = Get<Int_t>("nISRjets");
+    //Float_t wisr = Get<Float_t>("ISRweight");
+    Int_t nISRjets = CountISRjets();
+    //std::cout << Form("ISR jets: %i -- %i", nisr, nISRjets) << std::endl;
     if     (year == 2016) normfact = 1./0.91512654949;
     else if(year == 2017) normfact = 1./0.8887855814734756;
     else if(year == 2018) normfact = 1./0.8840396772766714;
+    Float_t wisr = year==2016? GetISRweight2016(nISRjets) : GetISRweight1718(nISRjets);
     wsusyisr   = wisr*normfact;
     delta      = (wsusyisr-1.)/2.;
     wsusyisrup = wsusyisr+delta;
     wsusyisrdo = wsusyisr-delta;
+    fHsumwisr->Fill(1, wisr);
   }
 
 
@@ -934,6 +939,7 @@ void TopAnalysis::GetWeights(){
 
 void TopAnalysis::InitHistos(){
   fhDummy = CreateH1F("fhDummy","fhDummy", 1, 0, 2);
+  fHsumwisr = CreateH1D("sumisr", "miau", 1, 0, 2);
   for(Int_t ch = 0; ch < nChannels; ch++){
     fhDummyCh[ch] = CreateH1F("fhDummy_"+gChanLabel[ch],"fhDummy_"+gChanLabel[ch], 1, 0, 2);
     fhDummy_2leps[ch] = CreateH1F("fhDummy_2leps"+gChanLabel[ch],"fhDummy_2leps"+gChanLabel[ch], 1, 0, 2);
@@ -1131,10 +1137,10 @@ void TopAnalysis::FillHistos(Int_t ch, Int_t cut, Int_t sys){
   fHInvMass[ch][cut][sys]    -> Fill(invmass, weight);
   
   //Endcaps and barrel
-  if(lep0eta <= 1.479 & lep1eta <= 1.479) fHInvMass2BB[ch][cut][sys]     -> Fill(invmass, weight);
-  if(lep0eta <= 1.479 & lep1eta > 1.479) fHInvMass2BE[ch][cut][sys]     -> Fill(invmass, weight);
-  if(lep0eta > 1.479 & lep1eta <= 1.479) fHInvMass2EB[ch][cut][sys]     -> Fill(invmass, weight);
-  if(lep0eta > 1.479 & lep1eta > 1.479) fHInvMass2EE[ch][cut][sys]     -> Fill(invmass, weight);
+  if(lep0eta <= 1.479 && lep1eta <= 1.479) fHInvMass2BB[ch][cut][sys]     -> Fill(invmass, weight);
+  if(lep0eta <= 1.479 && lep1eta > 1.479) fHInvMass2BE[ch][cut][sys]     -> Fill(invmass, weight);
+  if(lep0eta > 1.479 && lep1eta <= 1.479) fHInvMass2EB[ch][cut][sys]     -> Fill(invmass, weight);
+  if(lep0eta > 1.479 && lep1eta > 1.479) fHInvMass2EE[ch][cut][sys]     -> Fill(invmass, weight);
 //}
   // Jets
   if(njets > 0){ 
@@ -1546,3 +1552,132 @@ Float_t TopAnalysis::GetTopPtWeight(Float_t Pt1, Float_t Pt2){
   return TMath::Sqrt(SF1*SF2)*normWeight;
 }
 
+Int_t TopAnalysis::CountISRjets(){
+
+  // Select loose electrons and muons for cleaning
+  std::vector<TLorentzVector> leps;
+  TLorentzVector lep;
+  Float_t pt = 0; Int_t cutBased = 0; Float_t iso = 0; Float_t eta; Float_t phi; Float_t m;
+  for(int i = 0; i < (int) Get<Int_t>("nMuon"); i++){
+    Bool_t isPFcand = Get<Bool_t>("Muon_isPFcand", i);
+    Bool_t isGlobal = Get<Bool_t>("Muon_isGlobal", i);
+    Bool_t isTracker= Get<Bool_t>("Muon_isTracker", i);
+    iso = Get<Float_t>("Muon_pfRelIso04_all",i);
+    pt  = Get<Float_t>("Muon_pt",i);
+    eta = Get<Float_t>("Muon_eta",i);
+    phi = Get<Float_t>("Muon_phi",i);
+    m   = Get<Float_t>("Muon_mass",i);
+    if( (pt>10) && (isPFcand) && (isTracker || isGlobal) && iso<0.15){
+      lep.SetPtEtaPhiM(pt, eta, phi, m);
+      leps.push_back(lep);
+    }
+  }
+  for(int i = 0; i < (int) Get<Int_t>("nElectron"); i++){
+    cutBased = Get<Int_t>("Electron_cutBased",i);
+    pt  = Get<Float_t>("Electron_pt",i);
+    eta = Get<Float_t>("Electron_eta",i);
+    phi = Get<Float_t>("Electron_phi",i);
+    m   = Get<Float_t>("Electron_mass",i);
+    if( (pt>10) && cutBased >= 1){
+      lep.SetPtEtaPhiM(pt, eta, phi, m);
+      leps.push_back(lep);
+    }
+  }
+
+  // Clean jets
+  std::vector<TLorentzVector> cleanjets;// = std::vector<TLorentzVector>;
+  TLorentzVector jet; Bool_t clean = true;
+  for(int i=0; i<Get<Int_t>("nJet"); i++){
+    pt  = Get<Float_t>("Jet_pt",i);
+    eta = Get<Float_t>("Jet_eta",i);
+    phi = Get<Float_t>("Jet_phi",i);
+    m   = Get<Float_t>("Jet_mass",i);
+    jet.SetPtEtaPhiM(pt, eta, phi, m);
+    if (pt<30 || TMath::Abs(eta) >4.7) clean = false;
+    for(int ilep = 0; ilep < (int) leps.size(); ilep++){
+      if(jet.DeltaR(leps.at(ilep)) < 0.4) clean = false;
+    } 
+    if(clean) cleanjets.push_back(jet);
+  }
+
+  // Search for gen particle daugters...
+  std::vector<Int_t> motherIndices;//= std::vector<Int_t>;
+  Int_t nGenPart = Get<Int_t>("nGenPart"); TLorentzVector genPart;
+  Int_t genPartIdxMother; Int_t status; Int_t pdgId;
+  std::vector<std::vector<int>> GenPart_daughterIds;
+  std::vector<std::vector<int>> GenPart_daughterPdgIds;
+  for(int i = 0; i<nGenPart; i++){
+    std::vector<int> emptyvec;
+    GenPart_daughterIds.push_back(emptyvec);
+    GenPart_daughterPdgIds.push_back(emptyvec);
+    genPartIdxMother = Get<Int_t>("GenPart_genPartIdxMother", i);
+    motherIndices.push_back(genPartIdxMother);
+  }
+  for(int i=0; i<nGenPart; i++){
+    int idx = motherIndices.at(i);
+    pdgId = Get<Int_t>("GenPart_pdgId", i);
+    if(idx>=0){
+      //std::cout << Form("adding index %i to position %i",i, idx) << std::endl;
+      GenPart_daughterIds.at(idx).push_back(i);
+      GenPart_daughterPdgIds.at(idx).push_back(pdgId);
+    }
+  }
+
+  // Count ISR jets
+  Int_t nISR = 0; Bool_t matched; Int_t did;
+  for(int ijet=0; ijet<(int)cleanjets.size(); ijet++){
+    if(cleanjets.at(ijet).Pt() < 30) continue;
+    if(TMath::Abs(cleanjets.at(ijet).Eta()) > 2.4) continue;
+    matched = false;
+    for(int i = 0; i<nGenPart; i++){
+      status = Get<Int_t>("GenPart_status",i);
+      pdgId  = Get<Int_t>("GenPart_pdgId",i);
+      if(status != 23 || TMath::Abs(pdgId)>5) continue;
+      genPartIdxMother = Get<Int_t>("GenPart_genPartIdxMother", i);
+      Int_t absMomId = genPartIdxMother>=0? TMath::Abs(Get<Int_t>("GenPart_pdgId", genPartIdxMother)) : 0;
+      if( !(absMomId==6 || absMomId==23 || absMomId==24 || absMomId==25 || absMomId>1e6) ) continue;
+
+
+      // Matching with daugters?
+      for(int idau = 0; idau<(int)GenPart_daughterIds.at(i).size(); idau++){
+        did=GenPart_daughterIds.at(i).at(idau);
+        pt  = Get<Float_t>("GenPart_pt", did);
+        eta = Get<Float_t>("GenPart_eta",did);
+        phi = Get<Float_t>("GenPart_phi",did);
+        m   = Get<Float_t>("GenPart_mass",did);
+        genPart.SetPtEtaPhiM(pt, eta, phi, m);
+        if(cleanjets.at(ijet).DeltaR(genPart) < 0.3){
+          matched=true;
+          break;
+        }
+      }
+    }
+
+    if(!matched) nISR++;
+  }
+  return nISR;
+}
+
+Float_t TopAnalysis::GetISRweight2016(Int_t n){
+   // From: https://indico.cern.ch/event/592621/contributions/2398559/attachments/1383909/2105089/16-12-05_ana_manuelf_isr.pdf
+   if     (n == 0) return 1.;
+   else if(n == 1) return 0.920;
+   else if(n == 2) return 0.821;
+   else if(n == 3) return 0.715;
+   else if(n == 4) return 0.662;
+   else if(n == 5) return 0.561;
+   else if(n >= 6) return 0.511;
+   return 1;
+}
+
+Float_t TopAnalysis::GetISRweight1718(Int_t n){
+   // From: https://indico.cern.ch/event/811884/contributions/3383484/attachments/1824913/2986231/ISR_ConcMarch2019.pdf
+   if     (n == 0) return 1.;
+   else if(n == 1) return 0.914;
+   else if(n == 2) return 0.796;
+   else if(n == 3) return 0.698;
+   else if(n == 4) return 0.602;
+   else if(n == 5) return 0.579;
+   else if(n >= 6) return 0.580;
+   return 1;
+}
